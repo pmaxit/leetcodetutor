@@ -1,0 +1,8 @@
+{
+  "News Feed": {
+    "sla": "Latency < 200ms, Availability 99.99%, Read QPS 100k, Write QPS 10k",
+    "simple_design": ["Single Load Balancer", "Web Server", "Relational Database (Postgres)"],
+    "complex_design": ["Redis Cache", "CDN for Media", "Message Queue (Kafka)", "Fan-out Service", "NoSQL for Feed Store (Cassandra)"],
+    "key_questions": ["How do you handle celebrity fan-out?", "What's the consistency model for the feed?", "How do you scale media storage?"]
+  }
+}

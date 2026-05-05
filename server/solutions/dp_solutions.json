@@ -1,0 +1,26 @@
+{
+  "Climbing Stairs": {
+    "reference": "def climbStairs(n):\n    if n <= 2: return n\n    dp = [0]*(n+1)\n    dp[1], dp[2] = 1, 2\n    for i in range(3, n+1):\n        dp[i] = dp[i-1] + dp[i-2]\n    return dp[n]",
+    "steps": [
+      "State: dp[i] = ways to reach i-th step. Base cases: dp[1]=1, dp[2]=2.",
+      "Transition: dp[i] = dp[i-1] + dp[i-2]. Why? Last step was either 1 or 2 steps."
+    ],
+    "success_criteria": ["Correct base cases", "Recurrence dp[i]=dp[i-1]+dp[i-2]", "O(n) time, O(n) space"]
+  },
+  "Coin Change": {
+    "reference": "def coinChange(coins, amount):\n    dp = [amount + 1] * (amount + 1)\n    dp[0] = 0\n    for coin in coins:\n        for i in range(coin, amount + 1):\n            dp[i] = min(dp[i], dp[i-coin] + 1)\n    return dp[amount] if dp[amount] <= amount else -1",
+    "steps": [
+      "State: dp[i] = min coins for amount i. Init: dp[0]=0, others=inf.",
+      "Transition: dp[i] = min(dp[i], dp[i-coin] + 1) for each coin."
+    ],
+    "success_criteria": ["Initialization with large value", "Nested loop order", "Correct return for unreachable amount"]
+  },
+  "Longest Common Subsequence": {
+    "reference": "def LCS(s1, s2):\n    m, n = len(s1), len(s2)\n    dp = [[0]*(n+1) for _ in range(m+1)]\n    for i in range(1, m+1):\n        for j in range(1, n+1):\n            if s1[i-1] == s2[j-1]: dp[i][j] = 1 + dp[i-1][j-1]\n            else: dp[i][j] = max(dp[i-1][j], dp[i][j-1])\n    return dp[m][n]",
+    "steps": [
+      "State: dp[i][j] = LCS of prefix s1[:i] and s2[:j].",
+      "Transition: If match: 1+diag. Else: max(top, left)."
+    ],
+    "success_criteria": ["2D DP grid", "Correct match logic", "Max(top, left) for non-match"]
+  }
+}
