@@ -3,7 +3,8 @@ require('dotenv').config();
 
 class SearchService {
   constructor() {
-    this.client = tavily({ apiKey: process.env.TAVILY_API_KEY });
+    this.apiKey = process.env.TAVILY_API_KEY;
+    this.client = this.apiKey ? tavily({ apiKey: this.apiKey }) : null;
   }
 
   /**
@@ -11,6 +12,9 @@ class SearchService {
    */
   async performSearch(query) {
     console.log(`Searching Tavily for: "${query}"...`);
+    if (!this.client) {
+      return "Web search is not available (TAVILY_API_KEY not configured).";
+    }
     try {
       const results = await this.client.search(query, {
         searchDepth: "basic",

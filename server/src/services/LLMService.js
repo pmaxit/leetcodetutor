@@ -12,13 +12,15 @@ class LLMService {
     };
 
     // ─── Models (Primary + Fallbacks, in order, with provider) ────────────
+    const fallbacks = (process.env.OPENROUTER_FALLBACKS || "")
+      .split(",")
+      .map(id => id.trim())
+      .filter(Boolean)
+      .map(id => ({ id, provider: "remote" }));
+
     const MODELS = [
-      { id: process.env.LM_STUDIO_MODEL, provider: "local" },
-      ...process.env.OPENROUTER_FALLBACKS
-        .split(",")
-        .map(id => id.trim())
-        .filter(Boolean)
-        .map(id => ({ id, provider: "remote" })),
+      { id: process.env.LM_STUDIO_MODEL || "gpt-4", provider: "local" },
+      ...fallbacks,
     ];
 
     // ─── Initialize Clients ───────────────────────────────────────────────
