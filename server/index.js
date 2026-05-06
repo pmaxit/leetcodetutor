@@ -848,10 +848,22 @@ const startServer = async () => {
     // Sync all models
     console.log('Syncing database models...');
     const isDev = process.env.NODE_ENV !== 'production';
+
+    if (isDev) {
+      // In development, disable foreign key checks before syncing
+      await sequelize.query('SET FOREIGN_KEY_CHECKS = 0');
+    }
+
     await sequelize.sync({
       alter: !isDev,  // Use alter in production, force in development
       force: isDev    // Recreate tables in development mode
     });
+
+    if (isDev) {
+      // Re-enable foreign key checks
+      await sequelize.query('SET FOREIGN_KEY_CHECKS = 1');
+    }
+
     console.log('✅ Database models synced');
 
     // Seed test user
