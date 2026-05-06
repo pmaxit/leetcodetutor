@@ -9,8 +9,7 @@ const PracticeSession = sequelize.define('PracticeSession', {
   },
   sessionName: {
     type: DataTypes.STRING,
-    allowNull: false,
-    unique: true,
+    allowNull: true,
     field: 'session_name'
   },
   userId: {
