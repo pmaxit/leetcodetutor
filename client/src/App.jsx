@@ -12,6 +12,7 @@ import 'katex/dist/katex.min.css';
 import './index.css';
 import SystemDesignView from './SystemDesignView';
 import DebugBar from './DebugBar';
+import { formatProblemDescription } from './utils/formatProblemDescription';
 
 const API = import.meta.env.PROD ? '' : 'http://127.0.0.1:3005';
 
@@ -25,9 +26,10 @@ const TldrawWrapper = ({ onEditorMount }) => {
 };
 
 function App() {
-  // ─── Mode: 'dsa' | 'system-design' ─────────────────────────────────────────
+  // ─── Mode: 'dsa' | 'system-design' | 'practice' ─────────────────────────────
   const [mode, setMode] = useState('dsa');
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [activeModal, setActiveModal] = useState(null); // 'profile' | 'stats' | 'settings' | null
 
   // ─── DSA State ───────────────────────────────────────────────────────────────
   const [session, setSession] = useState(null);
@@ -41,7 +43,8 @@ function App() {
   const [questions, setQuestions] = useState([]);
   const [selectedQuestion, setSelectedQuestion] = useState(null);
   const [constraints, setConstraints] = useState([]);
-  const [expandedCategories, setExpandedCategories] = useState({});
+  const [expandedCategories, setExpandedCategories] = useState({ 'Arrays & Hashing': true });
+  const [dsaExpanded, setDsaExpanded] = useState(true);
   const chatEndRef = useRef(null);
   const tldrawEditor = useRef(null);
 
@@ -51,6 +54,21 @@ function App() {
   const [sdExpanded, setSdExpanded] = useState(true);
   const [status, setStatus] = useState({ text: 'Ready', type: 'info' });
   const [llmHealth, setLlmHealth] = useState({ status: 'unknown', message: 'Checking...' });
+
+  // ─── Practice State ──────────────────────────────────────────────────────────
+  const [practiceConfig, setPracticeConfig] = useState({ newPerDay: 2, pastPerDay: 3 });
+  const [practiceSchedule, setPracticeSchedule] = useState(null);
+  const [practiceSessionName, setPracticeSessionName] = useState(null);
+  const [practiceSessionId, setPracticeSessionId] = useState(null);
+  const [practiceConfiguring, setPracticeConfiguring] = useState(true);
+  const [selectedPracticeDay, setSelectedPracticeDay] = useState(null);
+  const [practiceProgress, setPracticeProgress] = useState({});
+  const [expandedSessions, setExpandedSessions] = useState({});
+  const [expandedPracticeDays, setExpandedPracticeDays] = useState({});
+  const [savedPracticeSessions, setSavedPracticeSessions] = useState([]);
+  const [showLoadSession, setShowLoadSession] = useState(false);
+  const [renamingSessionId, setRenamingSessionId] = useState(null);
+  const [renamingSessionName, setRenamingSessionName] = useState('');
 
   const checkLLMHealth = async () => {
     setLlmHealth({ status: 'checking', message: 'Checking LM Studio...' });
@@ -86,6 +104,28 @@ function App() {
         const sdRes = await fetch(`${API}/api/sd/questions`);
         const sdData = await sdRes.json();
         setSdQuestions(sdData);
+
+        // Load saved practice sessions
+        const psRes = await fetch(`${API}/api/practice/sessions`);
+        const psData = await psRes.json();
+        setSavedPracticeSessions(psData);
+
+        // Auto-load the most recent practice session if it exists
+        if (psData.length > 0) {
+          const mostRecent = psData[0]; // Already sorted by createdAt DESC
+          const sessionRes = await fetch(`${API}/api/practice/session/${mostRecent.id}`);
+          const sessionData = await sessionRes.json();
+
+          setPracticeSchedule(sessionData.schedule);
+          setPracticeSessionName(sessionData.sessionName);
+          setPracticeSessionId(sessionData.id);
+          setPracticeProgress(sessionData.progress || {});
+          setPracticeConfig({
+            newPerDay: sessionData.newPerDay,
+            pastPerDay: sessionData.pastPerDay
+          });
+          setPracticeConfiguring(false);
+        }
 
         const sRes = await fetch(`${API}/api/session/start`, {
           method: 'POST',
@@ -299,6 +339,275 @@ function App() {
     }));
   };
 
+  const generateRandomSessionName = () => {
+    const adjectives = ['Swift', 'Sharp', 'Steady', 'Smart', 'Strong', 'Stellar', 'Sleek'];
+    const nouns = ['Coder', 'Engineer', 'Developer', 'Scholar', 'Master', 'Expert', 'Pro'];
+    const adj = adjectives[Math.floor(Math.random() * adjectives.length)];
+    const noun = nouns[Math.floor(Math.random() * nouns.length)];
+    const num = Math.floor(Math.random() * 1000);
+    return `${adj}${noun}${num}`;
+  };
+
+  const handleGeneratePracticeSchedule = async () => {
+    setStatus({ text: 'Generating practice schedule...', type: 'loading' });
+    try {
+      const sessionName = generateRandomSessionName();
+      const response = await fetch(`${API}/api/practice/generate`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          newPerDay: practiceConfig.newPerDay,
+          pastPerDay: practiceConfig.pastPerDay,
+          duration: 30,
+        }),
+      });
+      const data = await response.json();
+
+      // Save to database (convert schedule to ID-only format for smaller payload)
+      setStatus({ text: 'Saving session to database...', type: 'loading' });
+      const idOnlySchedule = {};
+      Object.entries(data.schedule).forEach(([day, questions]) => {
+        idOnlySchedule[day] = questions.map(q => q.id);
+      });
+
+      const saveRes = await fetch(`${API}/api/practice/save`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          sessionName,
+          schedule: idOnlySchedule,
+          newPerDay: practiceConfig.newPerDay,
+          pastPerDay: practiceConfig.pastPerDay,
+        }),
+      });
+      const savedSession = await saveRes.json();
+
+      setPracticeSchedule(data.schedule);
+      setPracticeSessionName(sessionName);
+      setPracticeSessionId(savedSession.session.id);
+      setPracticeProgress(data.progress || {});
+      setPracticeConfiguring(false);
+      setMode('dsa');
+      setStatus({ text: 'Practice schedule ready!', type: 'success' });
+
+      // Refresh saved sessions list
+      const sessionsRes = await fetch(`${API}/api/practice/sessions`);
+      const sessionsData = await sessionsRes.json();
+      setSavedPracticeSessions(sessionsData);
+    } catch (error) {
+      console.error('Generate schedule error:', error);
+      setStatus({ text: 'Failed to generate schedule', type: 'error' });
+    }
+  };
+
+  const handleLoadPracticeSession = async (sessionId) => {
+    try {
+      setStatus({ text: 'Loading practice session...', type: 'loading' });
+      const res = await fetch(`${API}/api/practice/session/${sessionId}`);
+      const session = await res.json();
+
+      setPracticeSchedule(session.schedule);
+      setPracticeSessionName(session.sessionName);
+      setPracticeSessionId(session.id);
+      setPracticeProgress(session.progress || {});
+      setPracticeConfig({ newPerDay: session.newPerDay, pastPerDay: session.pastPerDay });
+      setPracticeConfiguring(false);
+      setMode('dsa');
+      setShowLoadSession(false);
+      setStatus({ text: 'Session loaded!', type: 'success' });
+    } catch (error) {
+      console.error('Load practice session error:', error);
+      setStatus({ text: 'Failed to load session', type: 'error' });
+    }
+  };
+
+  const handleRenameSession = async (sessionId, oldName) => {
+    if (renamingSessionId === sessionId) {
+      // Save rename
+      if (renamingSessionName.trim() === '') {
+        setRenamingSessionName(oldName);
+        setRenamingSessionId(null);
+        return;
+      }
+
+      try {
+        const res = await fetch(`${API}/api/practice/session/${sessionId}/rename`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ newName: renamingSessionName }),
+        });
+        const data = await res.json();
+
+        // Update local state if this is the active session
+        if (practiceSessionId === sessionId) {
+          setPracticeSessionName(renamingSessionName);
+        }
+
+        // Refresh sessions list
+        const sessionsRes = await fetch(`${API}/api/practice/sessions`);
+        const sessionsData = await sessionsRes.json();
+        setSavedPracticeSessions(sessionsData);
+
+        setRenamingSessionId(null);
+        setRenamingSessionName('');
+        setStatus({ text: 'Session renamed!', type: 'success' });
+      } catch (error) {
+        console.error('Rename session error:', error);
+        setStatus({ text: 'Failed to rename session', type: 'error' });
+        setRenamingSessionName(oldName);
+      }
+    } else {
+      // Start rename
+      setRenamingSessionId(sessionId);
+      setRenamingSessionName(oldName);
+    }
+  };
+
+  const handleDeleteSession = async (sessionId) => {
+    if (window.confirm('Delete this practice session? This cannot be undone.')) {
+      try {
+        setStatus({ text: 'Deleting session...', type: 'loading' });
+        await fetch(`${API}/api/practice/session/${sessionId}`, {
+          method: 'DELETE',
+        });
+
+        // If deleting the active session, clear it
+        if (practiceSessionId === sessionId) {
+          setPracticeConfiguring(true);
+          setSelectedPracticeDay(null);
+          setPracticeProgress({});
+          setPracticeSchedule(null);
+          setPracticeSessionName(null);
+          setPracticeSessionId(null);
+        }
+
+        setExpandedSessions(prev => {
+          const next = { ...prev };
+          delete next[sessionId];
+          return next;
+        });
+
+        // Refresh sessions list
+        const sessionsRes = await fetch(`${API}/api/practice/sessions`);
+        const sessionsData = await sessionsRes.json();
+        setSavedPracticeSessions(sessionsData);
+
+        setStatus({ text: 'Session deleted', type: 'success' });
+      } catch (error) {
+        console.error('Delete session error:', error);
+        setStatus({ text: 'Failed to delete session', type: 'error' });
+      }
+    }
+  };
+
+  const handleResetPracticeSession = async () => {
+    if (window.confirm('Reset this practice session? It will be deleted from the database.')) {
+      try {
+        setStatus({ text: 'Deleting session...', type: 'loading' });
+        if (practiceSessionId) {
+          await fetch(`${API}/api/practice/session/${practiceSessionId}`, {
+            method: 'DELETE',
+          });
+        }
+
+        setPracticeConfiguring(true);
+        setSelectedPracticeDay(null);
+        setPracticeProgress({});
+        setPracticeSchedule(null);
+        setPracticeSessionName(null);
+        setPracticeSessionId(null);
+        setStatus({ text: 'Session reset', type: 'success' });
+
+        // Refresh saved sessions list
+        const sessionsRes = await fetch(`${API}/api/practice/sessions`);
+        const sessionsData = await sessionsRes.json();
+        setSavedPracticeSessions(sessionsData);
+      } catch (error) {
+        console.error('Reset practice session error:', error);
+        setStatus({ text: 'Failed to reset session', type: 'error' });
+      }
+    }
+  };
+
+  const handleMarkQuestionDone = async (questionId) => {
+    const newProgress = {
+      ...practiceProgress,
+      [questionId]: !(practiceProgress[questionId] || false),
+    };
+    setPracticeProgress(newProgress);
+
+    // Save progress to database
+    if (practiceSessionId) {
+      try {
+        await fetch(`${API}/api/practice/session/${practiceSessionId}/progress`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ progress: newProgress }),
+        });
+      } catch (error) {
+        console.error('Update progress error:', error);
+      }
+    }
+  };
+
+
+  const renderProblemDescription = () => {
+    if (!selectedQuestion) {
+      return <p className="placeholder-text">Select a problem to begin.</p>;
+    }
+
+    const description = selectedQuestion.description || selectedQuestion.statement || '';
+    const isHTML = /<[a-z][\s\S]*>/i.test(description);
+
+    return (
+      <div className="problem-content-wrapper">
+        <div className="problem-statement-html">
+          {isHTML ? (
+            <div dangerouslySetInnerHTML={{ __html: description }} />
+          ) : (
+            <ReactMarkdown remarkPlugins={[remarkGfm]}>
+              {formatProblemDescription(description)}
+            </ReactMarkdown>
+          )}
+        </div>
+        
+        {(selectedQuestion.neetcode_url || selectedQuestion.leetcode_url || selectedQuestion.youtube_url) && (
+          <div className="problem-resources">
+            <div className="panel-header sub-header" style={{ marginTop: '1.5rem', marginBottom: '0.5rem' }}>Resources</div>
+            <div className="resource-links">
+              {selectedQuestion.neetcode_url && (
+                <a href={selectedQuestion.neetcode_url} target="_blank" rel="noreferrer" className="resource-link neetcode">
+                  <span className="icon">🚀</span> NeetCode Solution
+                </a>
+              )}
+              {selectedQuestion.leetcode_url && (
+                <a href={selectedQuestion.leetcode_url} target="_blank" rel="noreferrer" className="resource-link leetcode">
+                  <span className="icon">📝</span> LeetCode Problem
+                </a>
+              )}
+            </div>
+            
+            {selectedQuestion.youtube_url && (
+              <div className="video-embed-container" style={{ marginTop: '1rem' }}>
+                <iframe
+                  width="100%"
+                  height="315"
+                  src={`https://www.youtube.com/embed/${selectedQuestion.youtube_url.split('v=')[1]?.split('&')[0] || selectedQuestion.youtube_url.split('/').pop()}`}
+                  title="YouTube video player"
+                  frameBorder="0"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                  allowFullScreen
+                  style={{ borderRadius: '8px', border: '1px solid var(--border)' }}
+                ></iframe>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+    );
+  };
+
+
   // Group DSA questions by category
   const groupedQuestions = questions.reduce((acc, q) => {
     const cat = q.category || 'General';
@@ -340,9 +649,9 @@ function App() {
           </div>
         </div>
         <div className="header-right">
-          <button onClick={handleFinish} className="finish-btn">
-            End Session
-          </button>
+          <button onClick={() => setActiveModal('stats')} className="header-icon-btn" title="Stats">📊</button>
+          <button onClick={() => setActiveModal('profile')} className="header-icon-btn" title="Profile">👤</button>
+          <button onClick={() => setActiveModal('settings')} className="header-icon-btn" title="Settings">⚙️</button>
         </div>
       </header>
 
@@ -355,46 +664,53 @@ function App() {
         </div>
         <div className="panel-header">Curriculum</div>
         <div className="tree-navigation">
-          {/* DSA Section */}
-          <div className="tree-section-label">
-            <span>⚙</span> DSA Problems
-          </div>
-          {Object.entries(groupedQuestions).map(([category, qs]) => (
-            <div key={category} className="tree-group">
-              <div
-                className={`tree-header ${expandedCategories[category] ? 'expanded' : ''}`}
-                onClick={() => toggleCategory(category)}
-              >
-                <span className="chevron"></span>
-                {category}
-              </div>
-              {expandedCategories[category] && (
-                <div className="tree-content">
-                  {qs.map((q) => (
-                    <div
-                      key={q.id}
-                      className={`tree-item ${mode === 'dsa' && selectedQuestion?.id === q.id ? 'active' : ''}`}
-                      onClick={() => { setMode('dsa'); handleSelectQuestion(q); }}
-                    >
-                      {q.title}
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          ))}
-
-          {/* System Design Section */}
-          <div className="tree-section-label" style={{ marginTop: '1rem' }}>
-            <span>🏗</span> System Design
-          </div>
+          {/* DSA Section - Collapsible Header */}
           <div className="tree-group">
             <div
-              className={`tree-header ${sdExpanded ? 'expanded' : ''}`}
-              onClick={() => setSdExpanded(p => !p)}
+              className={`tree-header tree-main-header ${dsaExpanded ? 'expanded' : ''}`}
+              onClick={() => setDsaExpanded(!dsaExpanded)}
             >
               <span className="chevron"></span>
-              Infrastructure & Scale
+              <span>⚙</span> DSA Problems
+            </div>
+            {dsaExpanded && (
+              <div className="tree-content">
+                {Object.entries(groupedQuestions).map(([category, qs]) => (
+                  <div key={category} className="tree-group">
+                    <div
+                      className={`tree-header ${expandedCategories[category] ? 'expanded' : ''}`}
+                      onClick={() => toggleCategory(category)}
+                    >
+                      <span className="chevron"></span>
+                      {category}
+                    </div>
+                    {expandedCategories[category] && (
+                      <div className="tree-content">
+                        {qs.map((q) => (
+                          <div
+                            key={q.id}
+                            className={`tree-item ${mode === 'dsa' && selectedQuestion?.id === q.id ? 'active' : ''}`}
+                            onClick={() => { setMode('dsa'); handleSelectQuestion(q); }}
+                          >
+                            {q.title}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* System Design Section - Collapsible Header */}
+          <div className="tree-group">
+            <div
+              className={`tree-header tree-main-header ${sdExpanded ? 'expanded' : ''}`}
+              onClick={() => setSdExpanded(!sdExpanded)}
+            >
+              <span className="chevron"></span>
+              <span>🏗</span> System Design
             </div>
             {sdExpanded && (
               <div className="tree-content">
@@ -404,7 +720,6 @@ function App() {
                     className={`tree-item ${mode === 'system-design' && selectedSdQuestion?.id === q.id ? 'active' : ''}`}
                     onClick={() => handleSelectSdQuestion(q)}
                   >
-                    <span style={{ marginRight: '0.35rem' }}>🏗</span>
                     {q.title}
                     <span className={`sd-tree-badge sd-tree-badge--${q.difficulty?.toLowerCase()}`}>
                       {q.difficulty}
@@ -414,9 +729,202 @@ function App() {
               </div>
             )}
           </div>
+
+          {/* Active Sessions Section */}
+          <div className="tree-group">
+            <div className="tree-header tree-main-header">
+              <span>📅</span> Active Sessions
+            </div>
+            <div className="tree-content" style={{ paddingLeft: 0 }}>
+              {savedPracticeSessions.length === 0 ? (
+                <div className="tree-item placeholder-text" style={{ paddingLeft: '1rem', border: 'none' }}>
+                  No active sessions. Create one in Settings.
+                </div>
+              ) : (
+                savedPracticeSessions.map((session) => {
+                  const isExpanded = expandedSessions[session.id];
+                  const isActive = practiceSessionId === session.id;
+                  
+                  return (
+                    <div key={session.id} className="tree-group">
+                      <div
+                        className={`tree-header ${isExpanded ? 'expanded' : ''} ${isActive ? 'active-session-header' : ''}`}
+                        onClick={() => {
+                          setExpandedSessions(prev => ({ ...prev, [session.id]: !isExpanded }));
+                          if (!isActive) handleLoadPracticeSession(session.id);
+                        }}
+                      >
+                        <span className="chevron"></span>
+                        <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                          {session.sessionName}
+                        </span>
+                        <button
+                          className="practice-delete-icon"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDeleteSession(session.id);
+                          }}
+                          title="Delete session"
+                        >
+                          🗑
+                        </button>
+                      </div>
+                      
+                      {isExpanded && isActive && practiceSchedule && (
+                        <div className="tree-content">
+                          {Object.entries(practiceSchedule).map(([day, dayQuestions]) => {
+                            const dayNum = parseInt(day);
+                            const dayExpanded = expandedPracticeDays[day];
+                            const completed = dayQuestions.every(q => practiceProgress[q.id]);
+
+                            return (
+                              <div key={day} className="practice-day-group">
+                                <div
+                                  className={`practice-day-header-small ${dayExpanded ? 'expanded' : ''} ${completed ? 'completed' : ''}`}
+                                  onClick={() => setExpandedPracticeDays(prev => ({
+                                    ...prev,
+                                    [day]: !prev[day]
+                                  }))}
+                                >
+                                  <span className="chevron"></span>
+                                  <span className="day-label">Day {dayNum}</span>
+                                  <span className="day-count">{dayQuestions.length}</span>
+                                  {completed && <span className="day-done">✓</span>}
+                                </div>
+                                {dayExpanded && (
+                                  <div className="tree-content">
+                                    {dayQuestions.map((q) => (
+                                      <div
+                                        key={q.id}
+                                        className={`tree-item practice-question ${practiceProgress[q.id] ? 'done' : ''}`}
+                                        onClick={() => { setMode('dsa'); handleSelectQuestion(q); }}
+                                      >
+                                        {practiceProgress[q.id] && <span className="done-check">✓</span>}
+                                        {q.title}
+                                      </div>
+                                    ))}
+                                  </div>
+                                )}
+                              </div>
+                            );
+                          })}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })
+              )}
+            </div>
+          </div>
         </div>
 
       </aside>
+
+      {/* ─── MODALS ────────────────────────────────────────────── */}
+      {activeModal && (
+        <div className="modal-overlay" onClick={() => setActiveModal(null)}>
+          <div className="modal-content side-modal" onClick={e => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2>{activeModal.charAt(0).toUpperCase() + activeModal.slice(1)}</h2>
+              <button className="close-btn" onClick={() => setActiveModal(null)}>✕</button>
+            </div>
+            <div className="modal-body">
+              {activeModal === 'settings' && (
+                <div className="settings-panel">
+                  <div className="settings-section">
+                    <h3>Create New Practice Session</h3>
+                    <p>Configure a personalized 30-day interview preparation plan</p>
+                    <div className="config-form">
+                      <div className="config-field">
+                        <label>New Questions Per Day</label>
+                        <input
+                          type="number"
+                          min="1"
+                          max="10"
+                          value={practiceConfig.newPerDay}
+                          onChange={(e) => setPracticeConfig({ ...practiceConfig, newPerDay: parseInt(e.target.value) })}
+                        />
+                      </div>
+                      <div className="config-field">
+                        <label>Past Questions Per Day (Repetitions)</label>
+                        <input
+                          type="number"
+                          min="0"
+                          max="10"
+                          value={practiceConfig.pastPerDay}
+                          onChange={(e) => setPracticeConfig({ ...practiceConfig, pastPerDay: parseInt(e.target.value) })}
+                        />
+                      </div>
+                      <button className="generate-btn" onClick={() => { handleGeneratePracticeSchedule(); setActiveModal(null); }}>
+                        Generate 30-Day Schedule
+                      </button>
+                    </div>
+                  </div>
+                  
+                  <div className="settings-section">
+                    <h3>Manage Active Sessions</h3>
+                    <div className="saved-sessions-list mini">
+                      {savedPracticeSessions.length === 0 ? (
+                        <p className="no-sessions-msg">No saved sessions yet</p>
+                      ) : (
+                        savedPracticeSessions.map((session) => (
+                          <div key={session.id} className={`session-item ${practiceSessionId === session.id ? 'active' : ''}`}>
+                            <div className="session-info">
+                              <div className="session-name">{session.sessionName}</div>
+                              <div className="session-meta">
+                                {session.newPerDay} new + {session.pastPerDay} past
+                              </div>
+                            </div>
+                            <div className="session-actions">
+                              <button
+                                className="session-action-btn delete"
+                                onClick={() => handleDeleteSession(session.id)}
+                                title="Delete"
+                              >
+                                🗑
+                              </button>
+                            </div>
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
+              
+              {activeModal === 'profile' && (
+                <div className="profile-panel">
+                  <div className="user-avatar">👤</div>
+                  <h3>Anonymous User</h3>
+                  <p>Guest Session</p>
+                  <div className="profile-stats">
+                    <div className="stat-item">
+                      <span className="stat-label">Member Since</span>
+                      <span className="stat-value">May 2026</span>
+                    </div>
+                  </div>
+                </div>
+              )}
+              
+              {activeModal === 'stats' && (
+                <div className="stats-panel">
+                  <h3>Your Progress</h3>
+                  <div className="stats-grid">
+                    <div className="stat-card">
+                      <div className="stat-num">{questions.length}</div>
+                      <div className="stat-desc">Problems Available</div>
+                    </div>
+                    <div className="stat-card">
+                      <div className="stat-num">{savedPracticeSessions.length}</div>
+                      <div className="stat-desc">Active Sessions</div>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ─── MAIN WORKSPACE ─────────────────────────────────────── */}
       {mode === 'system-design' ? (
@@ -424,22 +932,16 @@ function App() {
           <SystemDesignView question={selectedSdQuestion} />
         </div>
       ) : (
-        <>
-          <main className="workspace split-view">
+        <main className="workspace split-view">
+          {/* Left: Code and Problem Area */}
+          <div style={{ flex: 1, display: 'flex', flexDirection: 'row', minWidth: 0 }}>
             {/* Top Section: Problem Description (Always Visible) */}
             <section className="problem-pane">
               <div className="workspace-header">
                 <div className="panel-header" style={{ background: 'transparent', padding: '0' }}>Problem Description</div>
               </div>
               <div className="problem-description-view">
-                {selectedQuestion ? (
-                  <div 
-                    className="problem-statement-html"
-                    dangerouslySetInnerHTML={{ __html: selectedQuestion.description }} 
-                  />
-                ) : (
-                  <p className="placeholder-text">Select a problem from the curriculum to begin.</p>
-                )}
+                {renderProblemDescription()}
               </div>
             </section>
 
@@ -474,7 +976,7 @@ function App() {
                   {isAiLoading ? 'Analyzing...' : 'Get AI Feedback'}
                 </button>
               </div>
-              
+
               <div className="canvas-area">
                 {currentTab === 'whiteboard' ? (
                   <TldrawWrapper
@@ -519,9 +1021,10 @@ function App() {
                 )}
               </div>
             </section>
-          </main>
+          </div>
 
-          <aside className="panel feedback-panel" style={{ borderLeft: '1px solid var(--border)' }}>
+          {/* Right: Feedback Panel */}
+          <aside className="panel feedback-panel" style={{ borderLeft: '1px solid var(--border)', minWidth: 0 }}>
             {/* Interviewer section moved here */}
             <div className="interviewer-section">
               {constraints.length > 0 && (
@@ -613,7 +1116,7 @@ function App() {
               </div>
             </div>
           </aside>
-        </>
+        </main>
       )}
 
       {report && (

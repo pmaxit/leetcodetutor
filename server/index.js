@@ -8,13 +8,15 @@ const ScorerAgent = require('./src/agents/ScorerAgent');
 const LLMService = require('./src/services/LLMService');
 const { Question } = require('./src/models/Question');
 const { SYSTEM_DESIGN_QUESTIONS } = require('./src/data/system_design_questions');
+const { PracticeSession } = require('./src/models/PracticeSession');
 
 const path = require('path');
 const LogStreamer = require('./src/services/LogStreamer');
 
 const app = express();
 app.use(cors());
-app.use(express.json());
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
 // Serve static files from the React app
 app.use(express.static(path.join(__dirname, '../client/dist')));
@@ -23,6 +25,16 @@ const sessions = new Map();
 const interviewer = new InterviewerAgent();
 const proctor = new ProctorAgent();
 const scorer = new ScorerAgent();
+
+const mapQuestion = (q) => {
+  const data = q.toJSON ? q.toJSON() : q;
+  return {
+    ...data,
+    description: data.description || data.statement,
+    boilerplate: data.boilerplate || data.practice_scaffold,
+    pattern: data.pattern || data.category,
+  };
+};
 
 // Log streaming endpoint for debug bar
 app.get('/api/logs/stream', (req, res) => {
@@ -62,18 +74,7 @@ app.get('/api/health', async (req, res) => {
 app.get('/api/questions', async (req, res) => {
   try {
     const questions = await Question.findAll();
-    // Map fields for frontend compatibility
-    const mappedQuestions = questions.map(q => {
-      const data = q.toJSON();
-      return {
-        ...data,
-        description: data.statement || data.description,
-        boilerplate: data.practice_scaffold || data.boilerplate,
-        pattern: data.category || data.pattern,
-        initial_probe: data.initial_probe
-      };
-    });
-    res.json(mappedQuestions);
+    res.json(questions.map(mapQuestion));
   } catch (error) {
     console.error('Fetch questions error:', error);
     res.status(500).json({ error: error.message });
@@ -256,6 +257,227 @@ app.post('/api/session/finish', async (req, res) => {
   res.json({ report, state: session.getSummary() });
 });
 
+// ─── Practice Routes ──────────────────────────────────────────────────────────
+
+app.post('/api/practice/generate', async (req, res) => {
+  try {
+    const { newPerDay, pastPerDay, duration } = req.body;
+    const allQuestions = await Question.findAll();
+
+    // Filter to: medium/hard, DSA only (exclude System Design), prefer neetcode links
+    const filtered = allQuestions.filter(q => {
+      const difficulty = q.difficulty?.toLowerCase() || 'medium';
+      const category = q.category || '';
+      // Only include DSA problems, exclude System Design
+      return (difficulty === 'medium' || difficulty === 'hard') && category !== 'System Design';
+    }).map(mapQuestion);
+
+    // Separate questions by neetcode availability for weighted selection
+    const questionsWithNeetcode = filtered.filter(q => q.neetcode_url);
+    const questionsWithoutNeetcode = filtered.filter(q => !q.neetcode_url);
+
+    const pickRandomQuestion = (availablePool, usedIds) => {
+      const available = availablePool.filter(q => !usedIds.includes(q.id));
+      if (available.length === 0) return null;
+      return available[Math.floor(Math.random() * available.length)];
+    };
+
+    // Generate 30-day schedule with spaced repetition
+    const schedule = {};
+    const usedQuestions = [];
+    const questionFrequency = {};
+
+    for (let day = 1; day <= (duration || 30); day++) {
+      schedule[day] = [];
+
+      // Add new questions (prefer neetcode, fall back to others)
+      let newQuestionsToAdd = newPerDay;
+      while (newQuestionsToAdd > 0 && usedQuestions.length < filtered.length) {
+        let q = pickRandomQuestion(questionsWithNeetcode, usedQuestions);
+        if (!q) {
+          q = pickRandomQuestion(questionsWithoutNeetcode, usedQuestions);
+        }
+        if (q) {
+          schedule[day].push(q);
+          usedQuestions.push(q.id);
+          questionFrequency[q.id] = [day];
+          newQuestionsToAdd--;
+        } else {
+          break;
+        }
+      }
+
+      // Add past questions for spaced repetition (skip day 1)
+      if (day > 1) {
+        const pastCandidates = usedQuestions.filter(qId => {
+          const lastDay = (questionFrequency[qId] || []).slice(-1)[0];
+          return lastDay < day && (questionFrequency[qId]?.length || 0) < 3;
+        });
+
+        let pastQuestionsToAdd = Math.min(pastPerDay, pastCandidates.length);
+        const selectedPast = new Set();
+
+        while (pastQuestionsToAdd > 0 && pastCandidates.length > 0) {
+          const randomIdx = Math.floor(Math.random() * pastCandidates.length);
+          const qId = pastCandidates[randomIdx];
+
+          if (!selectedPast.has(qId)) {
+            const q = filtered.find(fq => fq.id === qId);
+            if (q) {
+              schedule[day].push(q);
+              selectedPast.add(qId);
+              questionFrequency[qId].push(day);
+              pastQuestionsToAdd--;
+            }
+          }
+        }
+      }
+    }
+
+    res.json({
+      schedule,
+      progress: {},
+      totalQuestions: filtered.length,
+      selectedQuestions: usedQuestions.length
+    });
+  } catch (error) {
+    console.error('Generate practice schedule error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Save practice session to database
+app.post('/api/practice/save', async (req, res) => {
+  try {
+    const { sessionName, schedule, newPerDay, pastPerDay } = req.body;
+
+    // Convert schedule to ID-only format to reduce payload
+    const idOnlySchedule = {};
+    Object.entries(schedule).forEach(([day, questions]) => {
+      idOnlySchedule[day] = questions.map(q => q.id || q);
+    });
+
+    const session = await PracticeSession.create({
+      sessionName,
+      schedule: idOnlySchedule,
+      newPerDay,
+      pastPerDay,
+      progress: {}
+    });
+
+    res.json({ success: true, session });
+  } catch (error) {
+    console.error('Save practice session error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Get all practice sessions
+app.get('/api/practice/sessions', async (req, res) => {
+  try {
+    const sessions = await PracticeSession.findAll({
+      attributes: ['id', 'sessionName', 'newPerDay', 'pastPerDay', 'createdAt', 'updatedAt'],
+      order: [['createdAt', 'DESC']]
+    });
+    res.json(sessions);
+  } catch (error) {
+    console.error('Fetch practice sessions error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Get a specific practice session (with full question data)
+app.get('/api/practice/session/:id', async (req, res) => {
+  try {
+    const session = await PracticeSession.findByPk(req.params.id);
+    if (!session) {
+      return res.status(404).json({ error: 'Session not found' });
+    }
+
+    // Parse schedule if it's a string
+    let schedule = session.schedule;
+    if (typeof schedule === 'string') {
+      schedule = JSON.parse(schedule);
+    }
+
+    // Fetch full question data based on IDs in schedule
+    const allQuestions = await Question.findAll();
+    const questionMap = {};
+    allQuestions.forEach(q => {
+      const mapped = mapQuestion(q);
+      questionMap[q.id] = mapped;
+    });
+
+    // Reconstruct schedule with full question data
+    const fullSchedule = {};
+    Object.entries(schedule).forEach(([day, questionIds]) => {
+      fullSchedule[day] = questionIds
+        .map(qId => questionMap[qId])
+        .filter(q => q); // Filter out any missing questions
+    });
+
+    const sessionData = session.toJSON();
+    sessionData.schedule = fullSchedule;
+
+    res.json(sessionData);
+  } catch (error) {
+    console.error('Fetch practice session error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Update practice session progress
+app.put('/api/practice/session/:id/progress', async (req, res) => {
+  try {
+    const { progress } = req.body;
+    const session = await PracticeSession.findByPk(req.params.id);
+    if (!session) {
+      return res.status(404).json({ error: 'Session not found' });
+    }
+
+    session.progress = progress;
+    await session.save();
+    res.json({ success: true, session });
+  } catch (error) {
+    console.error('Update practice session error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Rename a practice session
+app.put('/api/practice/session/:id/rename', async (req, res) => {
+  try {
+    const { newName } = req.body;
+    const session = await PracticeSession.findByPk(req.params.id);
+    if (!session) {
+      return res.status(404).json({ error: 'Session not found' });
+    }
+
+    session.sessionName = newName;
+    await session.save();
+    res.json({ success: true, session });
+  } catch (error) {
+    console.error('Rename practice session error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Delete/reset a practice session
+app.delete('/api/practice/session/:id', async (req, res) => {
+  try {
+    const session = await PracticeSession.findByPk(req.params.id);
+    if (!session) {
+      return res.status(404).json({ error: 'Session not found' });
+    }
+
+    await session.destroy();
+    res.json({ success: true, message: 'Session deleted' });
+  } catch (error) {
+    console.error('Delete practice session error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // ─── System Design Routes ──────────────────────────────────────────────────────
 
 // GET all system design questions (metadata only, no stage answers)
@@ -284,6 +506,8 @@ app.get('/api/sd/questions', async (req, res) => {
         category: data.category,
         description: data.statement,
         originalUrl,
+        neetcode_url: data.neetcode_url,
+        youtube_url: data.youtube_url,
         stageCount: stages.length,
         stages: stages.map(({ id, name, icon, prompt, hint }) => ({ id, name, icon, prompt, hint }))
       };
