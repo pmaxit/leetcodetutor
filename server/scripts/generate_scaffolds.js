@@ -2,6 +2,8 @@ const { Question } = require('../src/models/Question');
 const LLMService = require('../src/services/LLMService');
 require('dotenv').config();
 
+const CONCURRENCY = 4;
+
 async function generateScaffold(question) {
   const prompt = `You are a technical content editor. I will provide you with a full Python solution for a coding problem.
 Your task is to transform it into a "Practice Scaffold" (a skeleton).
@@ -61,28 +63,41 @@ Return ONLY the transformed Python code block.`;
   }
 }
 
-async function run() {
-  console.log('🚀 Starting scaffold generation...');
-  const questions = await Question.findAll();
-  console.log(`Found ${questions.length} questions.`);
-
-  for (const q of questions) {
-    if (q.category === 'System Design') continue;
-    
-    console.log(`Processing: ${q.title}...`);
-    const scaffold = await generateScaffold(q);
-    
-    if (scaffold) {
-      q.practice_scaffold = scaffold;
-      await q.save();
-      console.log(`✅ Updated scaffold for ${q.title}`);
-    } else {
-      console.log(`❌ Failed for ${q.title}`);
-    }
-    
-    // Small delay to avoid rate limits if any
-    await new Promise(resolve => setTimeout(resolve, 500));
+async function processQuestion(q) {
+  if (q.category === 'System Design') return;
+  console.log(`Processing: ${q.title}...`);
+  const scaffold = await generateScaffold(q);
+  if (scaffold) {
+    q.practice_scaffold = scaffold;
+    await q.save();
+    console.log(`✅ Updated: ${q.title}`);
+  } else {
+    console.log(`❌ Failed: ${q.title}`);
   }
+}
+
+async function run() {
+  console.log('🚀 Starting scaffold generation (max 4 concurrent)...');
+  const questions = await Question.findAll();
+  const eligible = questions.filter(q => q.category !== 'System Design');
+  console.log(`Found ${eligible.length} questions to process.`);
+
+  // Promise pool: always keep up to CONCURRENCY tasks running
+  const pool = new Set();
+  let completed = 0;
+
+  for (const q of eligible) {
+    const p = processQuestion(q).finally(() => {
+      pool.delete(p);
+      completed++;
+      console.log(`[${completed}/${eligible.length}] Task completed`);
+    });
+    pool.add(p);
+    if (pool.size >= CONCURRENCY) await Promise.race(pool);
+  }
+
+  // Drain remaining tasks
+  if (pool.size > 0) await Promise.all(pool);
 
   console.log('✨ Finished generating scaffolds!');
   process.exit(0);

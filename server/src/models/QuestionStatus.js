@@ -2,34 +2,29 @@ const { DataTypes } = require('sequelize');
 const sequelize = require('./db');
 
 const QuestionStatus = sequelize.define('QuestionStatus', {
-  user_id: {
+  userId: {
     type: DataTypes.INTEGER,
     primaryKey: true,
     allowNull: false,
-    defaultValue: 1,
-    field: 'user_id'
+    defaultValue: 1
   },
   question_id: {
     type: DataTypes.STRING,
     primaryKey: true,
-    allowNull: false,
-    field: 'question_id'
+    allowNull: false
   },
   status: {
     type: DataTypes.ENUM('needs_review', 'done'),
     defaultValue: 'needs_review',
-    allowNull: false,
-    field: 'status'
+    allowNull: false
   },
   user_code: {
     type: DataTypes.TEXT,
-    allowNull: true,
-    field: 'user_code'
+    allowNull: true
   },
   updatedAt: {
     type: DataTypes.DATE,
-    defaultValue: DataTypes.NOW,
-    field: 'updatedAt'
+    defaultValue: DataTypes.NOW
   }
 }, {
   tableName: 'question_status',
