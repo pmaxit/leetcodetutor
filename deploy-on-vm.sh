@@ -33,10 +33,11 @@ cd client && npm install && cd ..
 if [ ! -f ".env" ]; then
     echo -e "${YELLOW}⚠️  Creating .env file...${NC}"
     cat > .env << 'EOF'
-# LLM Configuration - Uses SSH tunnel to local LM Studio
-LLM_BASE_URL=http://localhost:1234/v1
-LLM_API_KEY=lm-studio
-LLM_MODEL=google/gemma-3n-e4b
+# LLM Configuration - OpenRouter (Cloud-based)
+OPENROUTER_API_KEY=your-openrouter-api-key-here
+LLM_BASE_URL=https://openrouter.ai/api/v1
+LLM_API_KEY=your-openrouter-api-key-here
+LLM_MODEL=google/gemma-3-4b-it
 
 # Database (optional)
 DB_HOST=35.224.79.154
@@ -48,19 +49,22 @@ DB_DIALECT=mysql
 # Server
 PORT=3005
 EOF
-    echo -e "${GREEN}✅ .env created${NC}"
+    echo -e "${GREEN}✅ .env created (configure OPENROUTER_API_KEY)${NC}"
 fi
 
-# Test LM Studio connection
+# Test OpenRouter connection
 echo ""
-echo -e "${BLUE}🔍 Testing LM Studio connection...${NC}"
-if curl -s http://localhost:1234/v1/models | grep -q "google/gemma-3n-e4b"; then
-    echo -e "${GREEN}✅ LM Studio is accessible${NC}"
+echo -e "${BLUE}🔍 Testing OpenRouter connection...${NC}"
+OPENROUTER_KEY=$(grep "OPENROUTER_API_KEY=" .env | cut -d= -f2)
+if [ -z "$OPENROUTER_KEY" ] || [ "$OPENROUTER_KEY" = "your-openrouter-api-key-here" ]; then
+    echo -e "${YELLOW}⚠️  OPENROUTER_API_KEY not configured in .env${NC}"
+    echo "   Get your key from: https://openrouter.ai"
 else
-    echo -e "${YELLOW}⚠️  LM Studio not responding${NC}"
-    echo "   Make sure SSH tunnel is active on your desktop:"
-    echo "   ssh -R 1234:localhost:1234 USER@VM_IP -N"
-    echo ""
+    if curl -s -H "Authorization: Bearer $OPENROUTER_KEY" https://openrouter.ai/api/v1/models | grep -q "object"; then
+        echo -e "${GREEN}✅ OpenRouter is accessible${NC}"
+    else
+        echo -e "${YELLOW}⚠️  OpenRouter not responding (check API key)${NC}"
+    fi
 fi
 
 # Test Server Health
@@ -87,8 +91,8 @@ echo -e "${GREEN}========================================${NC}"
 echo ""
 echo "📋 Next Steps:"
 echo ""
-echo "1️⃣  Verify SSH tunnel is active (on your desktop):"
-echo "   ssh -R 1234:localhost:1234 USER@VM_IP -N"
+echo "1️⃣  Configure OpenRouter API key in .env:"
+echo "   OPENROUTER_API_KEY=your-key-from-openrouter.ai"
 echo ""
 echo "2️⃣  Start the server:"
 echo "   npm run dev"
@@ -100,7 +104,7 @@ echo "4️⃣  Check server logs:"
 echo "   tail -f /tmp/server.log"
 echo ""
 echo -e "${YELLOW}Important:${NC}"
-echo "- Keep the SSH tunnel running on your desktop"
-echo "- LM Studio must be running locally"
+echo "- Get OpenRouter API key from: https://openrouter.ai"
+echo "- No local LM Studio setup needed"
 echo "- Check /tmp/server.log for any errors"
 echo ""

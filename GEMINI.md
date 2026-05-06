@@ -81,3 +81,48 @@ Ready to see the full solution? Ask "show solution" or type @showsolution.
 - **Invalid hint index**: Clamp to bounds or fallback to full solution
 
 ---
+
+## Deployment (Preferred Method)
+
+**Always use the deploy.sh script for consistent deployments:**
+```bash
+./deploy.sh
+```
+
+This script:
+- Checks for required dependencies (Docker, Docker Compose)
+- Verifies the .env configuration file exists
+- Builds and starts all services in isolated containers
+- Outputs access points and useful commands
+
+**Why**: The script ensures reproducible deployments across environments and handles all setup steps automatically.
+
+---
+
+## Architecture & Codebase Learnings
+
+### 1. Database Environment
+- **Primary DB**: The application uses a **MySQL database on GCP** (see `.env`) for production-like data, NOT the local `server/database.sqlite`.
+- **Table Name**: The `Question` model maps to the `problems` table in MySQL, but `Questions` in SQLite.
+- **Data Integrity**: Always verify question metadata against the live DB using scratch scripts if the local SQLite seems stale or incomplete.
+
+### 2. Data Models (Question)
+- **Virtual Fields**: The `Question` model uses Sequelize `VIRTUAL` fields for `description`, `pattern`, and `boilerplate` to handle legacy column naming (e.g., `statement` vs `description`).
+- **API Hydration**: When mapping questions in server routes (`/api/questions`, `/api/practice/session/:id`), always use the spread operator `...data` to ensure all metadata (including virtuals and resource URLs like `neetcode_url`) are sent to the frontend.
+- **Mapping Pattern**:
+  ```javascript
+  const data = q.toJSON();
+  return {
+    ...data,
+    description: data.description || data.statement, // Prioritize virtual combined field
+    boilerplate: data.boilerplate || data.practice_scaffold,
+    pattern: data.pattern || data.category
+  };
+  ```
+
+### 3. Frontend Workspace (App.jsx)
+- **Unification**: All algorithmic solving (DSA + Practice) is unified in the `algorithm` mode.
+- **Problem Descriptions**: Always use `renderProblemDescription()` which handles HTML rendering and resource embedding (LeetCode/NeetCode links + YouTube).
+- **Sidebar Integration**: The practice session sidebar must hydrate questions with full metadata from the server to avoid empty description views.
+
+---

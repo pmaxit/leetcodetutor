@@ -10,6 +10,10 @@ const { Question } = require('./src/models/Question');
 const { SYSTEM_DESIGN_QUESTIONS } = require('./src/data/system_design_questions');
 const { PracticeSession } = require('./src/models/PracticeSession');
 const { QuestionStatus } = require('./src/models/QuestionStatus');
+const { User } = require('./src/models/User');
+const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
+const { authenticateToken, JWT_SECRET } = require('./src/middleware/auth');
 
 const path = require('path');
 const LogStreamer = require('./src/services/LogStreamer');
@@ -72,7 +76,7 @@ app.get('/api/health', async (req, res) => {
   }
 });
 
-app.get('/api/questions', async (req, res) => {
+app.get('/api/questions', authenticateToken, async (req, res) => {
   try {
     const questions = await Question.findAll();
     res.json(questions.map(mapQuestion));
@@ -82,13 +86,29 @@ app.get('/api/questions', async (req, res) => {
   }
 });
 
-// Get all question statuses as object
-app.get('/api/question-status', async (req, res) => {
+// Auth endpoint
+app.post('/api/auth/login', async (req, res) => {
   try {
-    const statuses = await QuestionStatus.findAll();
+    const { email, password } = req.body;
+    const user = await User.findOne({ where: { email } });
+    if (!user) return res.status(401).json({ error: 'Invalid credentials' });
+    const match = await bcrypt.compare(password, user.passwordHash);
+    if (!match) return res.status(401).json({ error: 'Invalid credentials' });
+    const token = jwt.sign({ id: user.id, email: user.email }, JWT_SECRET, { expiresIn: '24h' });
+    res.json({ token, user: { id: user.id, email: user.email } });
+  } catch (err) {
+    console.error('Login error:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Get all question statuses as object
+app.get('/api/question-status', authenticateToken, async (req, res) => {
+  try {
+    const statuses = await QuestionStatus.findAll({ where: { userId: req.user.id } });
     const statusMap = {};
     statuses.forEach(s => {
-      statusMap[s.question_id] = s.status;
+      statusMap[s.question_id] = { status: s.status, user_code: s.user_code };
     });
     res.json(statusMap);
   } catch (error) {
@@ -98,7 +118,7 @@ app.get('/api/question-status', async (req, res) => {
 });
 
 // Update question status (create or update)
-app.put('/api/question-status/:questionId', async (req, res) => {
+app.put('/api/question-status/:questionId', authenticateToken, async (req, res) => {
   try {
     const { questionId } = req.params;
     const { status } = req.body;
@@ -108,7 +128,7 @@ app.put('/api/question-status/:questionId', async (req, res) => {
     }
 
     const [statusRecord] = await QuestionStatus.findOrCreate({
-      where: { question_id: questionId },
+      where: { question_id: questionId, userId: req.user.id },
       defaults: { status, updatedAt: new Date() }
     });
 
@@ -125,8 +145,8 @@ app.put('/api/question-status/:questionId', async (req, res) => {
   }
 });
 
-const getSession = (questionId, type = 'DSA') => {
-  const id = questionId || 'default';
+const getSession = (questionId, userId, type = 'DSA') => {
+  const id = `${userId || 'default'}_${questionId || 'default'}`;
   if (!sessions.has(id)) {
     console.log(`Initializing new session for: ${id} (${type})`);
     sessions.set(id, new StateManager(type));
@@ -134,16 +154,17 @@ const getSession = (questionId, type = 'DSA') => {
   return sessions.get(id);
 };
 
-app.post('/api/session/start', (req, res) => {
+app.post('/api/session/start', authenticateToken, (req, res) => {
   const { questionId, type } = req.body;
   const session = new StateManager(type || 'SYSTEM_DESIGN');
-  sessions.set(questionId || 'default', session);
+  const sessionId = `${req.user.id}_${questionId || 'default'}`;
+  sessions.set(sessionId, session);
   res.json({ state: session.getSummary() });
 });
 
-app.post('/api/interviewer/init', async (req, res) => {
+app.post('/api/interviewer/init', authenticateToken, async (req, res) => {
   const { question } = req.body;
-  const session = getSession(question?.id, 'DSA');
+  const session = getSession(question?.id, req.user.id, 'DSA');
   
   // Use pre-computed probe if available
   if (question?.initial_probe) {
@@ -160,18 +181,19 @@ app.post('/api/interviewer/init', async (req, res) => {
   res.json({ probe: result.text || result });
 });
 
-app.post('/api/chat', async (req, res) => {
+app.post('/api/chat', authenticateToken, async (req, res) => {
   const { message, selectedQuestion } = req.body;
-  const session = getSession(selectedQuestion?.id, 'DSA');
+  const session = getSession(selectedQuestion?.id, req.user.id, 'DSA');
 
   console.log("\n" + "=".repeat(60));
-  console.log("💬 CHAT REQUEST RECEIVED");
+  console.log("💬 CHAT REQUEST RECEIVED (User: " + req.user.id + ")");
   console.log("=".repeat(60));
   console.log(`⏰ Time: ${new Date().toISOString()}`);
   console.log(`📋 Question: ${selectedQuestion?.title || 'Unknown'}`);
   console.log(`💬 Message: "${message.substring(0, 100)}${message.length > 100 ? '...' : ''}"`);
-  console.log(`🔖 Session ID: ${selectedQuestion?.id || 'default'}`);
+  console.log(`🔖 Session ID: ${req.user.id}_${selectedQuestion?.id || 'default'}`);
   console.log("=".repeat(60));
+
 
   if (selectedQuestion) {
     session.updateState({ selectedQuestion });
@@ -203,9 +225,9 @@ app.post('/api/chat', async (req, res) => {
     const aiResult = await interviewer.generateResponse(
       currentSummary,
       message || '',
-      (statusText) => {
-        console.log(`📊 Progress: ${statusText}`);
-        sendEvent('status', { message: statusText });
+      (statusText, modelId) => {
+        console.log(`📊 Progress: ${statusText} [${modelId || 'N/A'}]`);
+        sendEvent('status', { message: statusText, model: modelId });
       }
     );
 
@@ -220,6 +242,7 @@ app.post('/api/chat', async (req, res) => {
     let responseText = typeof aiResult === 'object' ? aiResult.text : aiResult;
     let responseCode = typeof aiResult === 'object' ? aiResult.code : null;
     let nextHintIndex = typeof aiResult === 'object' ? aiResult.nextHintIndex : null;
+    let modelUsed = typeof aiResult === 'object' ? aiResult.model : null;
 
     if (nextHintIndex !== null) {
       session.updateState({ currentHintIndex: nextHintIndex });
@@ -235,7 +258,8 @@ app.post('/api/chat', async (req, res) => {
       response: responseText,
       code: responseCode,
       constraints: session.state.requirements,
-      state: session.getSummary()
+      state: session.getSummary(),
+      model: modelUsed
     });
     
     console.log("✨ Chat response completed successfully\n");
@@ -262,22 +286,63 @@ app.post('/api/chat', async (req, res) => {
   }
 });
 
-app.post('/api/code', async (req, res) => {
+app.post('/api/code', authenticateToken, async (req, res) => {
   const { code, selectedQuestion } = req.body;
-  const session = getSession(selectedQuestion?.id, 'DSA');
+  const session = getSession(selectedQuestion?.id, req.user.id, 'DSA');
   
   session.updateState({ 
     codeBuffer: code,
     selectedQuestion: selectedQuestion || session.state.selectedQuestion 
   });
   
+  if (selectedQuestion?.id) {
+    try {
+      const [statusRecord] = await QuestionStatus.findOrCreate({
+        where: { question_id: selectedQuestion.id, userId: req.user.id },
+        defaults: { status: 'needs_review', user_code: code, updatedAt: new Date() }
+      });
+      if (!statusRecord.isNewRecord) {
+        statusRecord.user_code = code;
+        statusRecord.updatedAt = new Date();
+        await statusRecord.save();
+      }
+    } catch (err) {
+      console.error('Failed to save user code:', err);
+    }
+  }
+  
   const feedback = await proctor.analyzeCode(code, { problem: selectedQuestion?.title });
   res.json({ feedback, state: session.getSummary() });
 });
 
-app.post('/api/feedback/ai', async (req, res) => {
+app.post('/api/code/reset', authenticateToken, async (req, res) => {
+  const { questionId } = req.body;
+  try {
+    const statusRecord = await QuestionStatus.findOne({ 
+      where: { question_id: questionId, userId: req.user.id } 
+    });
+    if (statusRecord) {
+      statusRecord.user_code = null;
+      await statusRecord.save();
+    }
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.post('/api/code/reset-all', authenticateToken, async (req, res) => {
+  try {
+    await QuestionStatus.update({ user_code: null }, { where: { userId: req.user.id } });
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.post('/api/feedback/ai', authenticateToken, async (req, res) => {
   const { code, whiteboard, problem, type, questionId } = req.body;
-  const session = getSession(questionId, 'DSA');
+  const session = getSession(questionId, req.user.id, 'DSA');
   
   let feedback;
   const context = {
@@ -293,9 +358,9 @@ app.post('/api/feedback/ai', async (req, res) => {
   res.json({ feedback, state: session.getSummary() });
 });
 
-app.post('/api/session/finish', async (req, res) => {
+app.post('/api/session/finish', authenticateToken, async (req, res) => {
   const { questionId } = req.body;
-  const session = getSession(questionId);
+  const session = getSession(questionId, req.user.id);
   const report = await scorer.generateReport(session.getSummary());
   session.transitionTo('EVALUATION');
   res.json({ report, state: session.getSummary() });
@@ -303,10 +368,19 @@ app.post('/api/session/finish', async (req, res) => {
 
 // ─── Practice Routes ──────────────────────────────────────────────────────────
 
-app.post('/api/practice/generate', async (req, res) => {
+app.post('/api/practice/generate', authenticateToken, async (req, res) => {
   try {
     const { newPerDay, pastPerDay, duration } = req.body;
+
+    if (!newPerDay || !pastPerDay) {
+      return res.status(400).json({ error: 'Missing required parameters: newPerDay, pastPerDay' });
+    }
+
     const allQuestions = await Question.findAll();
+
+    if (!allQuestions || allQuestions.length === 0) {
+      return res.status(400).json({ error: 'No questions available in database' });
+    }
 
     // Filter to: medium/hard, DSA only (exclude System Design), prefer neetcode links
     const filtered = allQuestions.filter(q => {
@@ -315,6 +389,10 @@ app.post('/api/practice/generate', async (req, res) => {
       // Only include DSA problems, exclude System Design
       return (difficulty === 'medium' || difficulty === 'hard') && category !== 'System Design';
     }).map(mapQuestion);
+
+    if (filtered.length === 0) {
+      return res.status(400).json({ error: 'No medium/hard DSA problems found in database' });
+    }
 
     // Separate questions by neetcode availability for weighted selection
     const questionsWithNeetcode = filtered.filter(q => q.neetcode_url);
@@ -385,13 +463,21 @@ app.post('/api/practice/generate', async (req, res) => {
       selectedQuestions: usedQuestions.length
     });
   } catch (error) {
-    console.error('Generate practice schedule error:', error);
-    res.status(500).json({ error: error.message });
+    console.error('❌ Generate practice schedule error:', {
+      message: error.message,
+      stack: error.stack,
+      name: error.name
+    });
+    res.status(500).json({
+      error: error.message,
+      type: error.name,
+      details: process.env.NODE_ENV === 'development' ? error.stack : undefined
+    });
   }
 });
 
 // Save practice session to database
-app.post('/api/practice/save', async (req, res) => {
+app.post('/api/practice/save', authenticateToken, async (req, res) => {
   try {
     const { sessionName, schedule, newPerDay, pastPerDay } = req.body;
 
@@ -406,8 +492,12 @@ app.post('/api/practice/save', async (req, res) => {
       schedule: idOnlySchedule,
       newPerDay,
       pastPerDay,
+      userId: req.user.id,
       progress: {}
     });
+
+    // Reset all code when creating a new session
+    await QuestionStatus.update({ user_code: null }, { where: { userId: req.user.id } });
 
     res.json({ success: true, session });
   } catch (error) {
@@ -417,9 +507,10 @@ app.post('/api/practice/save', async (req, res) => {
 });
 
 // Get all practice sessions
-app.get('/api/practice/sessions', async (req, res) => {
+app.get('/api/practice/sessions', authenticateToken, async (req, res) => {
   try {
     const sessions = await PracticeSession.findAll({
+      where: { userId: req.user.id },
       attributes: ['id', 'sessionName', 'newPerDay', 'pastPerDay', 'createdAt', 'updatedAt'],
       order: [['createdAt', 'DESC']]
     });
@@ -431,9 +522,11 @@ app.get('/api/practice/sessions', async (req, res) => {
 });
 
 // Get a specific practice session (with full question data)
-app.get('/api/practice/session/:id', async (req, res) => {
+app.get('/api/practice/session/:id', authenticateToken, async (req, res) => {
   try {
-    const session = await PracticeSession.findByPk(req.params.id);
+    const session = await PracticeSession.findOne({
+      where: { id: req.params.id, userId: req.user.id }
+    });
     if (!session) {
       return res.status(404).json({ error: 'Session not found' });
     }
@@ -471,10 +564,12 @@ app.get('/api/practice/session/:id', async (req, res) => {
 });
 
 // Update practice session progress
-app.put('/api/practice/session/:id/progress', async (req, res) => {
+app.put('/api/practice/session/:id/progress', authenticateToken, async (req, res) => {
   try {
     const { progress } = req.body;
-    const session = await PracticeSession.findByPk(req.params.id);
+    const session = await PracticeSession.findOne({
+      where: { id: req.params.id, userId: req.user.id }
+    });
     if (!session) {
       return res.status(404).json({ error: 'Session not found' });
     }
@@ -489,10 +584,12 @@ app.put('/api/practice/session/:id/progress', async (req, res) => {
 });
 
 // Rename a practice session
-app.put('/api/practice/session/:id/rename', async (req, res) => {
+app.put('/api/practice/session/:id/rename', authenticateToken, async (req, res) => {
   try {
     const { newName } = req.body;
-    const session = await PracticeSession.findByPk(req.params.id);
+    const session = await PracticeSession.findOne({
+      where: { id: req.params.id, userId: req.user.id }
+    });
     if (!session) {
       return res.status(404).json({ error: 'Session not found' });
     }
@@ -507,14 +604,20 @@ app.put('/api/practice/session/:id/rename', async (req, res) => {
 });
 
 // Delete/reset a practice session
-app.delete('/api/practice/session/:id', async (req, res) => {
+app.delete('/api/practice/session/:id', authenticateToken, async (req, res) => {
   try {
-    const session = await PracticeSession.findByPk(req.params.id);
+    const session = await PracticeSession.findOne({
+      where: { id: req.params.id, userId: req.user.id }
+    });
     if (!session) {
       return res.status(404).json({ error: 'Session not found' });
     }
 
     await session.destroy();
+    
+    // Reset all code when resetting a session
+    await QuestionStatus.update({ user_code: null }, { where: { userId: req.user.id } });
+    
     res.json({ success: true, message: 'Session deleted' });
   } catch (error) {
     console.error('Delete practice session error:', error);
@@ -526,7 +629,7 @@ app.delete('/api/practice/session/:id', async (req, res) => {
 
 // GET all system design questions (metadata only, no stage answers)
 // GET all system design questions (metadata only, no stage answers)
-app.get('/api/sd/questions', async (req, res) => {
+app.get('/api/sd/questions', authenticateToken, async (req, res) => {
   try {
     const questions = await Question.findAll({ where: { category: 'System Design' } });
     const mappedQuestions = questions.map(q => {
@@ -710,7 +813,17 @@ LogStreamer.start();
 
 const PORT = process.env.PORT || 3005;
 const HOST = '0.0.0.0';
-app.listen(PORT, HOST, () => {
+app.listen(PORT, HOST, async () => {
+  try {
+    const hashed = await bcrypt.hash('test123', 10);
+    await User.findOrCreate({
+      where: { email: 'test@mailnator.io' },
+      defaults: { passwordHash: hashed }
+    });
+    console.log(`✅ Test user seeded/ready`);
+  } catch (err) {
+    console.error('Error seeding test user:', err);
+  }
   console.log(`Server running on http://${HOST}:${PORT}`);
   console.log(`📊 Log streaming available at /api/logs/stream`);
 });

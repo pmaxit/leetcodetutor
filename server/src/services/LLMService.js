@@ -5,38 +5,57 @@ require('dotenv').config();
 
 class LLMService {
   constructor() {
-    const useGemini = !!process.env.GEMINI_API_KEY;
-    const baseURL = process.env.LLM_BASE_URL || (useGemini ? "https://generativelanguage.googleapis.com/v1beta/openai/" : "https://openrouter.ai/api/v1");
-    const apiKey = process.env.OPENROUTER_API_KEY || process.env.LLM_API_KEY || process.env.GEMINI_API_KEY || "sk-or-v1-";
-    const model = process.env.LLM_MODEL || (useGemini ? "gemini-1.5-flash" : "google/gemma-3-4b-it");
+    // ─── Configuration Dictionary ─────────────────────────────────────────
+    const CONFIG = {
+      local:  { url: process.env.LM_STUDIO_URL,  key: process.env.LM_STUDIO_KEY },
+      remote: { url: process.env.OPENROUTER_URL, key: process.env.OPENROUTER_API_KEY },
+    };
+
+    // ─── Models (Primary + Fallbacks, in order, with provider) ────────────
+    const MODELS = [
+      { id: process.env.LM_STUDIO_MODEL, provider: "local" },
+      ...process.env.OPENROUTER_FALLBACKS
+        .split(",")
+        .map(id => id.trim())
+        .filter(Boolean)
+        .map(id => ({ id, provider: "remote" })),
+    ];
+
+    // ─── Initialize Clients ───────────────────────────────────────────────
+    this.clients = {
+      local: new OpenAI({
+        baseURL: CONFIG.local.url,
+        apiKey: CONFIG.local.key,
+      }),
+      remote: new OpenAI({
+        baseURL: CONFIG.remote.url,
+        apiKey: CONFIG.remote.key,
+        defaultHeaders: {
+          'HTTP-Referer': 'https://ai-interview-platform.local',
+          'X-Title': 'AI Interview Platform',
+        },
+      }),
+    };
+
+    this.modelSequence = MODELS;
+    this.model = MODELS[0]?.id;
 
     console.log("\n" + "=".repeat(60));
     console.log("🤖 LLMService Initialization");
     console.log("=".repeat(60));
-    console.log(`📍 LLM Provider: ${useGemini ? "🔴 Google Gemini (Cloud)" : "🟢 OpenRouter (Cloud)"}`);
-    console.log(`🌐 Base URL: ${baseURL}`);
-    console.log(`🏷️  Model: ${model}`);
+    console.log(`🎯 Primary Model: ${this.model} (Local)`);
+    console.log(`📋 Fallback Models: ${MODELS.slice(1).map(m => m.id).join(", ")}`);
     console.log("=".repeat(60) + "\n");
 
-    this.client = new OpenAI({
-      baseURL,
-      apiKey,
-      defaultHeaders: {
-        'HTTP-Referer': 'https://ai-interview-platform.local',
-        'X-Title': 'AI Interview Platform',
-      },
-    });
-    this.model = model;
-    
     this.dpSolutionsPath = path.join(__dirname, '../solutions/dp_solutions.json');
     this.sdSolutionsPath = path.join(__dirname, '../solutions/system_design.json');
-    
+
     // Ensure directory exists
     const solutionsDir = path.dirname(this.dpSolutionsPath);
     if (!fs.existsSync(solutionsDir)) {
       fs.mkdirSync(solutionsDir, { recursive: true });
     }
-    
+
     this.loadSolutions();
   }
 
@@ -55,76 +74,75 @@ class LLMService {
     });
   }
 
-  async generateContent(messagesOrPrompt) {
+  async generateContent(messagesOrPrompt, onStatus = null) {
     const messages = typeof messagesOrPrompt === 'string'
       ? [{ role: "user", content: messagesOrPrompt }]
       : messagesOrPrompt;
 
-    console.log("\n" + "=".repeat(60));
-    console.log("🔄 LLM Request Starting...");
-    console.log("=".repeat(60));
-    console.log(`⏰ Timestamp: ${new Date().toISOString()}`);
-    console.log(`📝 Message count: ${messages.length}`);
-    console.log(`🏷️  Model: ${this.model}`);
-    console.log(`🌐 Base URL: ${process.env.LLM_BASE_URL}`);
-    console.log("=".repeat(60));
+    let lastError = null;
 
-    try {
-      console.log("📤 Sending request to OpenRouter...");
-      const response = await this.client.chat.completions.create({
-        model: this.model,
-        messages: messages,
-        max_tokens: 4096,
-        temperature: 0,
-      });
+    for (let i = 0; i < this.modelSequence.length; i++) {
+      const { id: modelId, provider } = this.modelSequence[i];
+      const client = this.clients[provider];
 
-      console.log("✅ Response received successfully!");
-      console.log(`📊 Response status: ${response.id ? 'Valid' : 'Invalid'}`);
-
-      const choice = response.choices[0];
-      const content = choice.message.content || "";
-
-      if (!content) {
-        throw new Error("LLM returned empty response");
+      if (onStatus) {
+        onStatus(`Trying ${modelId}...`, modelId);
       }
 
-      console.log(`✨ Content length: ${content.length} characters`);
-      console.log("=".repeat(60) + "\n");
-      return content.trim();
-    } catch (error) {
-      console.error("\n" + "❌".repeat(30));
-      console.error("🚨 LLM GENERATION ERROR 🚨");
-      console.error("❌".repeat(30));
-      console.error(`⏰ Time: ${new Date().toISOString()}`);
-      console.error(`📍 Error Type: ${error.constructor.name}`);
-      console.error(`💬 Error Message: ${error.message}`);
-      console.error(`📋 Error Code: ${error.code || 'N/A'}`);
-      console.error(`🔗 Error Status: ${error.status || 'N/A'}`);
+      console.log("\n" + "=".repeat(60));
+      console.log(`🔄 LLM Request Starting [Model: ${modelId}]`);
+      console.log("=".repeat(60));
+      console.log(`⏰ Timestamp: ${new Date().toISOString()}`);
+      console.log(`📝 Message count: ${messages.length}`);
+      console.log(`🌐 Provider: ${provider === 'local' ? 'LM Studio' : 'OpenRouter'}`);
+      console.log("=".repeat(60));
 
-      if (error.response) {
-        console.error(`📡 Response Status: ${error.response.status}`);
-        console.error(`📝 Response Data:`, error.response.data || 'No data');
-      }
-
-      if (error.request) {
-        console.error(`🌐 Request Info:`, {
-          method: error.request.method || 'N/A',
-          url: error.request.url || 'N/A',
-          headers: error.request.headers || {}
+      try {
+        console.log(`📤 Sending request to ${provider === 'local' ? 'LM Studio' : 'OpenRouter'} using ${modelId}...`);
+        const response = await client.chat.completions.create({
+          model: modelId,
+          messages: messages,
+          max_tokens: 4096,
+          temperature: 0,
         });
+
+        console.log(`✅ Response received successfully from ${modelId}!`);
+        console.log(`📊 Response status: ${response.id ? 'Valid' : 'Invalid'}`);
+
+        const choice = response.choices[0];
+        const content = choice.message.content || "";
+
+        if (!content) {
+          console.warn(`⚠️ Model ${modelId} returned empty response. Trying next...`);
+          continue;
+        }
+
+        console.log(`✨ Content length: ${content.length} characters`);
+        console.log("=".repeat(60) + "\n");
+        return content.trim();
+      } catch (error) {
+        lastError = error;
+        console.error(`\n❌ Error with model ${modelId}:`);
+        console.error(`💬 Message: ${error.message}`);
+
+        if (error.status === 401) {
+          console.error("🔴 AUTHENTICATION ERROR - Stopping fallback.");
+          throw error;
+        }
+
+        console.log("⏭️ Trying next model in sequence...");
       }
+    }
 
-      console.error(`🔧 Full Error:`, error);
-      console.error("❌".repeat(30) + "\n");
-
-      // Check if it's a connection error
-      if (error.code === 'ECONNREFUSED' || error.message.includes('ECONNREFUSED')) {
-        console.error("🔴 CONNECTION REFUSED - OpenRouter is not responding!");
-        console.error("💡 Check your OPENROUTER_API_KEY and internet connection");
-        throw new Error("OpenRouter not responding. Check OPENROUTER_API_KEY and network.");
-      }
-
-      throw error;
+    // If we reach here, all models failed
+    console.error("\n" + "❌".repeat(30));
+    console.error("🚨 ALL LLM MODELS FAILED 🚨");
+    console.error("❌".repeat(30));
+    
+    if (lastError) {
+      throw lastError;
+    } else {
+      throw new Error("All LLM models in sequence returned empty or failed.");
     }
   }
 
@@ -140,7 +158,7 @@ class LLMService {
       Type: ${type.toUpperCase()}
       
       Return a JSON object:
-      ${type === 'dp' ? 
+      ${type === 'dp' ?
         '{ "reference": "Python code", "steps": ["step1", "step2"], "success_criteria": ["c1", "c2"] }' :
         '{ "sla": "latency/qps", "simple_design": ["comp1", "comp2"], "complex_design": ["comp3", "comp4"], "key_questions": ["q1", "q2"] }'
       }
@@ -217,9 +235,9 @@ class LLMService {
   async analyzeWhiteboard(shapes, context) {
     const problemName = context.problem || 'News Feed';
     const solution = await this.ensureSolutionExists(problemName, 'sd');
-    
+
     const whiteboardText = shapes.filter(s => s.text).map(s => s.text).join(', ');
-    
+
     const prompt = `
       You are a Senior Principal Engineer. Critique the following System Design diagram (parsed as text/shapes):
       Text detected on board: ${whiteboardText}
@@ -261,7 +279,7 @@ class LLMService {
   async generateChatResponse(userInput, state) {
     const problemName = state.state?.selectedQuestion?.title || 'Coin Change';
     const solution = await this.ensureSolutionExists(problemName, state.type === 'SYSTEM_DESIGN' ? 'sd' : 'dp');
-    
+
     const systemPrompt = `
       You are a Senior Principal Engineer conducting a Technical Interview.
       Problem: ${problemName}
@@ -308,7 +326,7 @@ class LLMService {
   async generateInitialProbe(question) {
     const isSystemDesign = question.pattern && question.pattern.toLowerCase().includes('design');
     const solution = await this.ensureSolutionExists(question.title, isSystemDesign ? 'sd' : 'dp');
-    
+
     const prompt = `
       You are a Senior Principal Engineer. You are starting an interview for the problem: "${question.title}".
       Pattern: ${question.pattern}

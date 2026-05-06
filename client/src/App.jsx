@@ -14,6 +14,9 @@ import SystemDesignView from './SystemDesignView';
 import DebugBar from './DebugBar';
 import { formatProblemDescription } from './utils/formatProblemDescription';
 import { formatLeetcodeHTML } from './utils/formatLeetcodeHTML';
+import Login from './components/Login';
+import SettingsPage from './components/SettingsPage';
+import StatsPage from './components/StatsPage';
 
 const API = import.meta.env.PROD ? '' : 'http://127.0.0.1:3005';
 
@@ -30,7 +33,7 @@ function App() {
   // ─── Mode: 'dsa' | 'system-design' | 'practice' ─────────────────────────────
   const [mode, setMode] = useState('dsa');
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [activeModal, setActiveModal] = useState(null); // 'profile' | 'stats' | 'settings' | null
+  const [currentView, setCurrentView] = useState('main'); // 'main' | 'settings' | 'stats'
 
   // ─── DSA State ───────────────────────────────────────────────────────────────
   const [session, setSession] = useState(null);
@@ -49,7 +52,10 @@ function App() {
   const [dsaExpanded, setDsaExpanded] = useState(true);
   const chatEndRef = useRef(null);
   const tldrawEditor = useRef(null);
+  const saveTimeoutRef = useRef(null);
   const [isDraggingDivider, setIsDraggingDivider] = useState(false);
+  const [feedbackPaneWidth, setFeedbackPaneWidth] = useState(350);
+  const [isDraggingFeedbackDivider, setIsDraggingFeedbackDivider] = useState(false);
 
   // ─── System Design State ─────────────────────────────────────────────────────
   const [sdQuestions, setSdQuestions] = useState([]);
@@ -57,6 +63,7 @@ function App() {
   const [sdExpanded, setSdExpanded] = useState(true);
   const [status, setStatus] = useState({ text: 'Ready', type: 'info' });
   const [llmHealth, setLlmHealth] = useState({ status: 'unknown', message: 'Checking...' });
+  const [activeModel, setActiveModel] = useState('Gemma 4 (Primary)');
 
   // ─── Practice State ──────────────────────────────────────────────────────────
   const [practiceConfig, setPracticeConfig] = useState({ newPerDay: 2, pastPerDay: 3 });
@@ -73,6 +80,34 @@ function App() {
   const [renamingSessionId, setRenamingSessionId] = useState(null);
   const [renamingSessionName, setRenamingSessionName] = useState('');
   const [questionStatuses, setQuestionStatuses] = useState({});
+
+  // ─── Auth State ─────────────────────────────────────────────────────────────
+  const [token, setToken] = useState(localStorage.getItem('ag_token'));
+  const [user, setUser] = useState(JSON.parse(localStorage.getItem('ag_user')));
+
+  const handleLogin = (newToken, newUser) => {
+    setToken(newToken);
+    setUser(newUser);
+    localStorage.setItem('ag_token', newToken);
+    localStorage.setItem('ag_user', JSON.stringify(newUser));
+  };
+
+  const handleLogout = () => {
+    setToken(null);
+    setUser(null);
+    localStorage.removeItem('ag_token');
+    localStorage.removeItem('ag_user');
+  };
+
+  const fetchWithAuth = (url, options = {}) => {
+    return fetch(url, {
+      ...options,
+      headers: {
+        ...options.headers,
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+  };
 
   const checkLLMHealth = async () => {
     setLlmHealth({ status: 'checking', message: 'Checking LM Studio...' });
@@ -98,21 +133,34 @@ function App() {
     setIsDraggingDivider(true);
   };
 
+  const handleFeedbackDividerMouseDown = () => {
+    setIsDraggingFeedbackDivider(true);
+  };
+
   useEffect(() => {
-    if (!isDraggingDivider) return;
+    if (!isDraggingDivider && !isDraggingFeedbackDivider) return;
 
     const handleMouseMove = (e) => {
       const workspace = document.querySelector('.split-view');
       if (!workspace) return;
       const rect = workspace.getBoundingClientRect();
-      const newWidth = ((e.clientX - rect.left) / rect.width) * 100;
-      if (newWidth > 20 && newWidth < 80) {
-        setProblemPaneWidth(newWidth);
+      
+      if (isDraggingDivider) {
+        const newWidth = ((e.clientX - rect.left) / rect.width) * 100;
+        if (newWidth > 20 && newWidth < 80) {
+          setProblemPaneWidth(newWidth);
+        }
+      } else if (isDraggingFeedbackDivider) {
+        const newWidth = rect.right - e.clientX;
+        if (newWidth > 250 && newWidth < 600) {
+          setFeedbackPaneWidth(newWidth);
+        }
       }
     };
 
     const handleMouseUp = () => {
       setIsDraggingDivider(false);
+      setIsDraggingFeedbackDivider(false);
     };
 
     document.addEventListener('mousemove', handleMouseMove);
@@ -122,32 +170,34 @@ function App() {
       document.removeEventListener('mousemove', handleMouseMove);
       document.removeEventListener('mouseup', handleMouseUp);
     };
-  }, [isDraggingDivider]);
+  }, [isDraggingDivider, isDraggingFeedbackDivider]);
 
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
 
   useEffect(() => {
+    if (!token) return;
+
     const init = async () => {
       try {
-        const qRes = await fetch(`${API}/api/questions`);
+        const qRes = await fetchWithAuth(`${API}/api/questions`);
         const qData = await qRes.json();
         setQuestions(qData);
 
-        const sdRes = await fetch(`${API}/api/sd/questions`);
+        const sdRes = await fetchWithAuth(`${API}/api/sd/questions`);
         const sdData = await sdRes.json();
         setSdQuestions(sdData);
 
         // Load saved practice sessions
-        const psRes = await fetch(`${API}/api/practice/sessions`);
+        const psRes = await fetchWithAuth(`${API}/api/practice/sessions`);
         const psData = await psRes.json();
         setSavedPracticeSessions(psData);
 
         // Auto-load the most recent practice session if it exists
         if (psData.length > 0) {
           const mostRecent = psData[0]; // Already sorted by createdAt DESC
-          const sessionRes = await fetch(`${API}/api/practice/session/${mostRecent.id}`);
+          const sessionRes = await fetchWithAuth(`${API}/api/practice/session/${mostRecent.id}`);
           const sessionData = await sessionRes.json();
 
           setPracticeSchedule(sessionData.schedule);
@@ -161,7 +211,7 @@ function App() {
           setPracticeConfiguring(false);
         }
 
-        const sRes = await fetch(`${API}/api/session/start`, {
+        const sRes = await fetchWithAuth(`${API}/api/session/start`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ type: 'DSA' }),
@@ -170,7 +220,7 @@ function App() {
         setSession(sData.state);
 
         // Load question statuses
-        const statusRes = await fetch(`${API}/api/question-status`);
+        const statusRes = await fetchWithAuth(`${API}/api/question-status`);
         const statusData = await statusRes.json();
         setQuestionStatuses(statusData);
 
@@ -186,18 +236,19 @@ function App() {
       }
     };
     init();
-  }, []);
+  }, [token]);
 
   const handleSelectQuestion = async (q) => {
     setSelectedQuestion(q);
     const boilerplate = q.practice_scaffold || q.boilerplate;
-    setCodeValue(boilerplate);
+    const savedCode = questionStatuses[q.id]?.user_code;
+    setCodeValue(savedCode || boilerplate);
     setCurrentTab('code');
     setCodeFeedback([]);
     setConstraints([]);
 
     // Sync boilerplate to backend immediately
-    fetch(`${API}/api/code`, {
+    fetchWithAuth(`${API}/api/code`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -210,7 +261,7 @@ function App() {
     if (q.initial_probe) {
       setMessages([{ role: 'ai', content: q.initial_probe }]);
       // Still ping backend to set up the session state for this question
-      fetch(`${API}/api/interviewer/init`, {
+      fetchWithAuth(`${API}/api/interviewer/init`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ question: q }),
@@ -220,7 +271,7 @@ function App() {
 
     setMessages([{ role: 'ai', content: `Focusing on **${q.title}**. Fetching initial probe...` }]);
     try {
-      const res = await fetch(`${API}/api/interviewer/init`, {
+      const res = await fetchWithAuth(`${API}/api/interviewer/init`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ question: q }),
@@ -230,6 +281,7 @@ function App() {
     } catch (err) {
       console.error(err);
     }
+
   };
   const handleSelectSdQuestion = (q) => {
     setSelectedSdQuestion(q);
@@ -246,7 +298,7 @@ function App() {
     setStatus({ text: 'Agent Thinking...', type: 'loading' });
 
     try {
-      const response = await fetch(`${API}/api/chat`, {
+      const response = await fetchWithAuth(`${API}/api/chat`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -254,6 +306,7 @@ function App() {
           selectedQuestion: selectedQuestion,
         }),
       });
+
 
       if (!response.body) return;
       const reader = response.body.getReader();
@@ -274,10 +327,12 @@ function App() {
               const data = JSON.parse(line.slice(6));
               if (data.type === 'status') {
                 setStatus({ text: data.message, type: 'loading' });
+                if (data.model) setActiveModel(data.model);
               } else if (data.type === 'result') {
                 setMessages((prev) => [...prev, { role: 'ai', content: data.response }]);
                 if (data.constraints) setConstraints(data.constraints);
                 setSession(data.state);
+                if (data.model) setActiveModel(data.model);
                 setStatus({ text: 'Ready', type: 'info' });
               } else if (data.type === 'error') {
                 console.error('🚨 AI Error:', data.message);
@@ -302,14 +357,57 @@ function App() {
 
   const handleCodeChange = (value) => {
     setCodeValue(value);
-    fetch(`${API}/api/code`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        code: value,
-        selectedQuestion: selectedQuestion,
-      }),
-    });
+    
+    // Update local state immediately for snappy UI
+    if (selectedQuestion) {
+      setQuestionStatuses(prev => ({
+        ...prev,
+        [selectedQuestion.id]: {
+          ...(prev[selectedQuestion.id] || {}),
+          user_code: value
+        }
+      }));
+    }
+
+    // Debounce backend save
+    if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
+    saveTimeoutRef.current = setTimeout(() => {
+      fetchWithAuth(`${API}/api/code`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          code: value,
+          selectedQuestion: selectedQuestion,
+        }),
+      });
+    }, 1000); // Save after 1 second of inactivity
+  };
+
+  const handleResetCode = async () => {
+    if (!selectedQuestion) return;
+    if (window.confirm("Are you sure you want to reset to the boilerplate? Your current code will be lost.")) {
+      const boilerplate = selectedQuestion.practice_scaffold || selectedQuestion.boilerplate;
+      setCodeValue(boilerplate);
+      
+      // Update local state
+      setQuestionStatuses(prev => ({
+        ...prev,
+        [selectedQuestion.id]: {
+          ...(prev[selectedQuestion.id] || {}),
+          user_code: null
+        }
+      }));
+
+      try {
+        await fetchWithAuth(`${API}/api/code/reset`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ questionId: selectedQuestion.id })
+        });
+      } catch (err) {
+        console.error(err);
+      }
+    }
   };
 
   const handleGetAiFeedback = async () => {
@@ -337,7 +435,7 @@ function App() {
       }
 
       setStatus({ text: 'Consulting Principal Interviewer (Gemini)...', type: 'loading' });
-      const response = await fetch(`${API}/api/feedback/ai`, {
+      const response = await fetchWithAuth(`${API}/api/feedback/ai`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
@@ -345,6 +443,7 @@ function App() {
       
       setStatus({ text: 'Processing deep analysis results...', type: 'loading' });
       const data = await response.json();
+
       setCodeFeedback(data.feedback);
       setStatus({ text: 'Analysis complete. Insights updated.', type: 'success' });
       setTimeout(() => setStatus({ text: 'Ready', type: 'info' }), 5000);
@@ -358,12 +457,13 @@ function App() {
 
   const handleFinish = async () => {
     try {
-      const response = await fetch(`${API}/api/session/finish`, {
+      const response = await fetchWithAuth(`${API}/api/session/finish`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ questionId: selectedQuestion?.id }),
       });
       const data = await response.json();
+
       setReport(data.report);
       setSession(data.state);
     } catch (error) {
@@ -391,7 +491,7 @@ function App() {
     setStatus({ text: 'Generating practice schedule...', type: 'loading' });
     try {
       const sessionName = generateRandomSessionName();
-      const response = await fetch(`${API}/api/practice/generate`, {
+      const response = await fetchWithAuth(`${API}/api/practice/generate`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -400,7 +500,17 @@ function App() {
           duration: 30,
         }),
       });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || `Server error: ${response.status}`);
+      }
+
       const data = await response.json();
+
+      if (!data.schedule) {
+        throw new Error('Invalid response: missing schedule data');
+      }
 
       // Save to database (convert schedule to ID-only format for smaller payload)
       setStatus({ text: 'Saving session to database...', type: 'loading' });
@@ -409,7 +519,7 @@ function App() {
         idOnlySchedule[day] = questions.map(q => q.id);
       });
 
-      const saveRes = await fetch(`${API}/api/practice/save`, {
+      const saveRes = await fetchWithAuth(`${API}/api/practice/save`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -421,6 +531,7 @@ function App() {
       });
       const savedSession = await saveRes.json();
 
+
       setPracticeSchedule(data.schedule);
       setPracticeSessionName(sessionName);
       setPracticeSessionId(savedSession.session.id);
@@ -429,8 +540,20 @@ function App() {
       setMode('dsa');
       setStatus({ text: 'Practice schedule ready!', type: 'success' });
 
+      // Clear local user codes
+      setQuestionStatuses(prev => {
+        const next = {};
+        for (const [id, val] of Object.entries(prev)) {
+          next[id] = { ...(val || {}), user_code: null };
+        }
+        return next;
+      });
+      if (selectedQuestion) {
+        setCodeValue(selectedQuestion.practice_scaffold || selectedQuestion.boilerplate);
+      }
+
       // Refresh saved sessions list
-      const sessionsRes = await fetch(`${API}/api/practice/sessions`);
+      const sessionsRes = await fetchWithAuth(`${API}/api/practice/sessions`);
       const sessionsData = await sessionsRes.json();
       setSavedPracticeSessions(sessionsData);
     } catch (error) {
@@ -442,8 +565,9 @@ function App() {
   const handleLoadPracticeSession = async (sessionId) => {
     try {
       setStatus({ text: 'Loading practice session...', type: 'loading' });
-      const res = await fetch(`${API}/api/practice/session/${sessionId}`);
+      const res = await fetchWithAuth(`${API}/api/practice/session/${sessionId}`);
       const session = await res.json();
+
 
       setPracticeSchedule(session.schedule);
       setPracticeSessionName(session.sessionName);
@@ -470,7 +594,7 @@ function App() {
       }
 
       try {
-        const res = await fetch(`${API}/api/practice/session/${sessionId}/rename`, {
+        const res = await fetchWithAuth(`${API}/api/practice/session/${sessionId}/rename`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ newName: renamingSessionName }),
@@ -483,9 +607,10 @@ function App() {
         }
 
         // Refresh sessions list
-        const sessionsRes = await fetch(`${API}/api/practice/sessions`);
+        const sessionsRes = await fetchWithAuth(`${API}/api/practice/sessions`);
         const sessionsData = await sessionsRes.json();
         setSavedPracticeSessions(sessionsData);
+
 
         setRenamingSessionId(null);
         setRenamingSessionName('');
@@ -506,9 +631,10 @@ function App() {
     if (window.confirm('Delete this practice session? This cannot be undone.')) {
       try {
         setStatus({ text: 'Deleting session...', type: 'loading' });
-        await fetch(`${API}/api/practice/session/${sessionId}`, {
+        await fetchWithAuth(`${API}/api/practice/session/${sessionId}`, {
           method: 'DELETE',
         });
+
 
         // If deleting the active session, clear it
         if (practiceSessionId === sessionId) {
@@ -527,7 +653,7 @@ function App() {
         });
 
         // Refresh sessions list
-        const sessionsRes = await fetch(`${API}/api/practice/sessions`);
+        const sessionsRes = await fetchWithAuth(`${API}/api/practice/sessions`);
         const sessionsData = await sessionsRes.json();
         setSavedPracticeSessions(sessionsData);
 
@@ -544,10 +670,11 @@ function App() {
       try {
         setStatus({ text: 'Deleting session...', type: 'loading' });
         if (practiceSessionId) {
-          await fetch(`${API}/api/practice/session/${practiceSessionId}`, {
+          await fetchWithAuth(`${API}/api/practice/session/${practiceSessionId}`, {
             method: 'DELETE',
           });
         }
+
 
         setPracticeConfiguring(true);
         setSelectedPracticeDay(null);
@@ -557,10 +684,23 @@ function App() {
         setPracticeSessionId(null);
         setStatus({ text: 'Session reset', type: 'success' });
 
+        // Clear local user codes
+        setQuestionStatuses(prev => {
+          const next = {};
+          for (const [id, val] of Object.entries(prev)) {
+            next[id] = { ...(val || {}), user_code: null };
+          }
+          return next;
+        });
+        if (selectedQuestion) {
+          setCodeValue(selectedQuestion.practice_scaffold || selectedQuestion.boilerplate);
+        }
+
         // Refresh saved sessions list
-        const sessionsRes = await fetch(`${API}/api/practice/sessions`);
+        const sessionsRes = await fetchWithAuth(`${API}/api/practice/sessions`);
         const sessionsData = await sessionsRes.json();
         setSavedPracticeSessions(sessionsData);
+
       } catch (error) {
         console.error('Reset practice session error:', error);
         setStatus({ text: 'Failed to reset session', type: 'error' });
@@ -578,7 +718,7 @@ function App() {
     // Save progress to database
     if (practiceSessionId) {
       try {
-        await fetch(`${API}/api/practice/session/${practiceSessionId}/progress`, {
+        await fetchWithAuth(`${API}/api/practice/session/${practiceSessionId}/progress`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ progress: newProgress }),
@@ -587,17 +727,18 @@ function App() {
         console.error('Update progress error:', error);
       }
     }
+
   };
 
   const handleSetQuestionStatus = async (questionId, status) => {
     const newStatuses = {
       ...questionStatuses,
-      [questionId]: status,
+      [questionId]: { ...(questionStatuses[questionId] || {}), status },
     };
     setQuestionStatuses(newStatuses);
 
     try {
-      await fetch(`${API}/api/question-status/${questionId}`, {
+      await fetchWithAuth(`${API}/api/question-status/${questionId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status }),
@@ -605,6 +746,7 @@ function App() {
     } catch (error) {
       console.error('Update question status error:', error);
     }
+
   };
 
   const renderProblemDescription = () => {
@@ -678,46 +820,68 @@ function App() {
     return acc;
   }, {});
 
+  if (!token) {
+    return <Login onLogin={handleLogin} />;
+  }
+
   return (
-    <div className={`app-container ${isSidebarOpen ? 'sidebar-open' : ''}`}>
+    <div className={`app-container ${isSidebarOpen ? 'sidebar-open' : ''} ${currentView === 'main' ? '' : currentView + '-view'}`} style={{
+      gridTemplateColumns: currentView === 'main' ? '280px 1fr' : '1fr'
+    }}>
+
       {/* Mobile Sidebar Overlay */}
-      {isSidebarOpen && (
+      {currentView === 'main' && isSidebarOpen && (
         <div className="sidebar-overlay" onClick={() => setIsSidebarOpen(false)}></div>
       )}
-      <header>
+      <header style={{
+        gridColumn: currentView === 'main' ? '2 / -1' : '1 / -1'
+      }}>
         <div className="header-left">
-          <button className="sidebar-toggle-btn" onClick={() => setIsSidebarOpen(!isSidebarOpen)} aria-label="Toggle Sidebar">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <line x1="3" y1="12" x2="21" y2="12"></line>
-              <line x1="3" y1="6" x2="21" y2="6"></line>
-              <line x1="3" y1="18" x2="21" y2="18"></line>
-            </svg>
-          </button>
+          {currentView === 'main' && (
+            <button className="sidebar-toggle-btn" onClick={() => setIsSidebarOpen(!isSidebarOpen)} aria-label="Toggle Sidebar">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="3" y1="12" x2="21" y2="12"></line>
+                <line x1="3" y1="6" x2="21" y2="6"></line>
+                <line x1="3" y1="18" x2="21" y2="18"></line>
+              </svg>
+            </button>
+          )}
         </div>
         <div className="header-center">
-          <div className="mode-switcher">
-            <button
-              className={`mode-tab ${mode === 'dsa' ? 'active' : ''}`}
-              onClick={() => setMode('dsa')}
-            >
-              <span className="mode-icon">&lt;/&gt;</span> Algorithms
-            </button>
-            <button
-              className={`mode-tab ${mode === 'system-design' ? 'active' : ''}`}
-              onClick={() => setMode('system-design')}
-            >
-              <span className="mode-icon">⬡</span> System Design
-            </button>
-          </div>
+          {currentView === 'main' && (
+            <div className="mode-switcher">
+              <button
+                className={`mode-tab ${mode === 'dsa' ? 'active' : ''}`}
+                onClick={() => setMode('dsa')}
+              >
+                <span className="mode-icon">&lt;/&gt;</span> Algorithms
+              </button>
+              <button
+                className={`mode-tab ${mode === 'system-design' ? 'active' : ''}`}
+                onClick={() => setMode('system-design')}
+              >
+                <span className="mode-icon">⬡</span> System Design
+              </button>
+            </div>
+          )}
         </div>
         <div className="header-right">
-          <button onClick={() => setActiveModal('stats')} className="header-icon-btn" title="Stats">📊</button>
-          <button onClick={() => setActiveModal('profile')} className="header-icon-btn" title="Profile">👤</button>
-          <button onClick={() => setActiveModal('settings')} className="header-icon-btn" title="Settings">⚙️</button>
+          <div className="user-info">
+            <span className="user-email">{user?.email}</span>
+          </div>
+          {currentView === 'main' && (
+            <>
+              <button onClick={() => setCurrentView('stats')} className="header-icon-btn" title="Statistics">📊</button>
+              <button onClick={() => setCurrentView('settings')} className="header-icon-btn" title="Settings">⚙️</button>
+            </>
+          )}
+          <button onClick={handleLogout} className="header-icon-btn logout-btn" title="Logout">🚪</button>
         </div>
       </header>
 
+
       {/* ─── SIDEBAR (always visible on desktop, toggleable on mobile) ────────────────────────────── */}
+      {currentView === 'main' && (
       <aside className={`panel sidebar-panel ${isSidebarOpen ? 'open' : ''}`}>
         <div className="logo sidebar-logo">
           <span className="logo-mark">AG</span>
@@ -751,10 +915,10 @@ function App() {
                         {qs.map((q) => (
                           <div
                             key={q.id}
-                            className={`tree-item ${mode === 'dsa' && selectedQuestion?.id === q.id ? 'active' : ''} ${questionStatuses[q.id] || 'needs-review'}`}
+                            className={`tree-item ${mode === 'dsa' && selectedQuestion?.id === q.id ? 'active' : ''} ${questionStatuses[q.id]?.status || 'needs-review'}`}
                             onClick={() => { setMode('dsa'); handleSelectQuestion(q); }}
                           >
-                            <span className={`status-dot status-dot--${questionStatuses[q.id] || 'needs_review'}`} />
+                            <span className={`status-dot status-dot--${questionStatuses[q.id]?.status || 'needs_review'}`} />
                             {q.title}
                           </div>
                         ))}
@@ -859,10 +1023,10 @@ function App() {
                                     {dayQuestions.map((q) => (
                                       <div
                                         key={q.id}
-                                        className={`tree-item practice-question ${mode === 'dsa' && selectedQuestion?.id === q.id ? 'active' : ''} ${practiceProgress[q.id] ? 'done' : ''} ${questionStatuses[q.id] || 'needs-review'}`}
+                                        className={`tree-item practice-question ${mode === 'dsa' && selectedQuestion?.id === q.id ? 'active' : ''} ${practiceProgress[q.id] ? 'done' : ''} ${questionStatuses[q.id]?.status || 'needs-review'}`}
                                         onClick={() => { setMode('dsa'); handleSelectQuestion(q); }}
                                       >
-                                        <span className={`status-dot status-dot--${questionStatuses[q.id] || 'needs_review'}`} />
+                                        <span className={`status-dot status-dot--${questionStatuses[q.id]?.status || 'needs_review'}`} />
                                         {practiceProgress[q.id] && <span className="done-check">✓</span>}
                                         {q.title}
                                       </div>
@@ -883,115 +1047,37 @@ function App() {
         </div>
 
       </aside>
+      )}
 
-      {/* ─── MODALS ────────────────────────────────────────────── */}
-      {activeModal && (
-        <div className="modal-overlay" onClick={() => setActiveModal(null)}>
-          <div className="modal-content side-modal" onClick={e => e.stopPropagation()}>
-            <div className="modal-header">
-              <h2>{activeModal.charAt(0).toUpperCase() + activeModal.slice(1)}</h2>
-              <button className="close-btn" onClick={() => setActiveModal(null)}>✕</button>
-            </div>
-            <div className="modal-body">
-              {activeModal === 'settings' && (
-                <div className="settings-panel">
-                  <div className="settings-section">
-                    <h3>Create New Practice Session</h3>
-                    <p>Configure a personalized 30-day interview preparation plan</p>
-                    <div className="config-form">
-                      <div className="config-field">
-                        <label>New Questions Per Day</label>
-                        <input
-                          type="number"
-                          min="1"
-                          max="10"
-                          value={practiceConfig.newPerDay}
-                          onChange={(e) => setPracticeConfig({ ...practiceConfig, newPerDay: parseInt(e.target.value) })}
-                        />
-                      </div>
-                      <div className="config-field">
-                        <label>Past Questions Per Day (Repetitions)</label>
-                        <input
-                          type="number"
-                          min="0"
-                          max="10"
-                          value={practiceConfig.pastPerDay}
-                          onChange={(e) => setPracticeConfig({ ...practiceConfig, pastPerDay: parseInt(e.target.value) })}
-                        />
-                      </div>
-                      <button className="generate-btn" onClick={() => { handleGeneratePracticeSchedule(); setActiveModal(null); }}>
-                        Generate 30-Day Schedule
-                      </button>
-                    </div>
-                  </div>
-                  
-                  <div className="settings-section">
-                    <h3>Manage Active Sessions</h3>
-                    <div className="saved-sessions-list mini">
-                      {savedPracticeSessions.length === 0 ? (
-                        <p className="no-sessions-msg">No saved sessions yet</p>
-                      ) : (
-                        savedPracticeSessions.map((session) => (
-                          <div key={session.id} className={`session-item ${practiceSessionId === session.id ? 'active' : ''}`}>
-                            <div className="session-info">
-                              <div className="session-name">{session.sessionName}</div>
-                              <div className="session-meta">
-                                {session.newPerDay} new + {session.pastPerDay} past
-                              </div>
-                            </div>
-                            <div className="session-actions">
-                              <button
-                                className="session-action-btn delete"
-                                onClick={() => handleDeleteSession(session.id)}
-                                title="Delete"
-                              >
-                                🗑
-                              </button>
-                            </div>
-                          </div>
-                        ))
-                      )}
-                    </div>
-                  </div>
-                </div>
-              )}
-              
-              {activeModal === 'profile' && (
-                <div className="profile-panel">
-                  <div className="user-avatar">👤</div>
-                  <h3>Anonymous User</h3>
-                  <p>Guest Session</p>
-                  <div className="profile-stats">
-                    <div className="stat-item">
-                      <span className="stat-label">Member Since</span>
-                      <span className="stat-value">May 2026</span>
-                    </div>
-                  </div>
-                </div>
-              )}
-              
-              {activeModal === 'stats' && (
-                <div className="stats-panel">
-                  <h3>Your Progress</h3>
-                  <div className="stats-grid">
-                    <div className="stat-card">
-                      <div className="stat-num">{questions.length}</div>
-                      <div className="stat-desc">Problems Available</div>
-                    </div>
-                    <div className="stat-card">
-                      <div className="stat-num">{savedPracticeSessions.length}</div>
-                      <div className="stat-desc">Active Sessions</div>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
+      {/* ─── PAGE VIEWS ────────────────────────────────────────────── */}
+      {currentView === 'settings' && (
+        <SettingsPage
+          practiceConfig={practiceConfig}
+          setPracticeConfig={setPracticeConfig}
+          savedPracticeSessions={savedPracticeSessions}
+          onGenerateSchedule={handleGeneratePracticeSchedule}
+          onDeleteSession={handleDeleteSession}
+          onRenameSession={handleRenameSession}
+          onBack={() => setCurrentView('main')}
+          renamingSessionId={renamingSessionId}
+          renamingSessionName={renamingSessionName}
+          setRenamingSessionId={setRenamingSessionId}
+          setRenamingSessionName={setRenamingSessionName}
+          practiceSessionId={practiceSessionId}
+        />
+      )}
+
+      {currentView === 'stats' && (
+        <StatsPage
+          questions={questions}
+          savedPracticeSessions={savedPracticeSessions}
+          questionStatuses={questionStatuses}
+          onBack={() => setCurrentView('main')}
+        />
       )}
 
       {/* ─── MAIN WORKSPACE ─────────────────────────────────────── */}
-      {mode === 'system-design' ? (
+      {currentView === 'main' && (mode === 'system-design' ? (
         <div className="sd-workspace">
           <SystemDesignView question={selectedSdQuestion} />
         </div>
@@ -1005,12 +1091,12 @@ function App() {
                 <div className="panel-header" style={{ background: 'transparent', padding: '0' }}>Problem Description</div>
                 {selectedQuestion && (
                   <button
-                    className={`status-toggle-btn ${questionStatuses[selectedQuestion.id] === 'done' ? 'done' : 'needs-review'}`}
+                    className={`status-toggle-btn ${questionStatuses[selectedQuestion.id]?.status === 'done' ? 'done' : 'needs-review'}`}
                     onClick={() => handleSetQuestionStatus(selectedQuestion.id,
-                      questionStatuses[selectedQuestion.id] === 'done' ? 'needs_review' : 'done'
+                      questionStatuses[selectedQuestion.id]?.status === 'done' ? 'needs_review' : 'done'
                     )}
                   >
-                    {questionStatuses[selectedQuestion.id] === 'done' ? '✓ Done' : '○ Needs Review'}
+                    {questionStatuses[selectedQuestion.id]?.status === 'done' ? '✓ Done' : '○ Needs Review'}
                   </button>
                 )}
               </div>
@@ -1049,13 +1135,22 @@ function App() {
                     Reference Solution
                   </div>
                 </div>
-                <button
-                  onClick={handleGetAiFeedback}
-                  disabled={isAiLoading}
-                  className="ai-feedback-btn"
-                >
-                  {isAiLoading ? 'Analyzing...' : 'Get AI Feedback'}
-                </button>
+                <div style={{ display: 'flex', gap: '0.5rem' }}>
+                  <button
+                    onClick={handleResetCode}
+                    disabled={currentTab !== 'code'}
+                    className="action-btn-secondary"
+                  >
+                    Reset Code
+                  </button>
+                  <button
+                    onClick={handleGetAiFeedback}
+                    disabled={isAiLoading}
+                    className="ai-feedback-btn"
+                  >
+                    {isAiLoading ? 'Analyzing...' : 'Get AI Feedback'}
+                  </button>
+                </div>
               </div>
 
               <div className="canvas-area">
@@ -1104,8 +1199,15 @@ function App() {
             </section>
           </div>
 
+          {/* Draggable Divider for Feedback Panel */}
+          <div
+            className="resize-divider"
+            onMouseDown={handleFeedbackDividerMouseDown}
+            style={{ cursor: isDraggingFeedbackDivider ? 'col-resize' : 'default', borderLeft: '1px solid var(--border)' }}
+          />
+
           {/* Right: Feedback Panel */}
-          <aside className="panel feedback-panel" style={{ borderLeft: '1px solid var(--border)', minWidth: 0 }}>
+          <aside className="panel feedback-panel" style={{ minWidth: 0, width: `${feedbackPaneWidth}px` }}>
             {/* Interviewer section moved here */}
             <div className="interviewer-section">
               {constraints.length > 0 && (
@@ -1198,9 +1300,9 @@ function App() {
             </div>
           </aside>
         </main>
-      )}
+      ))}
 
-      {report && (
+      {currentView === 'main' && report && (
         <div className="modal-overlay">
           <div className="modal-content">
             <h2 className="accent-text">Performance Report</h2>
@@ -1220,6 +1322,7 @@ function App() {
         </div>
       )}
 
+      {currentView === 'main' && (
       <footer className={`status-bar status--${status.type}`}>
         <div className="status-indicator">
           {status.type === 'loading' && <div className="pulse-dot" />}
@@ -1244,13 +1347,14 @@ function App() {
             {llmHealth.message}
           </button>
           <span className="status-sep">|</span>
-          <span className="status-model">Gemini 1.5 Pro</span>
+          <span className="status-model">{activeModel}</span>
           <span className="status-sep">|</span>
           <span className="status-latency">Principal Agent Active</span>
         </div>
       </footer>
+      )}
 
-      <DebugBar />
+      {currentView === 'main' && <DebugBar />}
     </div>
   );
 }

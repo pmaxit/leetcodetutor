@@ -12,6 +12,10 @@ const PracticeSession = sequelize.define('PracticeSession', {
     allowNull: false,
     unique: true
   },
+  userId: {
+    type: DataTypes.INTEGER,
+    allowNull: true
+  },
   newPerDay: {
     type: DataTypes.INTEGER,
     allowNull: false,

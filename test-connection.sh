@@ -11,16 +11,24 @@ YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
-# Test 1: LM Studio
-echo "${BLUE}🔷 Test 1: LM Studio Connection${NC}"
-if curl -s http://localhost:1234/v1/models | grep -q "object"; then
-    echo -e "${GREEN}✅ LM Studio is running${NC}"
+# Test 1: OpenRouter
+echo "${BLUE}🔷 Test 1: OpenRouter Connection${NC}"
+OPENROUTER_KEY=$(grep "OPENROUTER_API_KEY=" .env 2>/dev/null | cut -d= -f2)
+if [ -z "$OPENROUTER_KEY" ]; then
+    echo -e "${YELLOW}⚠️  OPENROUTER_API_KEY not found in .env${NC}"
+    echo "   ➜ Get your key from: https://openrouter.ai"
+    echo "   ➜ Add it to .env: OPENROUTER_API_KEY=sk-or-v1-..."
+elif [ "$OPENROUTER_KEY" = "your-openrouter-api-key-here" ]; then
+    echo -e "${YELLOW}⚠️  OPENROUTER_API_KEY is not configured${NC}"
+    echo "   ➜ Replace placeholder in .env with your actual API key"
+elif curl -s -H "Authorization: Bearer $OPENROUTER_KEY" https://openrouter.ai/api/v1/models | grep -q "object"; then
+    echo -e "${GREEN}✅ OpenRouter is accessible${NC}"
     echo "   Available models:"
-    curl -s http://localhost:1234/v1/models | jq '.data[].id' 2>/dev/null || curl -s http://localhost:1234/v1/models
+    curl -s -H "Authorization: Bearer $OPENROUTER_KEY" https://openrouter.ai/api/v1/models | jq '.data[].id' 2>/dev/null | head -5 || curl -s -H "Authorization: Bearer $OPENROUTER_KEY" https://openrouter.ai/api/v1/models | head -20
 else
-    echo -e "${RED}❌ LM Studio is NOT responding${NC}"
-    echo "   ➜ Make sure LM Studio is running on http://localhost:1234"
-    echo "   ➜ Download from: https://lmstudio.ai"
+    echo -e "${RED}❌ OpenRouter is NOT responding${NC}"
+    echo "   ➜ Check your OPENROUTER_API_KEY is correct"
+    echo "   ➜ Sign up at: https://openrouter.ai"
 fi
 echo ""
 

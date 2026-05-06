@@ -1,0 +1,15 @@
+/home/puneet/Projects/interviews/machine-learning/hellointerview-system-design/deep-dives-postgres.md
+/home/puneet/Projects/interviews/machine-learning/hellointerview-system-design/problem-breakdowns-google-news.md
+/home/puneet/Projects/interviews/machine-learning/hellointerview-system-design/in-a-hurry-problem-breakdowns.md
+/home/puneet/Projects/interviews/machine-learning/hellointerview-system-design/in-a-hurry-introduction.md
+/home/puneet/Projects/interviews/machine-learning/hellointerview-system-design/problem-breakdowns-camelcamelcamel.md
+/home/puneet/Projects/interviews/machine-learning/hellointerview-system-design/in-a-hurry-patterns.md
+/home/puneet/Projects/interviews/machine-learning/hellointerview-system-design/in-a-hurry-vote.md
+/home/puneet/Projects/interviews/machine-learning/artifacts/superpowers/brainstorm.md
+/home/puneet/Projects/interviews/machine-learning/plans/success_criteria_state_manager.md
+/home/puneet/Projects/interviews/machine-learning/plans/mvp_completion_evaluation.md
+/home/puneet/Projects/interviews/machine-learning/client/public/favicon.svg
+/home/puneet/Projects/interviews/machine-learning/client/public/icons.svg
+/home/puneet/Projects/interviews/machine-learning/client/src/assets/hero.png
+/home/puneet/Projects/interviews/machine-learning/client/src/assets/vite.svg
+/home/puneet/Projects/interviews/machine-learning/client/src/assets/react.svg

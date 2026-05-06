@@ -2,6 +2,12 @@ const { DataTypes } = require('sequelize');
 const sequelize = require('./db');
 
 const QuestionStatus = sequelize.define('QuestionStatus', {
+  userId: {
+    type: DataTypes.INTEGER,
+    primaryKey: true,
+    allowNull: false,
+    defaultValue: 1
+  },
   question_id: {
     type: DataTypes.STRING,
     primaryKey: true,
@@ -11,6 +17,10 @@ const QuestionStatus = sequelize.define('QuestionStatus', {
     type: DataTypes.ENUM('needs_review', 'done'),
     defaultValue: 'needs_review',
     allowNull: false
+  },
+  user_code: {
+    type: DataTypes.TEXT,
+    allowNull: true
   },
   updatedAt: {
     type: DataTypes.DATE,

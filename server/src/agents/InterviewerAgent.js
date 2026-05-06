@@ -30,6 +30,7 @@ class InterviewerAgent {
 
       const apiKey = process.env.OPENROUTER_API_KEY || process.env.LLM_API_KEY || "sk-or-v1-";
       const client = new OpenRouter({ apiKey });
+      const localClient = process.env.LM_STUDIO_URL ? new OpenRouter({ apiKey: process.env.LM_STUDIO_KEY, baseURL: process.env.LM_STUDIO_URL }) : null;
       
       const searchTool = tool({
         name: 'search',
@@ -117,36 +118,66 @@ Candidate's Input: "${userInput.replace(/"/g, '\\"').replace(/\n/g, '\\n')}"
 
       const enableTools = process.env.LLM_ENABLE_TOOLS === 'true';
       let finalText = '';
+      let successModelId = null;
+      let lastError = null;
 
-      try {
-        if (enableTools) {
-          console.log("🛠️ Tool calling enabled. Attempting agentic loop...");
-          const result = callModel(client, {
-            model: modelName,
-            input: inputItems,
-            tools: [searchTool, critiqueTool],
-            stopWhen: stepCountIs(5)
-          });
-          finalText = await result.getText();
-        } else {
-          console.log("📝 Tool calling disabled. Using standard completion.");
-          const result = callModel(client, {
-            model: modelName,
-            input: inputItems
-          });
-          finalText = await result.getText();
+      // Use the sequence defined in LLMService (which comes from .env)
+      for (let i = 0; i < LLMService.modelSequence.length; i++) {
+        const { id: modelId, provider } = LLMService.modelSequence[i];
+        const activeClient = (provider === 'local' && localClient) ? localClient : client;
+
+        onProgress(`Trying ${modelId}...`, modelId);
+        console.log(`🔄 [Agent] Attempting ${modelId} via ${provider === 'local' ? 'LM Studio' : 'OpenRouter'}...`);
+
+        try {
+          if (enableTools) {
+            console.log(`🛠️ Tool calling enabled for ${modelId}.`);
+            const result = callModel(activeClient, {
+              model: modelId,
+              input: inputItems,
+              tools: [searchTool, critiqueTool],
+              stopWhen: stepCountIs(5)
+            });
+            finalText = await result.getText();
+          } else {
+            console.log(`📝 Standard completion for ${modelId}.`);
+            const result = callModel(activeClient, {
+              model: modelId,
+              input: inputItems
+            });
+            finalText = await result.getText();
+          }
+
+          if (finalText) {
+            console.log(`✅ Success with ${modelId}`);
+            successModelId = modelId;
+            break;
+          }
+        } catch (apiError) {
+          lastError = apiError;
+          console.warn(`❌ Error with ${modelId}: ${apiError.message}`);
+          
+          if (enableTools && (apiError.status === 404 || apiError.message?.includes('tool use'))) {
+            console.warn(`Fallback to non-tool call for ${modelId}...`);
+            try {
+              const fallbackResult = callModel(client, {
+                model: modelId,
+                input: inputItems
+              });
+              finalText = await fallbackResult.getText();
+              if (finalText) break;
+            } catch (innerError) {
+              console.error(`Inner error with ${modelId}: ${innerError.message}`);
+            }
+          }
+          console.log("⏭️ Trying next model in agent sequence...");
         }
-      } catch (apiError) {
-        if (enableTools && (apiError.status === 404 || apiError.message?.includes('tool use'))) {
-          console.warn(`Model doesn't support tools. Falling back to standard completion. Error: ${apiError.message}`);
-          const fallbackResult = callModel(client, {
-            model: modelName,
-            input: inputItems
-          });
-          finalText = await fallbackResult.getText();
-        } else {
-          throw apiError;
-        }
+      }
+
+      if (!finalText && lastError) {
+        throw lastError;
+      } else if (!finalText) {
+        throw new Error("All models failed to return a response.");
       }
       let nextHintIndex = currentHintIndex;
       
@@ -157,7 +188,8 @@ Candidate's Input: "${userInput.replace(/"/g, '\\"').replace(/\n/g, '\\n')}"
       console.log(`✅ Agentic response generated (${finalText.length} chars)`);
       return {
         text: finalText.trim(),
-        nextHintIndex
+        nextHintIndex,
+        model: successModelId
       };
 
     } catch (error) {

@@ -1,38 +1,50 @@
 const { OpenAI } = require("openai");
 require('dotenv').config();
 
-async function testLMStudio() {
+async function testOpenRouter() {
   console.log("\n" + "=".repeat(70));
-  console.log("🔍 LM Studio Connection Test");
+  console.log("🔍 OpenRouter Connection Test");
   console.log("=".repeat(70) + "\n");
 
-  const baseURL = process.env.LLM_BASE_URL || "http://localhost:1234/v1";
-  const apiKey = process.env.LLM_API_KEY || "lm-studio";
-  const model = process.env.LLM_MODEL || "google/gemma-3n-e4b";
+  const baseURL = process.env.LLM_BASE_URL || "https://openrouter.ai/api/v1";
+  const apiKey = process.env.OPENROUTER_API_KEY || process.env.LLM_API_KEY;
+  const model = process.env.LLM_MODEL || "google/gemma-3-4b-it";
 
   console.log("📋 Configuration:");
   console.log(`   Base URL: ${baseURL}`);
-  console.log(`   API Key: ${apiKey}`);
+  console.log(`   API Key: ${apiKey ? apiKey.substring(0, 20) + "..." : "NOT SET"}`);
   console.log(`   Model: ${model}\n`);
 
+  if (!apiKey) {
+    console.log("❌ ERROR: OPENROUTER_API_KEY not found in .env");
+    console.log("\n💡 To fix:");
+    console.log("  1. Get your API key from https://openrouter.ai");
+    console.log("  2. Add to .env: OPENROUTER_API_KEY=sk-or-v1-...\n");
+    process.exit(1);
+  }
+
   // Test 1: Connection
-  console.log("Test 1️⃣  Testing connection to LM Studio...");
+  console.log("Test 1️⃣  Testing connection to OpenRouter...");
   try {
     const client = new OpenAI({
       baseURL,
       apiKey,
+      defaultHeaders: {
+        'HTTP-Referer': 'https://ai-interview-platform.local',
+        'X-Title': 'AI Interview Platform',
+      },
     });
 
     const models = await client.models.list();
-    console.log("✓ Connected to LM Studio!");
-    console.log(`  Available models: ${models.data.map(m => m.id).join(", ")}\n`);
+    console.log("✓ Connected to OpenRouter!");
+    console.log(`  Available models (first 5): ${models.data.slice(0, 5).map(m => m.id).join(", ")}\n`);
   } catch (error) {
-    console.log("✗ FAILED to connect to LM Studio!");
+    console.log("✗ FAILED to connect to OpenRouter!");
     console.log(`  Error: ${error.message}`);
     console.log(`\n💡 Make sure:`);
-    console.log(`  1. LM Studio is running`);
-    console.log(`  2. Server is listening on ${baseURL}`);
-    console.log(`  3. A model is loaded in LM Studio\n`);
+    console.log(`  1. OPENROUTER_API_KEY is set correctly in .env`);
+    console.log(`  2. Your API key has remaining credits at https://openrouter.ai`);
+    console.log(`  3. You have internet connection\n`);
     process.exit(1);
   }
 
@@ -42,6 +54,10 @@ async function testLMStudio() {
     const client = new OpenAI({
       baseURL,
       apiKey,
+      defaultHeaders: {
+        'HTTP-Referer': 'https://ai-interview-platform.local',
+        'X-Title': 'AI Interview Platform',
+      },
     });
 
     const response = await client.chat.completions.create({
@@ -66,7 +82,7 @@ async function testLMStudio() {
   }
 
   console.log("=".repeat(70));
-  console.log("✅ All tests passed! LM Studio is ready to use.");
+  console.log("✅ All tests passed! OpenRouter is ready to use.");
   console.log("=".repeat(70) + "\n");
 
   console.log("🚀 Next steps:");
@@ -75,7 +91,7 @@ async function testLMStudio() {
   console.log("  3. You should see Socratic hints before solutions\n");
 }
 
-testLMStudio().catch(error => {
+testOpenRouter().catch(error => {
   console.error("Unexpected error:", error);
   process.exit(1);
 });
