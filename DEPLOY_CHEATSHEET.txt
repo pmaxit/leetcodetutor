@@ -1,0 +1,219 @@
+╔════════════════════════════════════════════════════════════════════════════╗
+║       🚀 AI Interview Platform - GCP Deployment Cheat Sheet                 ║
+║              Local LM Studio + SSH Tunnel + GCP VM                          ║
+╚════════════════════════════════════════════════════════════════════════════╝
+
+═══════════════════════════════════════════════════════════════════════════════
+ STEP 1: SETUP (One Time)
+═══════════════════════════════════════════════════════════════════════════════
+
+Desktop:
+  $ chmod +x setup-tunnel.sh
+  $ ./setup-tunnel.sh
+
+  Follow prompts to enter:
+  - GCP VM IP address
+  - GCP username
+  - Port numbers (default: 1234)
+
+Output: Creates ~/lm-studio-tunnel.sh
+
+
+═══════════════════════════════════════════════════════════════════════════════
+ STEP 2: START TUNNEL (Every Session)
+═══════════════════════════════════════════════════════════════════════════════
+
+Desktop Terminal 1:
+  $ ~/lm-studio-tunnel.sh
+
+  Keep this running! It auto-reconnects if connection drops.
+  Output: 🔗 Starting SSH tunnel...
+
+
+═══════════════════════════════════════════════════════════════════════════════
+ STEP 3: DEPLOY TO GCP VM
+═══════════════════════════════════════════════════════════════════════════════
+
+Desktop Terminal 2:
+  $ ssh puneet@YOUR_VM_IP
+  $ cd interview-platform
+  $ ./deploy-on-vm.sh
+
+  This will:
+  ✓ Clone/update repo
+  ✓ Install dependencies
+  ✓ Create .env
+  ✓ Test LM Studio connection
+  ✓ Verify server health
+
+
+═══════════════════════════════════════════════════════════════════════════════
+ STEP 4: START SERVER (On VM)
+═══════════════════════════════════════════════════════════════════════════════
+
+GCP VM Terminal:
+  $ npm run dev
+
+  Output: Server running on http://0.0.0.0:3005
+
+  Access: http://YOUR_VM_IP:3005
+
+
+═══════════════════════════════════════════════════════════════════════════════
+ QUICK CHECKS
+═══════════════════════════════════════════════════════════════════════════════
+
+Desktop - Check tunnel:
+  $ ps aux | grep "ssh -R"
+
+Desktop - Check LM Studio:
+  $ lms status
+
+VM - Check connection:
+  $ curl http://localhost:1234/v1/models | jq .
+
+VM - Check server health:
+  $ curl http://localhost:3005/api/health | jq .
+
+
+═══════════════════════════════════════════════════════════════════════════════
+ COMMON ISSUES
+═══════════════════════════════════════════════════════════════════════════════
+
+Issue: "Connection refused at localhost:1234"
+Fix:   Make sure tunnel is running: ~/lm-studio-tunnel.sh
+
+Issue: "LM Studio Disconnected" in UI
+Fix:   Restart tunnel: Ctrl+C then ~/lm-studio-tunnel.sh
+
+Issue: "Cannot SSH to VM"
+Fix:   Check IP: gcloud compute instances list
+      Or use GCP web terminal
+
+Issue: Server won't start
+Fix:   Check .env exists and tunnel is running
+      Check logs: tail -f /tmp/server.log
+
+
+═══════════════════════════════════════════════════════════════════════════════
+ CONFIGURATION SUMMARY
+═══════════════════════════════════════════════════════════════════════════════
+
+Your Desktop:
+  LM Studio Port:        1234
+  Node Server Port:      3005 (development)
+  React Client Port:     5173 (development)
+
+GCP VM:
+  LM Studio Port:        1234 (via SSH tunnel)
+  Node Server Port:      3005 (public)
+  React Client Port:     5173 (public)
+
+SSH Tunnel:
+  Direction:             Desktop 1234 ←→ VM 1234
+  Type:                  Reverse tunnel (-R flag)
+  Auto-reconnect:        Yes (via script)
+
+
+═══════════════════════════════════════════════════════════════════════════════
+ MONITORING
+═══════════════════════════════════════════════════════════════════════════════
+
+Monitor Tunnel (Desktop):
+  $ watch -n 5 'ps aux | grep "ssh -R" | grep -v grep'
+
+Monitor Server (VM):
+  $ tail -f server.log
+  or
+  $ npm run dev  (watch in real-time)
+
+Monitor Health (VM):
+  $ watch -n 10 'curl -s http://localhost:3005/api/health | jq .'
+
+
+═══════════════════════════════════════════════════════════════════════════════
+ PRODUCTION DEPLOYMENT
+═══════════════════════════════════════════════════════════════════════════════
+
+After testing, for production:
+
+1. Keep tunnel persistent:
+   $ nohup ~/lm-studio-tunnel.sh > ~/tunnel.log 2>&1 &
+
+2. Use PM2 on VM:
+   $ npm install -g pm2
+   $ pm2 start "npm run dev" --name interview-platform
+   $ pm2 save
+   $ pm2 startup
+
+3. Use nginx as reverse proxy (optional)
+
+4. Enable HTTPS with SSL (recommended)
+
+
+═══════════════════════════════════════════════════════════════════════════════
+ HELPFUL COMMANDS
+═══════════════════════════════════════════════════════════════════════════════
+
+GCP VMs List:
+  $ gcloud compute instances list
+
+SSH to VM with verbose:
+  $ ssh -v puneet@YOUR_VM_IP
+
+Test tunnel works:
+  $ ssh -R 1234:localhost:1234 puneet@YOUR_VM_IP "curl localhost:1234/v1/models"
+
+View all node processes:
+  $ ps aux | grep node
+
+Kill all node:
+  $ pkill -9 node
+
+View open ports:
+  $ lsof -i :1234
+  $ lsof -i :3005
+  $ lsof -i :5173
+
+
+═══════════════════════════════════════════════════════════════════════════════
+ DOCUMENTATION
+═══════════════════════════════════════════════════════════════════════════════
+
+Quick Deploy:       QUICK_DEPLOY.md
+Detailed Guide:     DEPLOYMENT_GUIDE.md
+Summary:            GCP_DEPLOYMENT_SUMMARY.md
+This Cheatsheet:    DEPLOY_CHEATSHEET.txt
+
+
+═══════════════════════════════════════════════════════════════════════════════
+ SUPPORT CHECKLIST
+═══════════════════════════════════════════════════════════════════════════════
+
+Before you start:
+  ☐ LM Studio installed and running
+  ☐ Model google/gemma-3n-e4b loaded
+  ☐ GCP VM created
+  ☐ SSH key configured or password auth enabled
+  ☐ GCP VM IP address noted
+  ☐ SSH tested and working
+
+During deployment:
+  ☐ Tunnel script created (setup-tunnel.sh)
+  ☐ Tunnel running (~/lm-studio-tunnel.sh)
+  ☐ deploy-on-vm.sh executed
+  ☐ npm install completed
+  ☐ .env created
+  ☐ Server started
+
+After deployment:
+  ☐ Health check passes
+  ☐ App loads in browser
+  ☐ Chat works
+  ☐ No connection errors
+
+
+╔════════════════════════════════════════════════════════════════════════════╗
+║                    🎉 Ready to Deploy!                                    ║
+║           See QUICK_DEPLOY.md for step-by-step instructions               ║
+╚════════════════════════════════════════════════════════════════════════════╝

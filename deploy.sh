@@ -5,6 +5,9 @@
 
 set -e
 
+# Increase file descriptor limit to prevent nodemon "too many open files" error
+ulimit -n 10000
+
 # Colors for output
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -272,7 +275,7 @@ sleep 1
 print_section "STEP 9: Starting Servers"
 
 echo -e "${YELLOW}📝 Starting Node.js server...${NC}"
-npm run dev > "$LOG_DIR/server.log" 2>&1 &
+npm start > "$LOG_DIR/server.log" 2>&1 &
 SERVER_PID=$!
 echo "   Server PID: $SERVER_PID"
 echo "   Logs: tail -f $LOG_DIR/server.log"

@@ -1,0 +1,21 @@
+{
+  "watch": ["server"],
+  "ext": "js,json",
+  "poll": 1000,
+  "legacyWatch": true,
+  "ignore": [
+    "node_modules",
+    ".git",
+    "client",
+    "dist",
+    "build",
+    "coverage",
+    ".env",
+    ".env.local",
+    "*.log"
+  ],
+  "delay": 1000,
+  "env": {
+    "NODE_ENV": "development"
+  }
+}

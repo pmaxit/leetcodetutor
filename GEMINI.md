@@ -12,24 +12,27 @@ Rules:
 
 ## Hints-Based Socratic Interview Chat Rules
 
+**For detailed hints pattern and examples, see: HINTS_PATTERN.md**
+
 ### Data Structure
 Hints are stored as JSON arrays in the `Question.hints` field in the database:
 ```json
 [
-  "Consider the constraint: What are the bounds of n?",
-  "Think about the state transitions: What does dp[i] represent?",
-  "Review your base cases: Are they correctly initialized?",
-  "Check for off-by-one errors in indexing"
+  "Hint 1: Critical insight / problem framing (state definition, approach setup)",
+  "Hint 2: Core algorithm / approach step (recurrence, transitions, logic)",
+  "Hint 3: Edge cases / optimization (boundary conditions, pitfalls)"
 ]
 ```
+**Maximum 3 hints per problem. Each hint is 15-20 words and follows strict pattern.**
 
 ### Chat Interaction Rules
 
 #### 1. **Progressive Hint Disclosure**
-- **Default behavior**: Always start with Socratic nudges using available hints
-- **State tracking**: Maintain `currentHintIndex` in session state
-- **Progression**: When user asks for help, provide the next hint (don't skip)
-- **Frequency**: Show one hint per "I need help" request, no hint stacking
+- **Initial response**: Always start with **Hint 1** (automatic, no "I need help" required)
+- **State tracking**: Session tracks `currentHintIndex` (starts at 1 after initial probe)
+- **Progression**: When user asks for help, provide next hint (index 2, then 3)
+- **Frequency**: One hint per request, no stacking or skipping hints
+- **Session state after init**: `currentHintIndex = 1` (first hint already shown)
 
 #### 2. **Hint Usage in LLM Prompts**
 The LLM must:

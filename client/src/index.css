@@ -634,6 +634,7 @@ input {
   flex-direction: column;
   overflow: hidden;
   height: 100%;
+  grid-column: 2 / 4;
 }
 
 .sd-empty {
@@ -1316,3 +1317,453 @@ input {
   100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(56, 189, 248, 0); }
 }
 
+/* ─── Debug Terminal ────────────────────────────────────────────────── */
+.debug-toggle-container {
+  position: fixed;
+  bottom: 32px;
+  right: 20px;
+  z-index: 9998;
+}
+
+.debug-toggle-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  background-color: #1e293b;
+  color: #f8fafc;
+  border: 1px solid #334155;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 600;
+  transition: all 0.2s ease;
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+}
+
+.debug-toggle-btn:hover {
+  background-color: #334155;
+  border-color: #60a5fa;
+  box-shadow: 0 0 12px rgba(96, 165, 250, 0.2);
+}
+
+.debug-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.debug-dot.connected {
+  background-color: #22c55e;
+  box-shadow: 0 0 8px #22c55e;
+  animation: pulse-debug 2s infinite;
+}
+
+.debug-dot.disconnected {
+  background-color: #ef4444;
+  box-shadow: 0 0 8px #ef4444;
+}
+
+.debug-label {
+  font-weight: 600;
+}
+
+.debug-log-count {
+  background-color: #0f172a;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 500;
+  color: #60a5fa;
+}
+
+@keyframes pulse-debug {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+/* Debug Terminal Panel */
+.debug-terminal {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background-color: #0f172a;
+  border-top: 2px solid #334155;
+  display: flex;
+  flex-direction: column;
+  z-index: 9999;
+  box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.4);
+  user-select: text;
+}
+
+.debug-resize-handle {
+  height: 4px;
+  background-color: #334155;
+  cursor: row-resize;
+  transition: background-color 0.2s;
+}
+
+.debug-resize-handle:hover {
+  background-color: #60a5fa;
+}
+
+.debug-terminal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 16px;
+  background-color: #1e293b;
+  border-bottom: 1px solid #334155;
+  flex-shrink: 0;
+}
+
+.debug-terminal-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #f8fafc;
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+}
+
+.debug-status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.debug-status-dot.connected {
+  background-color: #22c55e;
+  box-shadow: 0 0 8px #22c55e;
+}
+
+.debug-status-dot.disconnected {
+  background-color: #ef4444;
+  box-shadow: 0 0 8px #ef4444;
+}
+
+.debug-connection-text {
+  font-size: 11px;
+  font-weight: 400;
+  margin-left: 12px;
+  padding-left: 12px;
+  border-left: 1px solid #334155;
+}
+
+.debug-connection-text.connected {
+  color: #22c55e;
+}
+
+.debug-connection-text.disconnected {
+  color: #ef4444;
+}
+
+.debug-terminal-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.debug-action-btn {
+  padding: 6px 12px;
+  background-color: #334155;
+  color: #94a3b8;
+  border: 1px solid #475569;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+}
+
+.debug-action-btn:hover {
+  background-color: #475569;
+  color: #f8fafc;
+  border-color: #60a5fa;
+}
+
+.debug-terminal-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 8px 0;
+  background-color: #0f172a;
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+  font-size: 12px;
+  line-height: 1.5;
+  color: #94a3b8;
+}
+
+.debug-terminal-content::-webkit-scrollbar {
+  width: 8px;
+}
+
+.debug-terminal-content::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.debug-terminal-content::-webkit-scrollbar-thumb {
+  background: #334155;
+  border-radius: 4px;
+}
+
+.debug-terminal-content::-webkit-scrollbar-thumb:hover {
+  background: #475569;
+}
+
+.debug-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: #64748b;
+  text-align: center;
+}
+
+.debug-line {
+  display: flex;
+  gap: 12px;
+  padding: 2px 16px;
+  white-space: pre-wrap;
+  word-break: break-word;
+  border-left: 3px solid transparent;
+}
+
+.debug-line.debug-level-error {
+  color: #fca5a5;
+}
+
+.debug-line.debug-level-warn {
+  color: #fed7aa;
+}
+
+.debug-line.debug-level-success {
+  color: #86efac;
+}
+
+.debug-line.debug-level-info {
+  color: #94a3b8;
+}
+
+.debug-time {
+  color: #64748b;
+  flex-shrink: 0;
+  min-width: 90px;
+  font-weight: 500;
+}
+
+.debug-source {
+  font-weight: 700;
+  flex-shrink: 0;
+  min-width: 70px;
+  text-transform: uppercase;
+  font-size: 11px;
+  letter-spacing: 0.5px;
+}
+
+.debug-msg {
+  flex: 1;
+}
+
+/* ─── Chat Message Repeat Button ─────────────────────────────────────── */
+.message {
+  position: relative;
+  transition: background-color 0.2s ease;
+}
+
+.message.user:hover {
+  background-color: rgba(56, 189, 248, 0.05);
+}
+
+.message-repeat-btn {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background-color: transparent;
+  border: 1px solid var(--border);
+  color: var(--text-secondary);
+  border-radius: 4px;
+  padding: 4px 8px;
+  cursor: pointer;
+  font-size: 14px;
+  opacity: 0;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.message.user:hover .message-repeat-btn {
+  opacity: 1;
+  border-color: var(--accent);
+  color: var(--accent);
+  background-color: rgba(56, 189, 248, 0.1);
+}
+
+.message-repeat-btn:hover {
+  background-color: rgba(56, 189, 248, 0.2);
+  box-shadow: 0 0 8px rgba(56, 189, 248, 0.3);
+}
+
+/* Sidebar toggle and overlay (Desktop by default: hide toggle) */
+.header-left {
+  display: none;
+}
+
+.sidebar-toggle-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-primary);
+  cursor: pointer;
+  padding: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.25rem;
+  transition: background 0.2s;
+}
+
+.sidebar-toggle-btn:hover {
+  background: rgba(255,255,255,0.1);
+}
+
+.sidebar-overlay {
+  display: none;
+}
+
+/* ─── Mobile UI Layout ────────────────────────────────────────────── */
+@media (max-width: 1024px) {
+  .app-container {
+    grid-template-columns: 1fr;
+    grid-template-rows: 60px auto auto 28px;
+    height: auto;
+    min-height: 100vh;
+  }
+
+  body {
+    overflow-y: auto;
+  }
+
+  header {
+    grid-column: 1 / -1;
+    grid-row: 1;
+    grid-template-columns: auto 1fr auto;
+    gap: 0.5rem;
+    padding: 0 1rem;
+  }
+
+  .header-left {
+    display: flex;
+  }
+
+  .header-center {
+    justify-content: flex-start;
+  }
+
+  /* Sidebar acts as an off-canvas menu */
+  .sidebar-panel {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: 280px;
+    height: 100vh;
+    z-index: 1000;
+    transform: translateX(-100%);
+    transition: transform 0.3s ease-in-out;
+  }
+
+  .sidebar-panel.open {
+    transform: translateX(0);
+  }
+
+  .sidebar-overlay {
+    display: block;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 999;
+    backdrop-filter: blur(2px);
+  }
+
+  /* Stack workspace and feedback panels */
+  .workspace {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    height: auto;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .feedback-panel {
+    grid-column: 1 / -1;
+    grid-row: 3;
+    border-left: none;
+    border-top: 1px solid var(--border);
+    min-height: 400px;
+    height: auto;
+  }
+
+  .sd-workspace {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    height: auto;
+    min-height: calc(100vh - 88px);
+  }
+
+  footer {
+    grid-column: 1 / -1;
+    grid-row: 4;
+  }
+
+  /* Adjust Action Pane height to not be bound by viewport */
+  .action-pane {
+    height: 500px;
+    min-height: unset;
+  }
+
+  /* Adjust SystemDesignView grid if needed */
+  .sd-content {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto 1fr;
+    height: auto;
+  }
+
+  .sd-left-panel {
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+    height: 400px;
+  }
+
+  .sd-right-panel {
+    height: 600px;
+  }
+}
+
+@media (max-width: 640px) {
+  /* Smaller screens */
+  header {
+    padding: 0 0.5rem;
+  }
+  
+  .mode-tab {
+    padding: 0.3rem 0.6rem;
+    font-size: 0.65rem;
+  }
+  
+  .finish-btn {
+    padding: 0.3rem 0.5rem;
+    font-size: 0.65rem;
+  }
+  
+  .sd-top-bar {
+    padding: 0.6rem 0.8rem;
+  }
+}

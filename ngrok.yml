@@ -1,0 +1,38 @@
+# ngrok Configuration File
+# Location: ~/.ngrok2/ngrok.yml (after first run)
+# or specify: ngrok start --config ngrok.yml
+
+# Authentication
+authtoken: YOUR_AUTH_TOKEN_HERE  # Get from https://dashboard.ngrok.com/auth
+
+# Web UI for monitoring requests
+web_addr: localhost:4040
+
+# Tunnels configuration
+tunnels:
+  # Tunnel for Node.js backend server
+  interview-api:
+    proto: http
+    addr: 3005
+    inspect: true
+    # Optional: Custom subdomain (requires paid plan)
+    # subdomain: interview-platform
+    # domain: ngrok.io
+
+  # Optional: Tunnel for React dev server (for debugging)
+  # interview-client:
+  #   proto: http
+  #   addr: 5173
+
+# Region (optional - speeds up tunnel)
+# Valid regions: us, eu, au, ap, sa, jp, in
+region: us
+
+# Log level (debug, info, warn, error)
+log_level: info
+
+# Usage:
+# 1. Update authtoken above with your actual token
+# 2. Save to ~/.ngrok2/ngrok.yml
+# 3. Run: ngrok start interview-api
+# OR run: ngrok http 3005 (simpler, no config needed)

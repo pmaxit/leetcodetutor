@@ -42,11 +42,23 @@ class InterviewerAgent {
       );
       scratchpad += llmOutput + "\n";
 
+      console.log("\n" + "=".repeat(60));
+      console.log("🔍 ReAct Output Parsing");
+      console.log("=".repeat(60));
+      console.log(`📝 LLM Output (first 300 chars):\n${llmOutput.substring(0, 300)}`);
+      console.log("=".repeat(60));
+
       // Parse LLM Output
       const thoughtMatch = llmOutput.match(/Thought:\s*(.*)/i);
       const actionMatch = llmOutput.match(/Action:\s*(\w+)/i);
       const actionInputMatch = llmOutput.match(/Action Input:\s*(.*)/i);
       const finalResponseMatch = llmOutput.match(/Final Response:\s*([\s\S]*)/i);
+
+      console.log(`✅ Thought found: ${!!thoughtMatch}`);
+      console.log(`✅ Action found: ${!!actionMatch} (${actionMatch ? actionMatch[1] : 'N/A'})`);
+      console.log(`✅ Action Input found: ${!!actionInputMatch}`);
+      console.log(`✅ Final Response found: ${!!finalResponseMatch}`);
+      console.log("=".repeat(60) + "\n");
 
       const thought = thoughtMatch ? thoughtMatch[1] : "";
       const action = actionMatch ? actionMatch[1].toUpperCase() : "NONE";
@@ -68,6 +80,21 @@ class InterviewerAgent {
         };
       }
 
+      // If no strict ReAct format found, use the LLM output directly (it's already helpful!)
+      if (iterations >= this.MAX_ITERATIONS) {
+        console.log("✨ Using LLM output directly (ReAct format not required for good responses)");
+
+        // Increment hint index if a hint was shown
+        if (!askingSolution && !hintsExhausted && /hint|nudge|consider|think about/i.test(llmOutput)) {
+          nextHintIndex = Math.min(currentHintIndex + 1, hints.length);
+        }
+
+        return {
+          text: llmOutput.trim(),
+          nextHintIndex
+        };
+      }
+
       if (action === "SEARCH" && actionInput) {
         onProgress(`Searching: ${actionInput}...`);
         const result = await SearchService.performSearch(actionInput);
@@ -77,18 +104,22 @@ class InterviewerAgent {
         const critique = await LLMService.analyzeCode(codeBuffer, { problem: question?.title });
         scratchpad += `Observation: ${JSON.stringify(critique)}\n`;
       } else {
-        // No valid action or NONE, but no final response yet
-        // If the LLM is stuck, we should force it or exit
-        if (action === "NONE" || iterations === this.MAX_ITERATIONS) {
-            // Attempt one last time to get a final response if possible
-            if (!llmOutput.includes("Final Response:")) {
-                scratchpad += "Thought: I need to wrap up and provide a response now.\n";
-            }
+        // No valid action, but we have a response - use it!
+        if (!finalResponseMatch && llmOutput.trim().length > 20) {
+          console.log("✨ Direct response (no ReAct markers found, but response is valid)");
+          if (!askingSolution && !hintsExhausted && /hint|nudge|consider|think about/i.test(llmOutput)) {
+            nextHintIndex = Math.min(currentHintIndex + 1, hints.length);
+          }
+          return {
+            text: llmOutput.trim(),
+            nextHintIndex
+          };
         }
       }
     }
 
-    // Fallback if loop exhausts without Final Response
+    // Final fallback - only if we have nothing else
+    console.log("⚠️ Using generic fallback response");
     return {
       text: "Let's take a step back and look at the core logic. What are our main constraints here?",
       nextHintIndex
@@ -96,7 +127,17 @@ class InterviewerAgent {
   }
 
   async generateInitialProbe(question) {
-    // Expert Teacher starting probe
+    const hints = question?.hints || [];
+
+    // If hints are available, use the first hint as the initial probe
+    if (hints.length > 0) {
+      return {
+        text: `### Initial Guidance\n\n${hints[0]}`,
+        nextHintIndex: 1  // Mark first hint as shown
+      };
+    }
+
+    // Fallback: Generate initial probe from LLM
     const probeText = await LLMService.generateInitialProbe(question);
     return {
       text: probeText,

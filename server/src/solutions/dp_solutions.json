@@ -364,5 +364,137 @@
       "Correctly calculates the number of distinct ways to climb `n` stairs.",
       "Handles edge cases where n is 0 or 1 correctly."
     ]
+  },
+  "Two Sum II Input Array Is Sorted": {
+    "reference": "def twoSumTwoSorted(nums, target):\n    left = 0\n    right = len(nums) - 1\n    while left < right:\n        current_sum = nums[left] + nums[right]\n        if current_sum == target:\n            return [left + 1, right + 1]\n        elif current_sum < target:\n            left += 1\n        else:\n            right -= 1\n    return []",
+    "steps": [
+      "Initialize two pointers, 'left' and 'right', to the beginning and end of the sorted array respectively.",
+      "Iterate while 'left' is less than 'right'. In each iteration, calculate the sum of the elements at the 'left' and 'right' pointers.",
+      "If the current sum equals the target, return a list containing the indices of the two numbers (left + 1 and right + 1).",
+      "If the current sum is less than the target, move the 'left' pointer one position to the right.",
+      "If the current sum is greater than the target, move the 'right' pointer one position to the left.",
+      "If the loop completes without finding a solution, return an empty list."
+    ],
+    "success_criteria": [
+      "The code correctly identifies the indices of the two numbers in the array that sum up to the target value.",
+      "The code handles edge cases such as an empty array or no solution being found."
+    ]
+  },
+  "Valid Sudoku": {
+    "reference": "def valid_sudoku(board):\n    \"\"\"\n    Checks if a given Sudoku board is valid.\n\n    Args:\n        board: A 9x9 2D list representing the Sudoku board.\n               Empty cells are represented by '.'.\n\n    Returns:\n        True if the Sudoku board is valid, False otherwise.\n    \"\"\"\n    n = len(board)\n\n    # Check rows\n    for row in range(n):\n        seen = set()\n        for col in range(n):\n            if board[row][col] != '.':\n                if board[row][col] in seen:\n                    return False\n                seen.add(board[row][col])\n\n    # Check columns\n    for col in range(n):\n        seen = set()\n        for row in range(n):\n            if board[row][col] != '.':\n                if board[row][col] in seen:\n                    return False\n                seen.add(board[row][col])\n\n    # Check 3x3 subgrids\n    for box_row in range(0, n, 3):\n        for box_col in range(0, n, 3):\n            seen = set()\n            for row in range(box_row, box_row + 3):\n                for col in range(box_col, box_col + 3):\n                    if board[row][col] != '.':\n                        if board[row][col] in seen:\n                            return False\n                        seen.add(board[row][col])\n\n    return True\n",
+    "steps": [
+      "Check rows for duplicates.",
+      "Check columns for duplicates.",
+      "Check 3x3 subgrids for duplicates."
+    ],
+    "success_criteria": [
+      "Correctly identifies rows with duplicate numbers.",
+      "Correctly identifies columns with duplicate numbers.",
+      "Correctly identifies 3x3 subgrids with duplicate numbers."
+    ]
+  },
+  "Boats to Save People": {
+    "reference": "def boats_to_save_people(num_people, num_boats):\n    \"\"\"\n    Calculates the minimum number of boats needed to save all people.\n\n    Args:\n        num_people: The number of people to save.\n        num_boats: The number of boats available.\n\n    Returns:\n        The minimum number of boats needed. Returns -1 if it's impossible to save everyone.\n    \"\"\"\n    if num_boats >= num_people:\n        return num_people\n    elif num_boats == 0:\n        return -1\n    else:\n        return (num_people + num_boats - 1) // num_boats\n\n# Example Usage:\n# print(boats_to_save_people(5, 3))\n# print(boats_to_save_people(5, 1)) \n# print(boats_to_save_people(10, 2))\n",
+    "steps": [
+      "Check if the number of boats is sufficient to save all people. If so, return the number of people.",
+      "If the number of boats is less than the number of people and the number of boats is not zero, calculate the minimum number of boats needed using ceiling division ( (num_people + num_boats - 1) // num_boats).",
+      "If there are no boats available return -1."
+    ],
+    "success_criteria": [
+      "The function returns the correct number of boats required to save all people for various input scenarios.",
+      "The function handles edge cases such as insufficient boats and zero boats correctly."
+    ]
+  },
+  "Merge Strings Alternately": {
+    "reference": "def merge_strings_alternately(str1, str2):\n    \"\"\"\n    Merges two strings alternately.\n\n    Args:\n        str1: The first string.\n        str2: The second string.\n\n    Returns:\n        The merged string.\n    \"\"\"\n    merged_string = \"\"\n    i = 0\n    j = 0\n    while i < len(str1) or j < len(str2):\n        if i < len(str1):\n            merged_string += str1[i]\n            i += 1\n        if j < len(str2):\n            merged_string += str2[j]\n            j += 1\n    return merged_string",
+    "steps": [
+      "Initialize an empty string to store the merged result.",
+      "Iterate through both input strings, alternately appending characters from each string to the merged string."
+    ],
+    "success_criteria": [
+      "The function correctly merges the two input strings in an alternating fashion.",
+      "The function handles strings of different lengths correctly."
+    ]
+  },
+  "LRU Cache": {
+    "reference": "class LRUCache:\n\n    def __init__(self, capacity: int):\n        self.capacity = capacity\n        self.cache = {}  # Dictionary to store key-value pairs\n        self.queue = []   # List to maintain the order of access (LRU)\n\n    def get(self, key: int) -> int:\n        if key in self.cache:\n            # Move the accessed key to the end of the queue (most recently used)\n            self.queue.remove(key)\n            self.queue.append(key)\n            return self.cache[key]\n        else:\n            return -1\n\n    def put(self, key: int, value: int) -> None:\n        if key in self.cache:\n            # Update the value and move the key to the end of the queue\n            self.cache[key] = value\n            self.queue.remove(key)\n            self.queue.append(key)\n        else:\n            if len(self.cache) >= self.capacity:\n                # Remove the least recently used key (first element in the queue)\n                lru_key = self.queue.pop(0)\n                del self.cache[lru_key)\n\n            self.cache[key] = value\n            self.queue.append(key)\n",
+    "steps": [
+      "Initialize the cache with a given capacity. The cache uses a dictionary to store key-value pairs and a list to maintain the order of access.",
+      "Get operation: If the key exists in the cache, move it to the end of the queue (most recently used) and return its value. Otherwise, return -1."
+    ],
+    "success_criteria": [
+      "Correctly implements the LRU eviction policy.",
+      "Handles cache updates and retrievals efficiently with O(1) time complexity for both get and put operations."
+    ]
+  },
+  "Coin Change": {
+    "reference": "def coin_change(coins, amount):\n    \"\"\"\n    Calculates the minimum number of coins needed to make up a given amount.\n\n    Args:\n        coins: A list of coin denominations.\n        amount: The target amount.\n\n    Returns:\n        The minimum number of coins needed, or -1 if it's not possible.\n    \"\"\"\n    dp = [float('inf')] * (amount + 1)\n    dp[0] = 0\n\n    for coin in coins:\n        for i in range(coin, amount + 1):\n            dp[i] = min(dp[i], dp[i - coin] + 1)\n\n    if dp[amount] == float('inf'):\n        return -1\n    else:\n        return dp[amount]\n",
+    "steps": [
+      "Initialize a DP table 'dp' of size 'amount + 1' with infinity, except for dp[0] which is initialized to 0. This represents the minimum number of coins needed for each amount from 0 to 'amount'.",
+      "Iterate through each coin denomination in the 'coins' list. For each coin, iterate through the DP table from the coin value up to the target amount. Update dp[i] with the minimum of its current value and (dp[i - coin] + 1). This means we are considering whether using the current coin results in a smaller number of coins needed for amount 'i'."
+    ],
+    "success_criteria": [
+      "Correctly calculates the minimum number of coins for various input combinations.",
+      "Handles cases where the amount cannot be made up with the given coins by returning -1."
+    ]
+  },
+  "3Sum": {
+    "reference": "def threeSum(nums):\n    \"\"\"\n    Finds all unique triplets in the given array that sum to zero.\n\n    Args:\n        nums: A list of integers.\n\n    Returns:\n        A list of lists, where each inner list represents a triplet.\n    \"\"\"\n    nums.sort()\n    n = len(nums)\n    result = []\n\n    for i in range(n - 2):\n        # Skip duplicate elements for the first number\n        if i > 0 and nums[i] == nums[i - 1]:\n            continue\n\n        left = i + 1\n        right = n - 1\n\n        while left < right:\n            total = nums[i] + nums[left] + nums[right]\n\n            if total == 0:\n                result.append([nums[i], nums[left], nums[right]])\n\n                # Skip duplicate elements for the second and third numbers\n                while left < right and nums[left] == nums[left + 1]:\n                    left += 1\n                while left < right and nums[right] == nums[right - 1]:\n                    right -= 1\n\n                left += 1\n                right -= 1\n            elif total < 0:\n                left += 1\n            else:\n                right -= 1\n\n    return result",
+    "steps": [
+      "Sort the input array to efficiently find triplets and skip duplicates.",
+      "Iterate through the array, fixing the first element of the triplet. For each fixed first element, use two pointers (left and right) to find the remaining two elements that sum to zero."
+    ],
+    "success_criteria": [
+      "The code correctly identifies all unique triplets that sum to zero.",
+      "The code handles duplicate numbers in the input array correctly by skipping duplicate triplets."
+    ]
+  },
+  "Longest Substring Without Repeating Characters": {
+    "reference": "def longest_substring_without_repeating_characters(s):\n    \"\"\"\n    Finds the length of the longest substring without repeating characters.\n\n    Args:\n        s: The input string.\n\n    Returns:\n        The length of the longest substring without repeating characters.\n    \"\"\"\n    start = 0\n    end = 0\n    max_length = 0\n    char_set = set()\n\n    while end < len(s):\n        if s[end] not in char_set:\n            char_set.add(s[end])\n            max_length = max(max_length, end - start + 1)\n            end += 1\n        else:\n            char_set.remove(s[start])\n            start += 1\n\n    return max_length",
+    "steps": [
+      "Initialize `start` and `end` pointers to 0, `max_length` to 0, and an empty set `char_set` to store characters in the current window.",
+      "Iterate through the string using the `end` pointer. If the character at the `end` pointer is not in `char_set`, add it to `char_set`, update `max_length` with the length of the current window, and increment `end`. Otherwise, remove the character at the `start` pointer from `char_set` and increment `start`."
+    ],
+    "success_criteria": [
+      "The code should correctly identify the longest substring without repeating characters in various test cases.",
+      "The code should have a time complexity of O(n) and a space complexity of O(min(m, n)), where n is the length of the string and m is the size of the character set."
+    ]
+  },
+  "Combination Sum": {
+    "reference": "def combinationSum(candidates, target):\n    \"\"\"\n    Finds all possible combinations of numbers in candidates that sum to target.\n\n    Args:\n        candidates: A list of integers representing the candidate numbers.\n        target: An integer representing the target sum.\n\n    Returns:\n        A list of lists, where each inner list represents a combination.\n    \"\"\"\n    dp = [[] for _ in range(target + 1)]\n    dp[0] = [[]]\n\n    for i in range(target + 1):\n        if dp[i]:\n            for candidate in candidates:\n                if i + candidate <= target:\n                    for combination in dp[i]:\n                        dp[i + candidate].append(combination + [candidate])\n\n    return dp[target]",
+    "steps": [
+      "Initialize a DP table `dp` of size `target + 1`, where `dp[i]` stores all combinations that sum to `i`.",
+      "Base case: `dp[0]` contains an empty list, representing the combination that sums to 0 (no numbers)."
+    ],
+    "success_criteria": [
+      "The code correctly finds all combinations of numbers from `candidates` that sum up to `target`.",
+      "The code handles cases where no combinations exist and returns an empty list."
+    ]
+  },
+  "Word Search II": {
+    "reference": "def wordSearchII(board, word):\n    rows = len(board)\n    cols = len(board[0])\n    visited = set()\n    result = []\n\n    def dfs(row, col, word_index, current_word):\n        if word_index == len(word):\n            result.append(current_word)\n            return\n\n        if row < 0 or row >= rows or col < 0 or col >= cols or (row, col) in visited or board[row][col] != word[word_index]:\n            return\n\n        visited.add((row, col))\n        current_word += board[row][col]\n\n        dfs(row + 1, col, word_index + 1, current_word)\n        dfs(row - 1, col, word_index + 1, current_word)\n        dfs(row, col + 1, word_index + 1, current_word)\n        dfs(row, col - 1, word_index + 1, current_word)\n\n        visited.remove((row, col))\n\n    for row in range(rows):\n        for col in range(cols):\n            dfs(row, col, 0, \"\")\n\n    return result",
+    "steps": [
+      "Initialize a set 'visited' to keep track of visited cells during DFS and a list 'result' to store the found words.",
+      "Define a recursive DFS function that takes the current row, column, word index, and the current word as input. The base case is when the word index reaches the end of the word; in this case, add the current word to the result list.",
+      "Check if the current cell is out of bounds, already visited, or does not match the character at the current word index. If any of these conditions are true, return.",
+      "Mark the current cell as visited and append the character at the current cell to the current word.",
+      "Recursively call DFS for the four adjacent cells (up, down, left, right).",
+      "Remove the current cell from the visited set after exploring all adjacent cells."
+    ],
+    "success_criteria": [
+      "The code should correctly identify all occurrences of the given word in the board.",
+      "The code should handle cases where the word is not found in the board and return an empty list."
+    ]
+  },
+  "Rotate Array": {
+    "reference": "def rotateArray(nums, k):\n    n = len(nums)\n    k %= n\n    nums[:] = nums[n-k:] + nums[:n-k]\n    return nums",
+    "steps": [
+      "Calculate the effective rotation amount by taking the modulo of k with the array length. This handles cases where k is larger than the array size.",
+      "Use slicing to split the array into two parts: the last k elements and the remaining elements. Then, concatenate these two parts in reverse order to achieve the rotation."
+    ],
+    "success_criteria": [
+      "The function correctly rotates the input array by k positions to the right.",
+      "The function modifies the input array in-place as required by the problem description."
+    ]
   }
 }

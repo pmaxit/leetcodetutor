@@ -5,12 +5,24 @@ require('dotenv').config();
 
 class LLMService {
   constructor() {
-    console.log("Initializing LLMService with LMStudio (OpenAI-compatible)");
+    const useGemini = !!process.env.GEMINI_API_KEY;
+    const baseURL = process.env.LLM_BASE_URL || (useGemini ? "https://generativelanguage.googleapis.com/v1beta/openai/" : "http://localhost:1234/v1");
+    const apiKey = process.env.LLM_API_KEY || process.env.GEMINI_API_KEY || "lm-studio";
+    const model = process.env.LLM_MODEL || (useGemini ? "gemini-1.5-flash" : "google/gemma-3n-e4b");
+
+    console.log("\n" + "=".repeat(60));
+    console.log("🤖 LLMService Initialization");
+    console.log("=".repeat(60));
+    console.log(`📍 LLM Provider: ${useGemini ? "🔴 Google Gemini (Cloud)" : "🟢 LM Studio (Local)"}`);
+    console.log(`🌐 Base URL: ${baseURL}`);
+    console.log(`🏷️  Model: ${model}`);
+    console.log("=".repeat(60) + "\n");
+
     this.client = new OpenAI({
-      baseURL: "http://localhost:1234/v1",
-      apiKey: "lm-studio", // LMStudio usually doesn't require a real key
+      baseURL,
+      apiKey,
     });
-    this.model = "google/gemma-3n-e4b";
+    this.model = model;
     
     this.dpSolutionsPath = path.join(__dirname, '../solutions/dp_solutions.json');
     this.sdSolutionsPath = path.join(__dirname, '../solutions/system_design.json');
@@ -40,17 +52,30 @@ class LLMService {
   }
 
   async generateContent(messagesOrPrompt) {
-    const messages = typeof messagesOrPrompt === 'string' 
+    const messages = typeof messagesOrPrompt === 'string'
       ? [{ role: "user", content: messagesOrPrompt }]
       : messagesOrPrompt;
 
+    console.log("\n" + "=".repeat(60));
+    console.log("🔄 LLM Request Starting...");
+    console.log("=".repeat(60));
+    console.log(`⏰ Timestamp: ${new Date().toISOString()}`);
+    console.log(`📝 Message count: ${messages.length}`);
+    console.log(`🏷️  Model: ${this.model}`);
+    console.log(`🌐 Base URL: http://localhost:1234/v1`);
+    console.log("=".repeat(60));
+
     try {
+      console.log("📤 Sending request to LM Studio...");
       const response = await this.client.chat.completions.create({
         model: this.model,
         messages: messages,
         max_tokens: 4096,
         temperature: 0,
       });
+
+      console.log("✅ Response received successfully!");
+      console.log(`📊 Response status: ${response.id ? 'Valid' : 'Invalid'}`);
 
       const choice = response.choices[0];
       const content = choice.message.content || "";
@@ -59,9 +84,42 @@ class LLMService {
         throw new Error("LLM returned empty response");
       }
 
+      console.log(`✨ Content length: ${content.length} characters`);
+      console.log("=".repeat(60) + "\n");
       return content.trim();
     } catch (error) {
-      console.error("LLM Generation Error:", error);
+      console.error("\n" + "❌".repeat(30));
+      console.error("🚨 LLM GENERATION ERROR 🚨");
+      console.error("❌".repeat(30));
+      console.error(`⏰ Time: ${new Date().toISOString()}`);
+      console.error(`📍 Error Type: ${error.constructor.name}`);
+      console.error(`💬 Error Message: ${error.message}`);
+      console.error(`📋 Error Code: ${error.code || 'N/A'}`);
+      console.error(`🔗 Error Status: ${error.status || 'N/A'}`);
+
+      if (error.response) {
+        console.error(`📡 Response Status: ${error.response.status}`);
+        console.error(`📝 Response Data:`, error.response.data || 'No data');
+      }
+
+      if (error.request) {
+        console.error(`🌐 Request Info:`, {
+          method: error.request.method || 'N/A',
+          url: error.request.url || 'N/A',
+          headers: error.request.headers || {}
+        });
+      }
+
+      console.error(`🔧 Full Error:`, error);
+      console.error("❌".repeat(30) + "\n");
+
+      // Check if it's a connection error
+      if (error.code === 'ECONNREFUSED' || error.message.includes('ECONNREFUSED')) {
+        console.error("🔴 CONNECTION REFUSED - LM Studio is not running!");
+        console.error("💡 Make sure LM Studio is running on http://localhost:1234");
+        throw new Error("LM Studio not responding. Is it running on localhost:1234?");
+      }
+
       throw error;
     }
   }
@@ -302,11 +360,10 @@ class LLMService {
       You are an Expert Interviewer and Principal Engineer. You solve problems using a Reasoning and Acting (ReAct) loop.
 
       Problem: ${problemName}
-      Target Reference: ${JSON.stringify(solution)}
 
       PEDAGOGICAL RULES:
       1. HINTS-FIRST approach: Use hints to guide the student with Socratic nudges, NOT direct solutions.
-      2. Current Hint (index ${currentHintIndex}): "${currentHint || 'No more hints available'}"
+      2. Current Hint (index ${currentHintIndex}): ${currentHint ? `"${currentHint.replace(/"/g, '\\"')}"` : "'No more hints available'"}
       3. If user asks for solution AND hints are exhausted: Provide FULL SOLUTION code.
       4. If user asks for solution BUT hints remain: Suggest showing the current hint first, then offer solution.
       5. If the user asks "what is the error" or "why is it failing", rephrase the current hint as a Socratic question.
@@ -320,7 +377,7 @@ class LLMService {
 
       CURRENT HINT CONTEXT:
       - Hints Remaining: ${hints.length - currentHintIndex} of ${hints.length}
-      - Current Hint: "${currentHint || 'No more hints'}"
+      - Current Hint: ${currentHint ? `"${currentHint.replace(/"/g, '\\"')}"` : "'No more hints'"}
       - User asking for solution: ${askingSolution}
       - Hints Exhausted: ${hintsExhausted}
 
@@ -333,7 +390,7 @@ class LLMService {
       Thought: I have enough information to respond to the candidate.
       Final Response: <your clean, structured, Markdown-formatted response. Use ### Headers and Bullet points.>
 
-      USER INPUT: "${userInput}"
+      USER INPUT: "${userInput.replace(/"/g, '\\"').replace(/\n/g, '\\n')}"
 
       REASONING HISTORY:
       ${scratchpad}
@@ -347,7 +404,7 @@ class LLMService {
       ${state.state?.codeBuffer || '# No code yet'}
       </user_code>
 
-      Candidate's Input: "${userInput}"
+      Candidate's Input: "${userInput.replace(/"/g, '\\"').replace(/\n/g, '\\n')}"
     `;
 
     const messages = [

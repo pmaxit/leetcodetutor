@@ -11,8 +11,9 @@ import 'tldraw/tldraw.css';
 import 'katex/dist/katex.min.css';
 import './index.css';
 import SystemDesignView from './SystemDesignView';
+import DebugBar from './DebugBar';
 
-const API = 'http://127.0.0.1:3005';
+const API = import.meta.env.PROD ? '' : 'http://127.0.0.1:3005';
 
 // Component to access tldraw editor instance
 const TldrawWrapper = ({ onEditorMount }) => {
@@ -26,6 +27,7 @@ const TldrawWrapper = ({ onEditorMount }) => {
 function App() {
   // ─── Mode: 'dsa' | 'system-design' ─────────────────────────────────────────
   const [mode, setMode] = useState('dsa');
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   // ─── DSA State ───────────────────────────────────────────────────────────────
   const [session, setSession] = useState(null);
@@ -48,6 +50,23 @@ function App() {
   const [selectedSdQuestion, setSelectedSdQuestion] = useState(null);
   const [sdExpanded, setSdExpanded] = useState(true);
   const [status, setStatus] = useState({ text: 'Ready', type: 'info' });
+  const [llmHealth, setLlmHealth] = useState({ status: 'unknown', message: 'Checking...' });
+
+  const checkLLMHealth = async () => {
+    setLlmHealth({ status: 'checking', message: 'Checking LM Studio...' });
+    try {
+      const res = await fetch(`${API}/api/health`);
+      const data = await res.json();
+      if (res.ok) {
+        setLlmHealth({ status: 'connected', message: 'LM Studio Connected ✓' });
+      } else {
+        setLlmHealth({ status: 'disconnected', message: 'LM Studio Disconnected ✗' });
+      }
+    } catch (error) {
+      console.error('Health check failed:', error);
+      setLlmHealth({ status: 'disconnected', message: 'LM Studio not responding' });
+    }
+  };
 
   const scrollToBottom = () => {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -182,7 +201,12 @@ function App() {
                 setSession(data.state);
                 setStatus({ text: 'Ready', type: 'info' });
               } else if (data.type === 'error') {
-                console.error('AI Error:', data.message);
+                console.error('🚨 AI Error:', data.message);
+                console.error('Error Details:', data);
+                setMessages((prev) => [...prev, {
+                  role: 'ai',
+                  content: `⚠️ **Error**: ${data.message}\n\n**Troubleshooting**:\n- Is LM Studio running on localhost:1234?\n- Check the server logs for detailed error information.`
+                }]);
                 setStatus({ text: `Error: ${data.message}`, type: 'error' });
               }
             } catch (err) {
@@ -284,8 +308,21 @@ function App() {
   }, {});
 
   return (
-    <div className="app-container">
+    <div className={`app-container ${isSidebarOpen ? 'sidebar-open' : ''}`}>
+      {/* Mobile Sidebar Overlay */}
+      {isSidebarOpen && (
+        <div className="sidebar-overlay" onClick={() => setIsSidebarOpen(false)}></div>
+      )}
       <header>
+        <div className="header-left">
+          <button className="sidebar-toggle-btn" onClick={() => setIsSidebarOpen(!isSidebarOpen)} aria-label="Toggle Sidebar">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="3" y1="12" x2="21" y2="12"></line>
+              <line x1="3" y1="6" x2="21" y2="6"></line>
+              <line x1="3" y1="18" x2="21" y2="18"></line>
+            </svg>
+          </button>
+        </div>
         <div className="header-center">
           <div className="mode-switcher">
             <button
@@ -309,8 +346,8 @@ function App() {
         </div>
       </header>
 
-      {/* ─── SIDEBAR (always visible) ────────────────────────────── */}
-      <aside className="panel sidebar-panel">
+      {/* ─── SIDEBAR (always visible on desktop, toggleable on mobile) ────────────────────────────── */}
+      <aside className={`panel sidebar-panel ${isSidebarOpen ? 'open' : ''}`}>
         <div className="logo sidebar-logo">
           <span className="logo-mark">AG</span>
           Antigravity
@@ -383,7 +420,7 @@ function App() {
 
       {/* ─── MAIN WORKSPACE ─────────────────────────────────────── */}
       {mode === 'system-design' ? (
-        <div className="sd-workspace" style={{ gridColumn: '2 / 4' }}>
+        <div className="sd-workspace">
           <SystemDesignView question={selectedSdQuestion} />
         </div>
       ) : (
@@ -529,6 +566,18 @@ function App() {
                     >
                       {msg.content}
                     </ReactMarkdown>
+                    {msg.role === 'user' && (
+                      <button
+                        className="message-repeat-btn"
+                        onClick={() => {
+                          setInputValue(msg.content);
+                          document.querySelector('.chat-input-area input')?.focus();
+                        }}
+                        title="Repeat this message"
+                      >
+                        🔁
+                      </button>
+                    )}
                   </div>
                 ))}
                 <div ref={chatEndRef} />
@@ -595,11 +644,29 @@ function App() {
           <span className="status-text">{status.text}</span>
         </div>
         <div className="status-right">
+          <button
+            onClick={checkLLMHealth}
+            style={{
+              background: 'transparent',
+              border: 'none',
+              color: llmHealth.status === 'connected' ? '#4ade80' : llmHealth.status === 'disconnected' ? '#ef4444' : '#a78bfa',
+              cursor: 'pointer',
+              fontSize: '0.85rem',
+              padding: '0 8px',
+              textDecoration: 'underline'
+            }}
+            title="Click to check LM Studio connection"
+          >
+            {llmHealth.message}
+          </button>
+          <span className="status-sep">|</span>
           <span className="status-model">Gemini 1.5 Pro</span>
           <span className="status-sep">|</span>
           <span className="status-latency">Principal Agent Active</span>
         </div>
       </footer>
+
+      <DebugBar />
     </div>
   );
 }

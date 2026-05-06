@@ -9,14 +9,55 @@ const LLMService = require('./src/services/LLMService');
 const { Question } = require('./src/models/Question');
 const { SYSTEM_DESIGN_QUESTIONS } = require('./src/data/system_design_questions');
 
+const path = require('path');
+const LogStreamer = require('./src/services/LogStreamer');
+
 const app = express();
 app.use(cors());
 app.use(express.json());
+
+// Serve static files from the React app
+app.use(express.static(path.join(__dirname, '../client/dist')));
 
 const sessions = new Map();
 const interviewer = new InterviewerAgent();
 const proctor = new ProctorAgent();
 const scorer = new ScorerAgent();
+
+// Log streaming endpoint for debug bar
+app.get('/api/logs/stream', (req, res) => {
+  res.setHeader('Content-Type', 'text/event-stream');
+  res.setHeader('Cache-Control', 'no-cache');
+  res.setHeader('Connection', 'keep-alive');
+  res.flushHeaders();
+  LogStreamer.subscribe(res);
+});
+
+// Health check endpoint for LM Studio
+app.get('/api/health', async (req, res) => {
+  console.log("\n🏥 Health Check Endpoint Called");
+  try {
+    // Try to verify LM Studio is responding
+    const response = await LLMService.client.models.list();
+    console.log("✅ LM Studio is responding");
+    console.log(`📊 Available models:`, response.data ? response.data.map(m => m.id) : 'N/A');
+    res.json({
+      status: 'healthy',
+      llmstudio: 'connected',
+      models: response.data ? response.data.map(m => m.id) : [],
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    console.error("❌ Health Check Failed:", error.message);
+    res.status(503).json({
+      status: 'unhealthy',
+      llmstudio: 'disconnected',
+      error: error.message,
+      timestamp: new Date().toISOString(),
+      hint: 'Make sure LM Studio is running on http://localhost:1234'
+    });
+  }
+});
 
 app.get('/api/questions', async (req, res) => {
   try {
@@ -34,6 +75,7 @@ app.get('/api/questions', async (req, res) => {
     });
     res.json(mappedQuestions);
   } catch (error) {
+    console.error('Fetch questions error:', error);
     res.status(500).json({ error: error.message });
   }
 });
@@ -76,7 +118,16 @@ app.post('/api/interviewer/init', async (req, res) => {
 app.post('/api/chat', async (req, res) => {
   const { message, selectedQuestion } = req.body;
   const session = getSession(selectedQuestion?.id, 'DSA');
-  
+
+  console.log("\n" + "=".repeat(60));
+  console.log("💬 CHAT REQUEST RECEIVED");
+  console.log("=".repeat(60));
+  console.log(`⏰ Time: ${new Date().toISOString()}`);
+  console.log(`📋 Question: ${selectedQuestion?.title || 'Unknown'}`);
+  console.log(`💬 Message: "${message.substring(0, 100)}${message.length > 100 ? '...' : ''}"`);
+  console.log(`🔖 Session ID: ${selectedQuestion?.id || 'default'}`);
+  console.log("=".repeat(60));
+
   if (selectedQuestion) {
     session.updateState({ selectedQuestion });
   }
@@ -91,22 +142,29 @@ app.post('/api/chat', async (req, res) => {
   res.flushHeaders();
 
   const sendEvent = (type, data) => {
+    console.log(`📨 Sending event: ${type}`, data);
     res.write(`data: ${JSON.stringify({ type, ...data })}\n\n`);
   };
 
   try {
+    console.log("🔄 Starting constraint extraction and response generation...");
     // Extract constraints in background/parallel
     const constraintsPromise = LLMService.extractConstraints(message, session.state.requirements || []);
 
     const currentSummary = session.getSummary();
-    
+
+    console.log("🤖 Calling interviewer agent...");
     // Call agent with progress callback
     const aiResult = await interviewer.generateResponse(
-      currentSummary, 
+      currentSummary,
       message || '',
-      (statusText) => sendEvent('status', { message: statusText })
+      (statusText) => {
+        console.log(`📊 Progress: ${statusText}`);
+        sendEvent('status', { message: statusText });
+      }
     );
 
+    console.log("✅ AI Response generated successfully");
     const newConstraints = await constraintsPromise;
 
     if (newConstraints && newConstraints.length > 0) {
@@ -135,10 +193,26 @@ app.post('/api/chat', async (req, res) => {
       state: session.getSummary()
     });
     
+    console.log("✨ Chat response completed successfully\n");
     res.end();
   } catch (error) {
-    console.error('Chat error:', error);
-    sendEvent('error', { message: error.message });
+    console.error("\n" + "❌".repeat(30));
+    console.error("🚨 CHAT ERROR 🚨");
+    console.error("❌".repeat(30));
+    console.error(`⏰ Time: ${new Date().toISOString()}`);
+    console.error(`💬 Error Message: ${error.message}`);
+    console.error(`📍 Error Type: ${error.constructor.name}`);
+    console.error(`🔧 Full Error:`, error);
+    console.error("❌".repeat(30) + "\n");
+
+    if (error.message.includes('ECONNREFUSED') || error.message.includes('LM Studio')) {
+      sendEvent('error', {
+        message: 'LM Studio connection failed. Please ensure LM Studio is running on localhost:1234',
+        type: 'connection_error'
+      });
+    } else {
+      sendEvent('error', { message: error.message });
+    }
     res.end();
   }
 });
@@ -185,27 +259,42 @@ app.post('/api/session/finish', async (req, res) => {
 // ─── System Design Routes ──────────────────────────────────────────────────────
 
 // GET all system design questions (metadata only, no stage answers)
-app.get('/api/sd/questions', (req, res) => {
-  const questions = SYSTEM_DESIGN_QUESTIONS.map(({ id, title, difficulty, category, description, stages }) => ({
-    id,
-    title,
-    difficulty,
-    category,
-    description,
-    stageCount: stages.length,
-    stages: stages.map(({ id, name, icon, prompt, hint }) => ({ id, name, icon, prompt, hint }))
-  }));
-  res.json(questions);
+// GET all system design questions (metadata only, no stage answers)
+app.get('/api/sd/questions', async (req, res) => {
+  try {
+    const questions = await Question.findAll({ where: { category: 'System Design' } });
+    const mappedQuestions = questions.map(q => {
+      const data = q.toJSON();
+      let stages = [];
+      try { stages = JSON.parse(data.solution_format || '[]'); } catch(e) {}
+      return {
+        id: data.id,
+        title: data.title,
+        difficulty: data.difficulty || 'Medium',
+        category: data.category,
+        description: data.statement,
+        stageCount: stages.length,
+        stages: stages.map(({ id, name, icon, prompt, hint }) => ({ id, name, icon, prompt, hint }))
+      };
+    });
+    res.json(mappedQuestions);
+  } catch(error) {
+    res.status(500).json({ error: error.message });
+  }
 });
 
 // POST evaluate a user's answer for a specific stage — returns LLM-powered feedback + probe
 app.post('/api/sd/stage/evaluate', async (req, res) => {
   const { questionId, stageId, userAnswer, whiteboardShapes } = req.body;
 
-  const question = SYSTEM_DESIGN_QUESTIONS.find(q => q.id === questionId);
-  if (!question) return res.status(404).json({ error: 'Question not found' });
+  const questionRaw = await Question.findOne({ where: { id: questionId } });
+  if (!questionRaw) return res.status(404).json({ error: 'Question not found' });
+  
+  const question = questionRaw.toJSON();
+  let stages = [];
+  try { stages = JSON.parse(question.solution_format || '[]'); } catch(e) {}
 
-  const stage = question.stages.find(s => s.id === stageId);
+  const stage = stages.find(s => s.id === stageId);
   if (!stage) return res.status(404).json({ error: 'Stage not found' });
 
   // Combine typed answer + any whiteboard text
@@ -220,7 +309,7 @@ app.post('/api/sd/stage/evaluate', async (req, res) => {
 You are a Senior Principal Engineer conducting a system design interview.
 
 Problem: "${question.title}"
-Stage: ${stage.name} (Stage ${stageId} of ${question.stages.length})
+Stage: ${stage.name} (Stage ${stageId} of ${stages.length})
 
 Stage Prompt given to candidate:
 "${stage.prompt}"
@@ -272,15 +361,18 @@ Respond with ONLY a JSON object:
 // POST complete the system design interview — returns full rubric report
 app.post('/api/sd/complete', async (req, res) => {
   const { questionId, stageAnswers } = req.body;
-  const question = SYSTEM_DESIGN_QUESTIONS.find(q => q.id === questionId);
-  if (!question) return res.status(404).json({ error: 'Question not found' });
+  const questionRaw = await Question.findOne({ where: { id: questionId } });
+  if (!questionRaw) return res.status(404).json({ error: 'Question not found' });
+  const question = questionRaw.toJSON();
+  let stages = [];
+  try { stages = JSON.parse(question.solution_format || '[]'); } catch(e) {}
 
   const prompt = `
 You are a Senior Principal Engineer scoring a completed system design interview.
 
 Problem: "${question.title}"
 Candidate Answers by Stage:
-${stageAnswers.map((a, i) => `Stage ${i + 1} (${question.stages[i]?.name}): "${a}"`).join('\n\n')}
+${stageAnswers.map((a, i) => `Stage ${i + 1} (${stages[i]?.name}): "${a}"`).join('\n\n')}
 
 Score the candidate on these rubric dimensions (0-100 each):
 - Requirements Clarity: Did they define clear functional + non-functional requirements?
@@ -316,9 +408,17 @@ Return ONLY a JSON object:
   }
 });
 
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, '../client/dist/index.html'));
+});
+
+// Start log streamer
+LogStreamer.start();
+
 const PORT = process.env.PORT || 3005;
 const HOST = '0.0.0.0';
 app.listen(PORT, HOST, () => {
   console.log(`Server running on http://${HOST}:${PORT}`);
+  console.log(`📊 Log streaming available at /api/logs/stream`);
 });
 

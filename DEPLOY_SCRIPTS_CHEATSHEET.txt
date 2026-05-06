@@ -1,0 +1,347 @@
+╔════════════════════════════════════════════════════════════════════════════╗
+║         🚀 Deployment Scripts - Quick Cheatsheet                            ║
+║         One command to deploy server + client + ngrok                       ║
+╚════════════════════════════════════════════════════════════════════════════╝
+
+═══════════════════════════════════════════════════════════════════════════════
+ QUICKEST START (3 seconds)
+═══════════════════════════════════════════════════════════════════════════════
+
+$ ./deploy.sh
+
+That's it. Wait for output showing:
+  ✅ Public URL: https://abc123.ngrok-free.app
+  ✅ All services running
+  ✅ Health checks passed
+
+
+═══════════════════════════════════════════════════════════════════════════════
+ WHAT DEPLOY.SH DOES
+═══════════════════════════════════════════════════════════════════════════════
+
+1. Verifies prerequisites (Node.js, npm, ngrok, LM Studio)
+2. Checks ports are available
+3. Installs server dependencies (npm install)
+4. Installs client dependencies (npm install in client/)
+5. Verifies .env configuration
+6. Tests server health
+7. Starts Node.js server (port 3005)
+8. (Optional) Starts React dev server (port 5173)
+9. Starts ngrok tunnel (creates public HTTPS URL)
+10. Displays all access points
+11. Runs health checks
+12. Stays running (Ctrl+C to stop)
+
+
+═══════════════════════════════════════════════════════════════════════════════
+ STOP EVERYTHING
+═══════════════════════════════════════════════════════════════════════════════
+
+$ ./stop-deployment.sh
+
+Cleanly stops:
+  • Node.js server
+  • React client (if running)
+  • ngrok tunnel
+  • All subprocesses
+
+Takes ~3 seconds
+
+
+═══════════════════════════════════════════════════════════════════════════════
+ CUSTOMIZATION
+═══════════════════════════════════════════════════════════════════════════════
+
+Change server port:
+  $ SERVER_PORT=8080 ./deploy.sh
+
+Change client port:
+  $ CLIENT_PORT=3000 ./deploy.sh
+
+Both:
+  $ SERVER_PORT=8080 CLIENT_PORT=3000 ./deploy.sh
+
+No client (server only):
+  $ ./deploy.sh
+  Then answer 'n' to "Start React dev server?"
+
+
+═══════════════════════════════════════════════════════════════════════════════
+ UNDERSTANDING OUTPUT
+═══════════════════════════════════════════════════════════════════════════════
+
+When you run ./deploy.sh, you'll see:
+
+  ✅ Prerequisites verified       ← All needed tools are installed
+  ✅ Ports available              ← No conflicts
+  ✅ Dependencies installed       ← npm modules ready
+  ✅ Configuration valid          ← .env is good
+  ✅ Server health test passed    ← Server starts OK
+  ✅ Server started               ← Running in background
+  ✅ ngrok tunnel created         ← Public URL ready
+
+Then shows:
+
+  📱 Access Points:
+    Local Server:   http://localhost:3005      ← Only your device
+    Public URL:     https://abc123.ngrok-free.app  ← Anyone, anywhere
+    React Dev:      http://localhost:5173      ← If running
+
+  ✅ Server Health: healthy (LM Studio: connected)
+
+
+═══════════════════════════════════════════════════════════════════════════════
+ ACCESSING YOUR APP
+═══════════════════════════════════════════════════════════════════════════════
+
+From your desktop:
+  $ curl http://localhost:3005/api/health
+  or
+  Open: http://localhost:3005 in browser
+
+From anywhere (share this URL):
+  Open: https://abc123.ngrok-free.app in any browser
+  Works on phone, tablet, another computer, etc.
+
+
+═══════════════════════════════════════════════════════════════════════════════
+ MONITORING
+═══════════════════════════════════════════════════════════════════════════════
+
+View all ngrok requests:
+  $ open http://127.0.0.1:4040
+  or
+  $ curl http://127.0.0.1:4040/api/tunnels | jq .
+
+View server logs:
+  $ tail -f /tmp/interview-platform/server.log
+
+View ngrok logs:
+  $ tail -f /tmp/interview-platform/ngrok.log
+
+View all logs:
+  $ ls /tmp/interview-platform/
+  • server.log              ← Node.js output
+  • client.log              ← React dev server
+  • ngrok.log               ← ngrok tunnel
+  • pids.txt                ← Process IDs
+
+
+═══════════════════════════════════════════════════════════════════════════════
+ TROUBLESHOOTING
+═══════════════════════════════════════════════════════════════════════════════
+
+If deploy.sh fails immediately:
+
+1. Check ngrok is authenticated:
+   $ ngrok config check
+
+2. Verify ngrok is installed:
+   $ ngrok --version
+
+3. Check Node.js:
+   $ node --version
+
+4. Check npm:
+   $ npm --version
+
+5. Check LM Studio is running:
+   $ lms status
+   (If offline, run: lms and start Local Server)
+
+6. Check port 3005 is free:
+   $ lsof -i :3005
+   If used, either close that app or run:
+   $ SERVER_PORT=8080 ./deploy.sh
+
+
+If server won't start:
+
+$ tail -50 /tmp/interview-platform/server.log
+
+Common issues:
+  • Dependencies missing: npm install
+  • Port in use: use different port
+  • .env missing: create with required fields
+  • LM Studio offline: start LM Studio
+
+
+If ngrok tunnel fails:
+
+1. Check internet connection:
+   $ ping 8.8.8.8
+
+2. Check ngrok not already running:
+   $ pkill -f ngrok
+   Then retry: ./deploy.sh
+
+3. Check ngrok auth:
+   $ ngrok config add-authtoken <YOUR_TOKEN>
+
+4. Check ngrok status:
+   $ curl http://127.0.0.1:4040 (if tunnel running)
+
+
+═══════════════════════════════════════════════════════════════════════════════
+ LOGS REFERENCE
+═══════════════════════════════════════════════════════════════════════════════
+
+Location: /tmp/interview-platform/
+
+server.log
+  • Node.js server output
+  • LLM requests/responses
+  • Errors and warnings
+
+  View: tail -f /tmp/interview-platform/server.log
+
+client.log
+  • React dev server output
+  • Build messages
+
+  View: tail -f /tmp/interview-platform/client.log
+
+ngrok.log
+  • ngrok tunnel status
+  • Connection info
+
+  View: tail -f /tmp/interview-platform/ngrok.log
+
+pids.txt
+  • Process IDs of running services
+  • Used by stop-deployment.sh
+
+  View: cat /tmp/interview-platform/pids.txt
+
+
+═══════════════════════════════════════════════════════════════════════════════
+ USEFUL COMMANDS
+═══════════════════════════════════════════════════════════════════════════════
+
+Deploy:
+  $ ./deploy.sh
+
+Deploy without client:
+  $ ./deploy.sh
+  # Answer 'n' to React dev server prompt
+
+Deploy with custom port:
+  $ SERVER_PORT=8080 ./deploy.sh
+
+Deploy in background:
+  $ nohup ./deploy.sh > /tmp/deploy.log 2>&1 &
+
+Stop everything:
+  $ ./stop-deployment.sh
+
+Check server health:
+  $ curl http://localhost:3005/api/health | jq .
+
+Check ngrok status:
+  $ curl http://127.0.0.1:4040/api/tunnels | jq .
+
+View ngrok requests:
+  $ open http://127.0.0.1:4040
+
+Kill specific service:
+  $ kill <PID>      # Graceful
+  $ kill -9 <PID>   # Force
+
+Check port usage:
+  $ lsof -i :3005
+
+Get processes:
+  $ ps aux | grep -E "(npm|ngrok)" | grep -v grep
+
+
+═══════════════════════════════════════════════════════════════════════════════
+ FILE LOCATIONS
+═══════════════════════════════════════════════════════════════════════════════
+
+Scripts:
+  • deploy.sh                      ← Main deployment script
+  • stop-deployment.sh             ← Stop all services
+  • DEPLOYMENT_SCRIPTS.md          ← Full documentation
+  • DEPLOY_SCRIPTS_CHEATSHEET.txt  ← This file
+
+Configuration:
+  • .env                           ← Server configuration
+  • ngrok.yml                      ← ngrok config (optional)
+
+Logs:
+  • /tmp/interview-platform/       ← All logs
+
+
+═══════════════════════════════════════════════════════════════════════════════
+ TYPICAL WORKFLOW
+═══════════════════════════════════════════════════════════════════════════════
+
+Day 1 (First Time):
+  1. Check prerequisites: lms status, node --version, npm --version, ngrok --version
+  2. Deploy: ./deploy.sh
+  3. Share URL from output
+
+Day 2+ (Continued Development):
+  1. Run: ./deploy.sh
+  2. App is immediately available at public URL
+  3. Make code changes
+  4. Changes auto-reload (npm dev watches for changes)
+  5. When done: ./stop-deployment.sh
+
+
+═══════════════════════════════════════════════════════════════════════════════
+ SHARING WITH OTHERS
+═══════════════════════════════════════════════════════════════════════════════
+
+After running ./deploy.sh:
+
+1. Copy the public URL from output:
+   https://abc123def456.ngrok-free.app
+
+2. Share it:
+   • Slack: "Check this out: https://abc123def456.ngrok-free.app"
+   • Email: Send the URL
+   • Text: Works on mobile too!
+
+3. Anyone can open it in their browser
+   • No VPN needed
+   • Works from anywhere
+   • Works on any device
+
+
+═══════════════════════════════════════════════════════════════════════════════
+ IMPORTANT NOTES
+═══════════════════════════════════════════════════════════════════════════════
+
+✅ LM Studio must be running (lms status)
+✅ ngrok must be authenticated (ngrok config add-authtoken <TOKEN>)
+✅ Keep deploy.sh running (don't close terminal)
+✅ Free ngrok URLs change on restart (use paid plan for permanent)
+✅ Ctrl+C to stop, or run ./stop-deployment.sh in another terminal
+✅ All processes logged to /tmp/interview-platform/
+✅ Ready for production once you test it works
+
+
+═══════════════════════════════════════════════════════════════════════════════
+ NEXT STEPS
+═══════════════════════════════════════════════════════════════════════════════
+
+1. Make sure LM Studio is running:
+   $ lms status
+
+2. Run deployment:
+   $ ./deploy.sh
+
+3. Wait for "🎉 DEPLOYMENT COMPLETE!"
+
+4. Copy the public URL (https://xxx.ngrok-free.app)
+
+5. Open in browser and test
+
+6. Share with others!
+
+
+╔════════════════════════════════════════════════════════════════════════════╗
+║                    🚀 You're Ready to Deploy!                             ║
+║                  ./deploy.sh (that's all you need)                         ║
+╚════════════════════════════════════════════════════════════════════════════╝
