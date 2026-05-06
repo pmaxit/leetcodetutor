@@ -29,9 +29,12 @@ const Question = sequelize.define('Question', {
   initial_probe: { type: DataTypes.TEXT, allowNull: true },
   neetcode_url: { type: DataTypes.STRING, allowNull: true },
   leetcode_url: { type: DataTypes.STRING, allowNull: true },
-  youtube_url: { type: DataTypes.STRING, allowNull: true }
+  youtube_url: { type: DataTypes.STRING, allowNull: true },
+  test_cases: { type: DataTypes.JSON, allowNull: true },
+  sample_test_cases: { type: DataTypes.JSON, allowNull: true },
+  solutions: { type: DataTypes.JSON, allowNull: true }
 }, {
-  tableName: 'problems', // The table name in neetcode_db
+  tableName: 'problems', 
   timestamps: false, // The remote DB doesn't have createdAt/updatedAt
   toJSON: { virtuals: true },
   toObject: { virtuals: true }

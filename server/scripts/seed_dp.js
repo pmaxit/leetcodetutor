@@ -40,10 +40,23 @@ const dpQuestions = [
 
 async function seed() {
   try {
-    await sequelize.sync({ force: true });
-    console.log("Database synced.");
-    await Question.bulkCreate(dpQuestions);
-    console.log("DP Questions re-seeded with improved boilerplate!");
+    await sequelize.authenticate();
+    console.log("Connected to DB.");
+
+    for (const q of dpQuestions) {
+      const [question, created] = await Question.findOrCreate({
+        where: { title: q.title },
+        defaults: q
+      });
+      
+      if (created) {
+        console.log(`✅ Created: ${q.title}`);
+      } else {
+        console.log(`⏭️  Skipped (exists): ${q.title}`);
+      }
+    }
+
+    console.log("DP Questions processed!");
     process.exit(0);
   } catch (error) {
     console.error("Seeding failed:", error);

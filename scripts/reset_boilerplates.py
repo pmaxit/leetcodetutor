@@ -1,6 +1,10 @@
 import os
 import sqlite3
-import MySQLdb
+try:
+    import mysql.connector
+    MYSQL_AVAILABLE = True
+except ImportError:
+    MYSQL_AVAILABLE = False
 import ast
 from dotenv import load_dotenv
 
@@ -25,7 +29,7 @@ def extract_boilerplate(code):
                         # get args
                         args = ast.unparse(item.args)
                         returns = f" -> {ast.unparse(item.returns)}" if item.returns else ""
-                        boilerplate_lines.append(f"    def {item.name}(self, {args}){returns}:")
+                        boilerplate_lines.append(f"    def {item.name}({args}){returns}:")
                         # get docstring if exists
                         if ast.get_docstring(item):
                             doc = ast.get_docstring(item)
@@ -43,11 +47,14 @@ def extract_boilerplate(code):
 
 db_dialect = os.getenv('DB_DIALECT', 'sqlite')
 if db_dialect == 'mysql':
-    conn = MySQLdb.connect(
+    if not MYSQL_AVAILABLE:
+        print("Error: mysql.connector not found. Please install mysql-connector-python.")
+        exit(1)
+    conn = mysql.connector.connect(
         host=os.getenv('DB_HOST'),
         user=os.getenv('DB_USER'),
-        passwd=os.getenv('DB_PASSWORD'),
-        db=os.getenv('DB_NAME')
+        password=os.getenv('DB_PASSWORD'),
+        database=os.getenv('DB_NAME')
     )
     cursor = conn.cursor()
     cursor.execute("SELECT id, python_code FROM problems")

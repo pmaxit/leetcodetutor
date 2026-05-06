@@ -106,6 +106,12 @@ This script:
 - **Table Name**: The `Question` model maps to the `problems` table in MySQL, but `Questions` in SQLite.
 - **Data Integrity**: Always verify question metadata against the live DB using scratch scripts if the local SQLite seems stale or incomplete.
 
+### 2. Database Safety & Seeding (CRITICAL)
+- **NO `force: true`**: Never use `sequelize.sync({ force: true })` in scripts. This drops all tables and wipes production data.
+- **Safe Seeding**: When creating seeding or migration scripts, always use `findOrCreate` or check for existence by `title` before inserting.
+- **Environment Isolation**: Be extremely careful when running scripts locally that are connected to the GCP MySQL host (check `.env` DB_HOST).
+- **Backups**: Daily backups are enabled in Cloud SQL. If a table is accidentally deleted, use `gcloud sql backups restore [ID] --instance=adveralabs-mysql`.
+
 ### 2. Data Models (Question)
 - **Virtual Fields**: The `Question` model uses Sequelize `VIRTUAL` fields for `description`, `pattern`, and `boilerplate` to handle legacy column naming (e.g., `statement` vs `description`).
 - **API Hydration**: When mapping questions in server routes (`/api/questions`, `/api/practice/session/:id`), always use the spread operator `...data` to ensure all metadata (including virtuals and resource URLs like `neetcode_url`) are sent to the frontend.

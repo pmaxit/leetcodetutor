@@ -1,8 +1,6 @@
-const { Question } = require('../src/models/Question');
-const LLMService = require('../src/services/LLMService');
+const { Question } = require('../server/src/models/Question');
+const LLMService = require('../server/src/services/LLMService');
 require('dotenv').config();
-
-const CONCURRENCY = 4;
 
 async function generateScaffold(question) {
   const prompt = `You are a technical content editor. I will provide you with a full Python solution for a coding problem.
@@ -51,46 +49,10 @@ class Solution:
         return []
 \`\`\`
 
-Example 2 (Valid Parentheses):
-Input:
-\`\`\`python
-class Solution:
-    def isValid(self, s: str) -> bool:
-        bracketMap = {")": "(", "]": "[", "}": "{"}
-        stack = []
-        for c in s:
-            if c not in bracketMap:
-                stack.append(c)
-                continue
-            if not stack or stack[-1] != bracketMap[c]:
-                return False
-            stack.pop()
-        return not stack
-\`\`\`
-Output:
-\`\`\`python
-class Solution:
-    def isValid(self, s: str) -> bool:
-        bracketMap = {")": "(", "]": "[", "}": "{"}
-        stack = []
-        for c in s:
-            if c not in bracketMap:
-                stack.append(c)
-                continue
-            # TODO: If 'c' is a closing bracket, check if it matches the top of the stack. 
-            # If it doesn't match or stack is empty, return False. Otherwise, pop from stack.
-            
-        return not stack
-\`\`\`
-
 Return ONLY the transformed Python code block.`;
 
   try {
     const response = await LLMService.generateContent(prompt);
-    console.log(`\n--- LLM Output for "${question.title}" ---`);
-    console.log(response);
-    console.log('-------------------------------------------\n');
-    // Extract code block
     const match = response.match(/```python\n([\s\S]*?)```/) || response.match(/```\n([\s\S]*?)```/) || response.match(/class [\s\S]*/);
     let code = match ? (Array.isArray(match) ? match[match.length - 1] : match[0]) : response;
     code = code.replace(/```python\n|```/g, '').trim();
@@ -101,43 +63,17 @@ Return ONLY the transformed Python code block.`;
   }
 }
 
-async function processQuestion(q) {
-  if (q.category === 'System Design') return;
-  console.log(`Processing: ${q.title}...`);
-  const scaffold = await generateScaffold(q);
-  if (scaffold) {
-    q.practice_scaffold = scaffold;
-    await q.save();
-    console.log(`✅ Updated: ${q.title}`);
-  } else {
-    console.log(`❌ Failed: ${q.title}`);
-  }
-}
-
 async function run() {
-  console.log('🚀 Starting scaffold generation (max 4 concurrent)...');
-  const questions = await Question.findAll();
-  const eligible = questions.filter(q => q.category !== 'System Design');
-  console.log(`Found ${eligible.length} questions to process.`);
-
-  // Promise pool: always keep up to CONCURRENCY tasks running
-  const pool = new Set();
-  let completed = 0;
-
-  for (const q of eligible) {
-    const p = processQuestion(q).finally(() => {
-      pool.delete(p);
-      completed++;
-      console.log(`[${completed}/${eligible.length}] Task completed`);
-    });
-    pool.add(p);
-    if (pool.size >= CONCURRENCY) await Promise.race(pool);
+  const q = await Question.findOne({ where: { title: '3Sum' } }); // Use 3Sum as it's more complex
+  if (q) {
+    console.log(`Processing: ${q.title}...`);
+    const scaffold = await generateScaffold(q);
+    if (scaffold) {
+      console.log('--- REGENERATED SCAFFOLD ---');
+      console.log(scaffold);
+      console.log('----------------------------');
+    }
   }
-
-  // Drain remaining tasks
-  if (pool.size > 0) await Promise.all(pool);
-
-  console.log('✨ Finished generating scaffolds!');
   process.exit(0);
 }
 

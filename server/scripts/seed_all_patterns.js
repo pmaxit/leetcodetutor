@@ -124,10 +124,24 @@ const allQuestions = [
 
 async function seed() {
   try {
-    await sequelize.sync({ force: true });
-    console.log("Database synced.");
-    await Question.bulkCreate(allQuestions);
-    console.log("Crawl-based curriculum seeded successfully!");
+    await sequelize.authenticate();
+    console.log("Connected to DB.");
+
+    for (const q of allQuestions) {
+      // Use findOrCreate to avoid duplicates and prevent table deletion
+      const [question, created] = await Question.findOrCreate({
+        where: { title: q.title },
+        defaults: q
+      });
+      
+      if (created) {
+        console.log(`✅ Created: ${q.title}`);
+      } else {
+        console.log(`⏭️  Skipped (exists): ${q.title}`);
+      }
+    }
+
+    console.log("Seeding complete!");
     process.exit(0);
   } catch (error) {
     console.error("Seeding failed:", error);
