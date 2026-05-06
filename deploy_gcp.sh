@@ -48,31 +48,42 @@ else
     echo -e "${RED}⚠️  No .env file found. Deploying with default environment variables.${NC}"
 fi
 
-# Create a temporary env-vars file (Cloud Run format, not shell format)
-TEMP_ENV_FILE=".env.cloud-run"
-cat > "$TEMP_ENV_FILE" <<EOF
-GEMINI_API_KEY=$GEMINI_API_KEY
-OPENROUTER_API_KEY=$OPENROUTER_API_KEY
-OPENROUTER_FALLBACKS=$OPENROUTER_FALLBACKS
-OPENROUTER_URL=${OPENROUTER_URL:-https://openrouter.ai/api/v1}
-LM_STUDIO_URL=$LM_STUDIO_URL
-LM_STUDIO_KEY=$LM_STUDIO_KEY
-LM_STUDIO_MODEL=$LM_STUDIO_MODEL
-LLM_BASE_URL=$LLM_BASE_URL
-LLM_API_KEY=$LLM_API_KEY
-LLM_MODEL=$LLM_MODEL
-LLM_ENABLE_TOOLS=${LLM_ENABLE_TOOLS:-false}
-TAVILY_API_KEY=$TAVILY_API_KEY
-DB_HOST=$DB_HOST
-DB_USER=$DB_USER
-DB_PASSWORD=$DB_PASSWORD
-DB_NAME=$DB_NAME
-DB_DIALECT=${DB_DIALECT:-mysql}
-DB_SOCKET_PATH=/cloudsql/adveralabs:us-central1:adveralabs-mysql
-NODE_ENV=production
-EOF
+# Create a temporary JSON env-vars file (Cloud Run requires YAML/JSON format)
+TEMP_ENV_FILE=".env.cloud-run.json"
 
-echo "Deploying with environment variables from $TEMP_ENV_FILE"
+python3 << 'PYTHON_EOF'
+import json
+import os
+
+env_vars = {
+    "GEMINI_API_KEY": os.environ.get("GEMINI_API_KEY", ""),
+    "OPENROUTER_API_KEY": os.environ.get("OPENROUTER_API_KEY", ""),
+    "OPENROUTER_FALLBACKS": os.environ.get("OPENROUTER_FALLBACKS", ""),
+    "OPENROUTER_URL": os.environ.get("OPENROUTER_URL", "https://openrouter.ai/api/v1"),
+    "LM_STUDIO_URL": os.environ.get("LM_STUDIO_URL", ""),
+    "LM_STUDIO_KEY": os.environ.get("LM_STUDIO_KEY", ""),
+    "LM_STUDIO_MODEL": os.environ.get("LM_STUDIO_MODEL", ""),
+    "LLM_BASE_URL": os.environ.get("LLM_BASE_URL", ""),
+    "LLM_API_KEY": os.environ.get("LLM_API_KEY", ""),
+    "LLM_MODEL": os.environ.get("LLM_MODEL", ""),
+    "LLM_ENABLE_TOOLS": os.environ.get("LLM_ENABLE_TOOLS", "false"),
+    "TAVILY_API_KEY": os.environ.get("TAVILY_API_KEY", ""),
+    "DB_HOST": os.environ.get("DB_HOST", ""),
+    "DB_USER": os.environ.get("DB_USER", ""),
+    "DB_PASSWORD": os.environ.get("DB_PASSWORD", ""),
+    "DB_NAME": os.environ.get("DB_NAME", ""),
+    "DB_DIALECT": os.environ.get("DB_DIALECT", "mysql"),
+    "DB_SOCKET_PATH": "/cloudsql/adveralabs:us-central1:adveralabs-mysql",
+    "NODE_ENV": "production"
+}
+
+with open(".env.cloud-run.json", "w") as f:
+    json.dump(env_vars, f, indent=2)
+
+print("✅ Created .env.cloud-run.json")
+PYTHON_EOF
+
+echo "Deploying with environment variables..."
 
 gcloud run deploy $SERVICE_NAME \
     --image $IMAGE_NAME \
@@ -84,10 +95,10 @@ gcloud run deploy $SERVICE_NAME \
     --timeout 120 \
     --cpu 2 \
     --memory 2Gi \
-    --env-vars-file "$TEMP_ENV_FILE"
+    --env-vars-file ".env.cloud-run.json"
 
 # Clean up temp file
-rm "$TEMP_ENV_FILE"
+rm -f ".env.cloud-run.json"
 
 echo -e "\n${GREEN}════════════════════════════════════════════════════════════${NC}"
 echo -e "${GREEN}🎉 DEPLOYMENT COMPLETE!${NC}"
