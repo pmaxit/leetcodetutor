@@ -507,7 +507,7 @@ app.post('/api/practice/save', authenticateToken, async (req, res) => {
       schedule: idOnlySchedule,
       newPerDay,
       pastPerDay,
-      user_id: req.user.id,
+      userId: req.user.id,
       progress: {}
     });
 
@@ -620,15 +620,19 @@ app.put('/api/practice/session/:id/rename', authenticateToken, async (req, res) 
 
 // Delete/reset a practice session
 app.delete('/api/practice/session/:id', authenticateToken, async (req, res) => {
+  const { id } = req.params;
+  console.log(`🗑 DELETE request for session ${id} from user ${req.user.id}`);
   try {
     const session = await PracticeSession.findOne({
-      where: { id: req.params.id, userId: req.user.id }
+      where: { id, userId: req.user.id }
     });
     if (!session) {
+      console.log(`❌ Session ${id} not found for user ${req.user.id}`);
       return res.status(404).json({ error: 'Session not found' });
     }
 
     await session.destroy();
+    console.log(`✅ Session ${id} deleted successfully`);
     
     // Reset all code when resetting a session
     await QuestionStatus.update({ user_code: null }, { where: { user_id: req.user.id } });
