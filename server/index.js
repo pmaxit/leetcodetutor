@@ -847,7 +847,7 @@ const startServer = async () => {
 
     // Sync all models
     console.log('Syncing database models...');
-    await sequelize.sync({ alter: false });
+    await sequelize.sync({ alter: true });
     console.log('✅ Database models synced');
 
     // Seed test user
