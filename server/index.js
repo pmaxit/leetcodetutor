@@ -105,7 +105,7 @@ app.post('/api/auth/login', async (req, res) => {
 // Get all question statuses as object
 app.get('/api/question-status', authenticateToken, async (req, res) => {
   try {
-    const statuses = await QuestionStatus.findAll({ where: { userId: req.user.id } });
+    const statuses = await QuestionStatus.findAll({ where: { user_id: req.user.id } });
     const statusMap = {};
     statuses.forEach(s => {
       statusMap[s.question_id] = { status: s.status, user_code: s.user_code };
@@ -128,7 +128,7 @@ app.put('/api/question-status/:questionId', authenticateToken, async (req, res) 
     }
 
     const [statusRecord] = await QuestionStatus.findOrCreate({
-      where: { question_id: questionId, userId: req.user.id },
+      where: { question_id: questionId, user_id: req.user.id },
       defaults: { status, updatedAt: new Date() }
     });
 
@@ -286,31 +286,46 @@ app.post('/api/chat', authenticateToken, async (req, res) => {
   }
 });
 
+const codeDebounceTimers = new Map();
+
 app.post('/api/code', authenticateToken, async (req, res) => {
   const { code, selectedQuestion } = req.body;
   const session = getSession(selectedQuestion?.id, req.user.id, 'DSA');
-  
-  session.updateState({ 
+
+  session.updateState({
     codeBuffer: code,
-    selectedQuestion: selectedQuestion || session.state.selectedQuestion 
+    selectedQuestion: selectedQuestion || session.state.selectedQuestion
   });
-  
+
   if (selectedQuestion?.id) {
-    try {
-      const [statusRecord] = await QuestionStatus.findOrCreate({
-        where: { question_id: selectedQuestion.id, userId: req.user.id },
-        defaults: { status: 'needs_review', user_code: code, updatedAt: new Date() }
-      });
-      if (!statusRecord.isNewRecord) {
-        statusRecord.user_code = code;
-        statusRecord.updatedAt = new Date();
-        await statusRecord.save();
-      }
-    } catch (err) {
-      console.error('Failed to save user code:', err);
+    const timerId = `${req.user.id}_${selectedQuestion.id}`;
+
+    // Clear previous timer
+    if (codeDebounceTimers.has(timerId)) {
+      clearTimeout(codeDebounceTimers.get(timerId));
     }
+
+    // Set new debounced save (500ms delay)
+    const timer = setTimeout(async () => {
+      try {
+        const [statusRecord] = await QuestionStatus.findOrCreate({
+          where: { question_id: selectedQuestion.id, user_id: req.user.id },
+          defaults: { status: 'needs_review', user_code: code, updatedAt: new Date() }
+        });
+        if (!statusRecord.isNewRecord) {
+          statusRecord.user_code = code;
+          statusRecord.updatedAt = new Date();
+          await statusRecord.save();
+        }
+      } catch (err) {
+        console.error('Failed to save user code:', err);
+      }
+      codeDebounceTimers.delete(timerId);
+    }, 500);
+
+    codeDebounceTimers.set(timerId, timer);
   }
-  
+
   const feedback = await proctor.analyzeCode(code, { problem: selectedQuestion?.title });
   res.json({ feedback, state: session.getSummary() });
 });
@@ -318,8 +333,8 @@ app.post('/api/code', authenticateToken, async (req, res) => {
 app.post('/api/code/reset', authenticateToken, async (req, res) => {
   const { questionId } = req.body;
   try {
-    const statusRecord = await QuestionStatus.findOne({ 
-      where: { question_id: questionId, userId: req.user.id } 
+    const statusRecord = await QuestionStatus.findOne({
+      where: { question_id: questionId, user_id: req.user.id }
     });
     if (statusRecord) {
       statusRecord.user_code = null;
@@ -333,7 +348,7 @@ app.post('/api/code/reset', authenticateToken, async (req, res) => {
 
 app.post('/api/code/reset-all', authenticateToken, async (req, res) => {
   try {
-    await QuestionStatus.update({ user_code: null }, { where: { userId: req.user.id } });
+    await QuestionStatus.update({ user_code: null }, { where: { user_id: req.user.id } });
     res.json({ success: true });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -497,7 +512,7 @@ app.post('/api/practice/save', authenticateToken, async (req, res) => {
     });
 
     // Reset all code when creating a new session
-    await QuestionStatus.update({ user_code: null }, { where: { userId: req.user.id } });
+    await QuestionStatus.update({ user_code: null }, { where: { user_id: req.user.id } });
 
     res.json({ success: true, session });
   } catch (error) {
@@ -616,7 +631,7 @@ app.delete('/api/practice/session/:id', authenticateToken, async (req, res) => {
     await session.destroy();
     
     // Reset all code when resetting a session
-    await QuestionStatus.update({ user_code: null }, { where: { userId: req.user.id } });
+    await QuestionStatus.update({ user_code: null }, { where: { user_id: req.user.id } });
     
     res.json({ success: true, message: 'Session deleted' });
   } catch (error) {
