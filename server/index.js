@@ -526,7 +526,7 @@ app.get('/api/practice/sessions', authenticateToken, async (req, res) => {
   try {
     const sessions = await PracticeSession.findAll({
       where: { userId: req.user.id },
-      attributes: ['id', 'sessionName', 'newPerDay', 'pastPerDay', 'createdAt', 'updatedAt'],
+      attributes: ['id', 'sessionName', 'newPerDay', 'pastPerDay', 'userId', 'createdAt', 'updatedAt'],
       order: [['createdAt', 'DESC']]
     });
     res.json(sessions);
@@ -823,23 +823,56 @@ app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, '../client/dist/index.html'));
 });
 
+// Health check endpoint for Cloud Run
+app.get('/health', (req, res) => {
+  res.status(200).json({ status: 'ok', timestamp: new Date().toISOString() });
+});
+
 // Start log streamer
 LogStreamer.start();
 
 const PORT = process.env.PORT || 3005;
 const HOST = '0.0.0.0';
-app.listen(PORT, HOST, async () => {
+
+// Initialize database and start server
+const startServer = async () => {
   try {
-    const hashed = await bcrypt.hash('test123', 10);
-    await User.findOrCreate({
-      where: { email: 'test@mailnator.io' },
-      defaults: { passwordHash: hashed }
+    // Import database after requiring models
+    const sequelize = require('./src/models/db');
+
+    // Test database connection
+    console.log('Testing database connection...');
+    await sequelize.authenticate();
+    console.log('✅ Database connected successfully');
+
+    // Sync all models
+    console.log('Syncing database models...');
+    await sequelize.sync({ alter: false });
+    console.log('✅ Database models synced');
+
+    // Seed test user
+    try {
+      const hashed = await bcrypt.hash('test123', 10);
+      await User.findOrCreate({
+        where: { email: 'test@mailnator.io' },
+        defaults: { passwordHash: hashed }
+      });
+      console.log(`✅ Test user seeded/ready`);
+    } catch (err) {
+      console.error('Error seeding test user:', err);
+    }
+
+    // Start listening
+    app.listen(PORT, HOST, () => {
+      console.log(`Server running on http://${HOST}:${PORT}`);
+      console.log(`📊 Log streaming available at /api/logs/stream`);
+      console.log(`🏥 Health check available at /health`);
     });
-    console.log(`✅ Test user seeded/ready`);
-  } catch (err) {
-    console.error('Error seeding test user:', err);
+  } catch (error) {
+    console.error('❌ Failed to start server:', error);
+    process.exit(1);
   }
-  console.log(`Server running on http://${HOST}:${PORT}`);
-  console.log(`📊 Log streaming available at /api/logs/stream`);
-});
+};
+
+startServer();
 

@@ -10,11 +10,13 @@ const PracticeSession = sequelize.define('PracticeSession', {
   sessionName: {
     type: DataTypes.STRING,
     allowNull: false,
-    unique: true
+    unique: true,
+    field: 'session_name'
   },
   userId: {
     type: DataTypes.INTEGER,
-    allowNull: true
+    allowNull: true,
+    field: 'user_id'
   },
   newPerDay: {
     type: DataTypes.INTEGER,
@@ -46,14 +48,5 @@ const PracticeSession = sequelize.define('PracticeSession', {
   tableName: 'practice_sessions',
   timestamps: true
 });
-
-// Sync the model with the database
-(async () => {
-  try {
-    await sequelize.sync({ alter: false });
-  } catch (err) {
-    console.error('Error syncing PracticeSession model:', err);
-  }
-})();
 
 module.exports = { PracticeSession };

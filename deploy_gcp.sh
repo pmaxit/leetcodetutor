@@ -55,6 +55,9 @@ gcloud run deploy $SERVICE_NAME \
     --allow-unauthenticated \
     --add-cloudsql-instances adveralabs:us-central1:adveralabs-mysql \
     --port 8080 \
+    --timeout 120 \
+    --cpu 2 \
+    --memory 2Gi \
     --set-env-vars "GEMINI_API_KEY=$GEMINI_API_KEY,OPENROUTER_API_KEY=$OPENROUTER_API_KEY,LLM_BASE_URL=$LLM_BASE_URL,LLM_API_KEY=$LLM_API_KEY,LLM_MODEL=$LLM_MODEL,LLM_ENABLE_TOOLS=$LLM_ENABLE_TOOLS,TAVILY_API_KEY=$TAVILY_API_KEY,DB_HOST=$DB_HOST,DB_USER=$DB_USER,DB_PASSWORD=$DB_PASSWORD,DB_NAME=$DB_NAME,DB_DIALECT=$DB_DIALECT,DB_SOCKET_PATH=/cloudsql/adveralabs:us-central1:adveralabs-mysql"
 
 echo -e "\n${GREEN}════════════════════════════════════════════════════════════${NC}"

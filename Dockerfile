@@ -30,5 +30,9 @@ ENV LLM_ENABLE_TOOLS=false
 # Expose the port (informative for local use)
 EXPOSE 8080
 
+# Add healthcheck
+HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
+  CMD node -e "require('http').get('http://localhost:8080/health', (r) => {if (r.statusCode !== 200) throw new Error(r.statusCode)})"
+
 # Start the server
 CMD ["node", "server/index.js"]

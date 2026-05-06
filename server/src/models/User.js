@@ -22,13 +22,4 @@ const User = sequelize.define('User', {
   timestamps: true
 });
 
-// Sync the model with the database
-(async () => {
-  try {
-    await sequelize.sync();
-  } catch (err) {
-    console.error('Error syncing User model:', err);
-  }
-})();
-
 module.exports = { User };
