@@ -364,6 +364,20 @@ export default function SystemDesignView({ question }) {
                   🔗 View Full System Design Solution
                 </a>
               )}
+              {question.youtube_url && (
+                <div className="video-embed-container" style={{ marginTop: '1rem' }}>
+                  <iframe
+                    width="100%"
+                    height="200"
+                    src={`https://www.youtube.com/embed/${question.youtube_url.split('v=')[1]?.split('&')[0] || question.youtube_url.split('/').pop()}`}
+                    title="YouTube video player"
+                    frameBorder="0"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                    allowFullScreen
+                    style={{ borderRadius: '8px', border: '1px solid var(--border)' }}
+                  ></iframe>
+                </div>
+              )}
             </div>
           </div>
         )}

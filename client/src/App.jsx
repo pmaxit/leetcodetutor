@@ -13,6 +13,7 @@ import './index.css';
 import SystemDesignView from './SystemDesignView';
 import DebugBar from './DebugBar';
 import { formatProblemDescription } from './utils/formatProblemDescription';
+import { formatLeetcodeHTML } from './utils/formatLeetcodeHTML';
 
 const API = import.meta.env.PROD ? '' : 'http://127.0.0.1:3005';
 
@@ -40,6 +41,7 @@ function App() {
   const [codeFeedback, setCodeFeedback] = useState([]);
   const [report, setReport] = useState(null);
   const [isAiLoading, setIsAiLoading] = useState(false);
+  const [problemPaneWidth, setProblemPaneWidth] = useState(45);
   const [questions, setQuestions] = useState([]);
   const [selectedQuestion, setSelectedQuestion] = useState(null);
   const [constraints, setConstraints] = useState([]);
@@ -47,6 +49,7 @@ function App() {
   const [dsaExpanded, setDsaExpanded] = useState(true);
   const chatEndRef = useRef(null);
   const tldrawEditor = useRef(null);
+  const [isDraggingDivider, setIsDraggingDivider] = useState(false);
 
   // ─── System Design State ─────────────────────────────────────────────────────
   const [sdQuestions, setSdQuestions] = useState([]);
@@ -69,6 +72,7 @@ function App() {
   const [showLoadSession, setShowLoadSession] = useState(false);
   const [renamingSessionId, setRenamingSessionId] = useState(null);
   const [renamingSessionName, setRenamingSessionName] = useState('');
+  const [questionStatuses, setQuestionStatuses] = useState({});
 
   const checkLLMHealth = async () => {
     setLlmHealth({ status: 'checking', message: 'Checking LM Studio...' });
@@ -89,6 +93,36 @@ function App() {
   const scrollToBottom = () => {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
+
+  const handleDividerMouseDown = () => {
+    setIsDraggingDivider(true);
+  };
+
+  useEffect(() => {
+    if (!isDraggingDivider) return;
+
+    const handleMouseMove = (e) => {
+      const workspace = document.querySelector('.split-view');
+      if (!workspace) return;
+      const rect = workspace.getBoundingClientRect();
+      const newWidth = ((e.clientX - rect.left) / rect.width) * 100;
+      if (newWidth > 20 && newWidth < 80) {
+        setProblemPaneWidth(newWidth);
+      }
+    };
+
+    const handleMouseUp = () => {
+      setIsDraggingDivider(false);
+    };
+
+    document.addEventListener('mousemove', handleMouseMove);
+    document.addEventListener('mouseup', handleMouseUp);
+
+    return () => {
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+    };
+  }, [isDraggingDivider]);
 
   useEffect(() => {
     scrollToBottom();
@@ -134,6 +168,11 @@ function App() {
         });
         const sData = await sRes.json();
         setSession(sData.state);
+
+        // Load question statuses
+        const statusRes = await fetch(`${API}/api/question-status`);
+        const statusData = await statusRes.json();
+        setQuestionStatuses(statusData);
 
         setMessages([
           {
@@ -550,6 +589,23 @@ function App() {
     }
   };
 
+  const handleSetQuestionStatus = async (questionId, status) => {
+    const newStatuses = {
+      ...questionStatuses,
+      [questionId]: status,
+    };
+    setQuestionStatuses(newStatuses);
+
+    try {
+      await fetch(`${API}/api/question-status/${questionId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status }),
+      });
+    } catch (error) {
+      console.error('Update question status error:', error);
+    }
+  };
 
   const renderProblemDescription = () => {
     if (!selectedQuestion) {
@@ -563,9 +619,15 @@ function App() {
       <div className="problem-content-wrapper">
         <div className="problem-statement-html">
           {isHTML ? (
-            <div dangerouslySetInnerHTML={{ __html: description }} />
+            <div dangerouslySetInnerHTML={{ __html: formatLeetcodeHTML(description) }} />
           ) : (
-            <ReactMarkdown remarkPlugins={[remarkGfm]}>
+            <ReactMarkdown
+              remarkPlugins={[remarkGfm]}
+              components={{
+                p: ({node, ...props}) => <p style={{ marginBottom: '1rem', lineHeight: '1.6' }} {...props} />,
+                strong: ({node, ...props}) => <strong style={{ color: 'var(--accent)', fontWeight: 600 }} {...props} />,
+              }}
+            >
               {formatProblemDescription(description)}
             </ReactMarkdown>
           )}
@@ -689,9 +751,10 @@ function App() {
                         {qs.map((q) => (
                           <div
                             key={q.id}
-                            className={`tree-item ${mode === 'dsa' && selectedQuestion?.id === q.id ? 'active' : ''}`}
+                            className={`tree-item ${mode === 'dsa' && selectedQuestion?.id === q.id ? 'active' : ''} ${questionStatuses[q.id] || 'needs-review'}`}
                             onClick={() => { setMode('dsa'); handleSelectQuestion(q); }}
                           >
+                            <span className={`status-dot status-dot--${questionStatuses[q.id] || 'needs_review'}`} />
                             {q.title}
                           </div>
                         ))}
@@ -796,9 +859,10 @@ function App() {
                                     {dayQuestions.map((q) => (
                                       <div
                                         key={q.id}
-                                        className={`tree-item practice-question ${practiceProgress[q.id] ? 'done' : ''}`}
+                                        className={`tree-item practice-question ${mode === 'dsa' && selectedQuestion?.id === q.id ? 'active' : ''} ${practiceProgress[q.id] ? 'done' : ''} ${questionStatuses[q.id] || 'needs-review'}`}
                                         onClick={() => { setMode('dsa'); handleSelectQuestion(q); }}
                                       >
+                                        <span className={`status-dot status-dot--${questionStatuses[q.id] || 'needs_review'}`} />
                                         {practiceProgress[q.id] && <span className="done-check">✓</span>}
                                         {q.title}
                                       </div>
@@ -936,17 +1000,34 @@ function App() {
           {/* Left: Code and Problem Area */}
           <div style={{ flex: 1, display: 'flex', flexDirection: 'row', minWidth: 0 }}>
             {/* Top Section: Problem Description (Always Visible) */}
-            <section className="problem-pane">
+            <section className="problem-pane" style={{ width: `${problemPaneWidth}%`, minWidth: 0, overflow: 'auto' }}>
               <div className="workspace-header">
                 <div className="panel-header" style={{ background: 'transparent', padding: '0' }}>Problem Description</div>
+                {selectedQuestion && (
+                  <button
+                    className={`status-toggle-btn ${questionStatuses[selectedQuestion.id] === 'done' ? 'done' : 'needs-review'}`}
+                    onClick={() => handleSetQuestionStatus(selectedQuestion.id,
+                      questionStatuses[selectedQuestion.id] === 'done' ? 'needs_review' : 'done'
+                    )}
+                  >
+                    {questionStatuses[selectedQuestion.id] === 'done' ? '✓ Done' : '○ Needs Review'}
+                  </button>
+                )}
               </div>
               <div className="problem-description-view">
                 {renderProblemDescription()}
               </div>
             </section>
 
+            {/* Draggable Divider */}
+            <div
+              className="resize-divider"
+              onMouseDown={handleDividerMouseDown}
+              style={{ cursor: isDraggingDivider ? 'col-resize' : 'default' }}
+            />
+
             {/* Bottom Section: Interactive Area (Tabs) */}
-            <section className="action-pane">
+            <section className="action-pane" style={{ flex: 1, minWidth: 0, overflow: 'auto' }}>
               <div className="workspace-header">
                 <div className="tabs">
                   <div

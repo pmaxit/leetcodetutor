@@ -6,14 +6,14 @@ require('dotenv').config();
 class LLMService {
   constructor() {
     const useGemini = !!process.env.GEMINI_API_KEY;
-    const baseURL = process.env.LLM_BASE_URL || (useGemini ? "https://generativelanguage.googleapis.com/v1beta/openai/" : "http://localhost:1234/v1");
-    const apiKey = process.env.LLM_API_KEY || process.env.GEMINI_API_KEY || "lm-studio";
-    const model = process.env.LLM_MODEL || (useGemini ? "gemini-1.5-flash" : "google/gemma-3n-e4b");
+    const baseURL = process.env.LLM_BASE_URL || (useGemini ? "https://generativelanguage.googleapis.com/v1beta/openai/" : "https://openrouter.ai/api/v1");
+    const apiKey = process.env.OPENROUTER_API_KEY || process.env.LLM_API_KEY || process.env.GEMINI_API_KEY || "sk-or-v1-";
+    const model = process.env.LLM_MODEL || (useGemini ? "gemini-1.5-flash" : "google/gemma-3-4b-it");
 
     console.log("\n" + "=".repeat(60));
     console.log("🤖 LLMService Initialization");
     console.log("=".repeat(60));
-    console.log(`📍 LLM Provider: ${useGemini ? "🔴 Google Gemini (Cloud)" : "🟢 LM Studio (Local)"}`);
+    console.log(`📍 LLM Provider: ${useGemini ? "🔴 Google Gemini (Cloud)" : "🟢 OpenRouter (Cloud)"}`);
     console.log(`🌐 Base URL: ${baseURL}`);
     console.log(`🏷️  Model: ${model}`);
     console.log("=".repeat(60) + "\n");
@@ -21,6 +21,10 @@ class LLMService {
     this.client = new OpenAI({
       baseURL,
       apiKey,
+      defaultHeaders: {
+        'HTTP-Referer': 'https://ai-interview-platform.local',
+        'X-Title': 'AI Interview Platform',
+      },
     });
     this.model = model;
     
@@ -62,11 +66,11 @@ class LLMService {
     console.log(`⏰ Timestamp: ${new Date().toISOString()}`);
     console.log(`📝 Message count: ${messages.length}`);
     console.log(`🏷️  Model: ${this.model}`);
-    console.log(`🌐 Base URL: http://localhost:1234/v1`);
+    console.log(`🌐 Base URL: ${process.env.LLM_BASE_URL}`);
     console.log("=".repeat(60));
 
     try {
-      console.log("📤 Sending request to LM Studio...");
+      console.log("📤 Sending request to OpenRouter...");
       const response = await this.client.chat.completions.create({
         model: this.model,
         messages: messages,
@@ -115,9 +119,9 @@ class LLMService {
 
       // Check if it's a connection error
       if (error.code === 'ECONNREFUSED' || error.message.includes('ECONNREFUSED')) {
-        console.error("🔴 CONNECTION REFUSED - LM Studio is not running!");
-        console.error("💡 Make sure LM Studio is running on http://localhost:1234");
-        throw new Error("LM Studio not responding. Is it running on localhost:1234?");
+        console.error("🔴 CONNECTION REFUSED - OpenRouter is not responding!");
+        console.error("💡 Check your OPENROUTER_API_KEY and internet connection");
+        throw new Error("OpenRouter not responding. Check OPENROUTER_API_KEY and network.");
       }
 
       throw error;
@@ -193,11 +197,16 @@ class LLMService {
     try {
       const text = await this.generateContent(prompt);
       const cleanedText = text.replace(/```json|```/g, '').trim();
+
+      // Extract JSON array from text
+      const jsonMatch = cleanedText.match(/\[[\s\S]*\]/);
+      const jsonStr = jsonMatch ? jsonMatch[0] : cleanedText;
+
       try {
-        const fixedText = this.fixJsonEscaping(cleanedText);
+        const fixedText = this.fixJsonEscaping(jsonStr);
         return JSON.parse(fixedText);
       } catch (parseError) {
-        console.error("Failed to parse code analysis JSON. Raw text:", cleanedText);
+        console.error("Failed to parse code analysis JSON. Raw text:", jsonStr);
         return [{ type: 'error', message: `Err: Parse failed` }];
       }
     } catch (error) {
@@ -232,11 +241,16 @@ class LLMService {
     try {
       const text = await this.generateContent(prompt);
       const cleanedText = text.replace(/```json|```/g, '').trim();
+
+      // Extract JSON array from text
+      const jsonMatch = cleanedText.match(/\[[\s\S]*\]/);
+      const jsonStr = jsonMatch ? jsonMatch[0] : cleanedText;
+
       try {
-        const fixedText = this.fixJsonEscaping(cleanedText);
+        const fixedText = this.fixJsonEscaping(jsonStr);
         return JSON.parse(fixedText);
       } catch (parseError) {
-        console.error("Failed to parse whiteboard analysis JSON. Raw text:", cleanedText);
+        console.error("Failed to parse whiteboard analysis JSON. Raw text:", jsonStr);
         return [{ type: 'error', message: `Err: Parse failed` }];
       }
     } catch (error) {
@@ -337,11 +351,16 @@ class LLMService {
     try {
       const text = await this.generateContent(prompt);
       const cleanedText = text.replace(/```json|```/g, '').trim();
+
+      // Extract JSON array from text (find [ and ])
+      const jsonMatch = cleanedText.match(/\[[\s\S]*\]/);
+      const jsonStr = jsonMatch ? jsonMatch[0] : cleanedText;
+
       try {
-        const fixedText = this.fixJsonEscaping(cleanedText);
+        const fixedText = this.fixJsonEscaping(jsonStr);
         return JSON.parse(fixedText);
       } catch (parseError) {
-        console.error("Failed to parse constraints JSON. Raw text:", cleanedText);
+        console.error("Failed to parse constraints JSON. Raw text:", jsonStr);
         return [];
       }
     } catch (error) {
@@ -467,7 +486,12 @@ class LLMService {
     try {
       const text = await this.generateContent(prompt);
       const cleanedText = text.replace(/```json|```/g, '').trim();
-      const fixedText = this.fixJsonEscaping(cleanedText);
+
+      // Extract JSON object from text (find { and })
+      const jsonMatch = cleanedText.match(/\{[\s\S]*\}/);
+      const jsonStr = jsonMatch ? jsonMatch[0] : cleanedText;
+
+      const fixedText = this.fixJsonEscaping(jsonStr);
       return JSON.parse(fixedText);
     } catch (error) {
       console.error("Gap Analysis Error:", error);

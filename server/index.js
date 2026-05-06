@@ -9,6 +9,7 @@ const LLMService = require('./src/services/LLMService');
 const { Question } = require('./src/models/Question');
 const { SYSTEM_DESIGN_QUESTIONS } = require('./src/data/system_design_questions');
 const { PracticeSession } = require('./src/models/PracticeSession');
+const { QuestionStatus } = require('./src/models/QuestionStatus');
 
 const path = require('path');
 const LogStreamer = require('./src/services/LogStreamer');
@@ -63,10 +64,10 @@ app.get('/api/health', async (req, res) => {
     console.error("❌ Health Check Failed:", error.message);
     res.status(503).json({
       status: 'unhealthy',
-      llmstudio: 'disconnected',
+      llm: 'disconnected',
       error: error.message,
       timestamp: new Date().toISOString(),
-      hint: 'Make sure LM Studio is running on http://localhost:1234'
+      hint: 'Check OpenRouter API key in .env and your internet connection'
     });
   }
 });
@@ -77,6 +78,49 @@ app.get('/api/questions', async (req, res) => {
     res.json(questions.map(mapQuestion));
   } catch (error) {
     console.error('Fetch questions error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Get all question statuses as object
+app.get('/api/question-status', async (req, res) => {
+  try {
+    const statuses = await QuestionStatus.findAll();
+    const statusMap = {};
+    statuses.forEach(s => {
+      statusMap[s.question_id] = s.status;
+    });
+    res.json(statusMap);
+  } catch (error) {
+    console.error('Fetch question status error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Update question status (create or update)
+app.put('/api/question-status/:questionId', async (req, res) => {
+  try {
+    const { questionId } = req.params;
+    const { status } = req.body;
+
+    if (!['needs_review', 'done'].includes(status)) {
+      return res.status(400).json({ error: 'Invalid status value' });
+    }
+
+    const [statusRecord] = await QuestionStatus.findOrCreate({
+      where: { question_id: questionId },
+      defaults: { status, updatedAt: new Date() }
+    });
+
+    if (!statusRecord.isNewRecord) {
+      statusRecord.status = status;
+      statusRecord.updatedAt = new Date();
+      await statusRecord.save();
+    }
+
+    res.json({ success: true, questionId, status });
+  } catch (error) {
+    console.error('Update question status error:', error);
     res.status(500).json({ error: error.message });
   }
 });
@@ -206,9 +250,9 @@ app.post('/api/chat', async (req, res) => {
     console.error(`🔧 Full Error:`, error);
     console.error("❌".repeat(30) + "\n");
 
-    if (error.message.includes('ECONNREFUSED') || error.message.includes('LM Studio')) {
+    if (error.message.includes('ECONNREFUSED') || error.message.includes('OpenRouter') || error.message.includes('401') || error.message.includes('403')) {
       sendEvent('error', {
-        message: 'LM Studio connection failed. Please ensure LM Studio is running on localhost:1234',
+        message: 'OpenRouter connection failed. Check your OPENROUTER_API_KEY in .env',
         type: 'connection_error'
       });
     } else {

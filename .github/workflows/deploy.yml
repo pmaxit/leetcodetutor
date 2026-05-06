@@ -1,0 +1,48 @@
+name: Deploy to Cloud Run
+
+on:
+  push:
+    branches:
+      - main
+
+env:
+  PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+  SERVICE_NAME: ai-interview-platform
+  REGION: us-central1
+  IMAGE_NAME: gcr.io/${{ secrets.GCP_PROJECT_ID }}/ai-interview-platform
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Google Auth
+      id: auth
+      uses: google-github-actions/auth@v2
+      with:
+        credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+    - name: Set up Cloud SDK
+      uses: google-github-actions/setup-gcloud@v2
+
+    - name: Authorize Docker
+      run: gcloud auth configure-docker --quiet
+
+    - name: Build and Push Container
+      run: |
+        docker build -t $IMAGE_NAME .
+        docker push $IMAGE_NAME
+
+    - name: Deploy to Cloud Run
+      run: |
+        gcloud run deploy $SERVICE_NAME \
+          --image $IMAGE_NAME \
+          --platform managed \
+          --region $REGION \
+          --allow-unauthenticated \
+          --add-cloudsql-instances adveralabs:us-central1:adveralabs-mysql \
+          --port 8080 \
+          --set-env-vars "OPENROUTER_API_KEY=${{ secrets.OPENROUTER_API_KEY }},LLM_BASE_URL=${{ secrets.LLM_BASE_URL }},LLM_API_KEY=${{ secrets.LLM_API_KEY }},LLM_MODEL=${{ secrets.LLM_MODEL }},LLM_ENABLE_TOOLS=false,DB_HOST=${{ secrets.DB_HOST }},DB_USER=${{ secrets.DB_USER }},DB_PASSWORD=${{ secrets.DB_PASSWORD }},DB_NAME=${{ secrets.DB_NAME }},DB_DIALECT=${{ secrets.DB_DIALECT }},TAVILY_API_KEY=${{ secrets.TAVILY_API_KEY }},DB_SOCKET_PATH=/cloudsql/adveralabs:us-central1:adveralabs-mysql"

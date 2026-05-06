@@ -22,10 +22,13 @@ COPY --from=frontend-builder /app/client/dist ./client/dist
 
 # Set environment to production
 ENV NODE_ENV=production
-ENV PORT=3005
+# Default port for Cloud Run
+ENV PORT=8080
+# Disable tool calling by default (prevents OpenRouter errors on non-tool models)
+ENV LLM_ENABLE_TOOLS=false
 
-# Expose the port the app runs on
-EXPOSE 3005
+# Expose the port (informative for local use)
+EXPOSE 8080
 
 # Start the server
-CMD ["npm", "start"]
+CMD ["node", "server/index.js"]

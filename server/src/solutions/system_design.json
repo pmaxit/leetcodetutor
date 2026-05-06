@@ -1,0 +1,106 @@
+{
+  "Data Modeling for System Design Interviews": {
+    "sla": "latency/qps",
+    "simple_design": [
+      "Relational Database (e.g., PostgreSQL)",
+      "Key-Value Store (e.g., Redis)"
+    ],
+    "complex_design": [
+      "Distributed NoSQL Database (e.g., Cassandra)",
+      "Data Warehouse/Lakehouse (e.g., Snowflake or Spark)"
+    ],
+    "key_questions": [
+      "How do you decide between normalization and denormalization for a specific use case?",
+      "How do you handle data partitioning and sharding to ensure horizontal scalability?"
+    ]
+  },
+  "Networking Essentials for System Design Interviews": {
+    "sla": "latency/qps",
+    "simple_design": [
+      "Load Balancer (L4)",
+      "Web Servers (Stateless)"
+    ],
+    "complex_design": [
+      "Content Delivery Network (CDN)",
+      "Global DNS Routing",
+      "API Gateway with Rate Limiting",
+      "Multi-Region Deployment"
+    ],
+    "key_questions": [
+      "How do you choose between L4 and L7 load balancing?",
+      "How would you design a system to handle geo-distributed traffic for low latency?"
+    ]
+  },
+  "CAP Theorem for System Design Interviews": {
+    "sla": "latency/qps",
+    "simple_design": [
+      "Replicated Key-Value Store (Eventual Consistency)",
+      "Simple Load Balancer"
+    ],
+    "complex_design": [
+      "Distributed Consensus Algorithm (Raft or Paxos)",
+      "Strongly Consistent Distributed Database with Quorum Writes"
+    ],
+    "key_questions": [
+      "How do you define consistency in your specific use case?",
+      "What is the trade-off between latency and consistency when handling network partitions?"
+    ]
+  },
+  "Design a Web Crawler": {
+    "sla": "latency/qps",
+    "simple_design": [
+      "Fetcher Module (Handles HTTP requests)",
+      "URL Queue Manager (FIFO queue for URLs to visit)"
+    ],
+    "complex_design": [
+      "Distributed Worker Pool (Scalable fetching and parsing units)",
+      "Deduplication Service (Using Bloom Filters or distributed cache to track visited URLs)",
+      "Message Queue System (e.g., Kafka) for decoupling fetchers and storage",
+      "Politeness/Rate Limiter Module (To respect server load and avoid bans)"
+    ],
+    "key_questions": [
+      "How do we handle dynamic content rendered by JavaScript?",
+      "How do we manage politeness, rate limiting, and IP rotation to avoid being blocked by target servers?",
+      "How do we ensure fault tolerance and handle failures in the distributed system?"
+    ]
+  },
+  "Vector Databases Deep Dive for System Design Interviews": {
+    "sla": "P95 latency under 100ms for vector search queries; sustained QPS of 10,000+ for ingestion and query operations.",
+    "simple_design": [
+      "API Gateway",
+      "Vector Indexing Service (using a single database instance)",
+      "Query Service (handles similarity search logic)"
+    ],
+    "complex_design": [
+      "Distributed Vector Index Sharding (e.g., using HNSW index partitions across multiple nodes)",
+      "Asynchronous Embedding Generation Pipeline (separate service for high-throughput ingestion)",
+      "Tiered Storage Strategy (hot vectors in memory/SSD, cold vectors in object storage)",
+      "Re-ranking Service (post-retrieval filtering to improve relevance)"
+    ],
+    "key_questions": [
+      "How do you choose between Approximate Nearest Neighbor (ANN) algorithms like HNSW and LSH, considering trade-offs between recall and query latency?",
+      "Design a system to handle billions of vectors with low-latency retrieval. How would you shard the index and manage data consistency during updates?",
+      "Describe the full lifecycle of an embedding: from raw text input to indexed vector storage, focusing on throughput bottlenecks."
+    ]
+  },
+  "Numbers to Know for System Design Interviews": {
+    "sla": "latency P95/P99 qps availability durability",
+    "simple_design": [
+      "load balancer",
+      "redis cache",
+      "sql database",
+      "static file serving"
+    ],
+    "complex_design": [
+      "sharding and partitioning strategies",
+      "message queues (kafka)",
+      "replication strategies (leader follower)",
+      "eventual consistency models"
+    ],
+    "key_questions": [
+      "how do you calculate required capacity for qps",
+      "what are the trade-offs between strong and eventual consistency",
+      "how do you handle database sharding and hot spots"
+    ]
+  }
+}

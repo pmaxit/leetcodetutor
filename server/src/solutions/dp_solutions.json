@@ -496,5 +496,331 @@
       "The function correctly rotates the input array by k positions to the right.",
       "The function modifies the input array in-place as required by the problem description."
     ]
+  },
+  "Number of Atoms": {
+    "reference": "def calculate_atoms(formula):\\n    atom_counts = {}\\n    i = 0\\n    n = len(formula)\\n    while i < n:\\n        element = formula[i]\\n        i += 1\\n        if element.isalpha():\\n            # Identify the element symbol (e.g., Fe, O)\\n            element_symbol = element\\n            count = 1\\n            start_index = i\\n            while i < n and formula[i].isdigit():\\n                i += 1\\n                count = count * 10 + int(formula[i])\\n            \\n            atom_counts[element_symbol] = atom_counts.get(element_symbol, 0) + count\\n        elif element.isdigit():\\n            # This case should ideally not happen if the formula is well-formed (must follow an element)\\n            i += 1\\n            continue\\n    \\n    total_atoms = sum(atom_counts.values())\\n    return total_atoms",
+    "steps": [
+      "step1: Initialize a dictionary to store the count of each unique element found in the formula.",
+      "step2: Iterate through the input formula string character by character, identifying element symbols (letters) and subsequent numerical counts.",
+      "step3: When an element symbol is found, parse the following digits to determine the multiplier for that element.",
+      "step4: Update the count for the identified element in the dictionary. If the element is encountered for the first time, initialize its count.",
+      "step5: After parsing the entire formula, calculate the total number of atoms by summing all the counts stored in the dictionary."
+    ],
+    "success_criteria": [
+      "c1: The function correctly parses chemical formulas containing single-letter and two-letter element symbols along with their stoichiometric coefficients.",
+      "c2: The returned value is the accurate total count of all atoms present in the given formula string."
+    ]
+  },
+  "Core Concepts for System Design Interviews": {
+    "reference": "def longest_common_subsequence(s1, s2):\n    m = len(s1)\n    n = len(s2)\n    \n    # Initialize the DP table\n    dp = [[0 for _ in range(n + 1)] for _ in range(m + 1)]\n    \n    # Fill the DP table\n    for i in range(1, m + 1):\n        for j in range(1, n + 1):\n            if s1[i - 1] == s2[j - 1]:\n                dp[i][j] = 1 + dp[i - 1][j - 1]\n            else:\n                dp[i][j] = max(dp[i - 1][j], dp[i][j - 1])\n    \n    return dp[m][n]",
+    "steps": [
+      "Step 1: Define the DP State. Create a 2D array dp[m+1][n+1] where dp[i][j] stores the length of the Longest Common Subsequence (LCS) between the first i characters of string s1 and the first j characters of string s2.",
+      "Step 2: Define the Transition Logic. Iterate through the table. If the current characters match (s1[i-1] == s2[j-1]), the length is 1 plus the diagonal value (dp[i-1][j-1]). Otherwise, take the maximum length from either the cell above (dp[i-1][j]) or the cell to the left (dp[i][j-1]).",
+      "Step 3: Determine Complexity. The time complexity is O(m*n) where m and n are the lengths of s1 and s2, as we fill an m x n table once."
+    ],
+    "success_criteria": [
+      "C1: Correctness - The function must accurately return the length of the longest common subsequence between the two input strings.",
+      "C2: Efficiency - The solution must exhibit a time complexity of O(m*n) and space complexity of O(m*n) due to the required DP table."
+    ]
+  },
+  "Smallest String Starting From Leaf": {
+    "reference": "'''def smallest_string_starting_from_leaf(tree):\n    \"\"\"Finds the lexicographically smallest string starting from any leaf node in a tree structure.\n\n    Args:\n        tree (dict): Adjacency list representation of the tree, where keys are nodes and values are lists of neighbors.\n\n    Returns:\n        str: The smallest possible string found.\n    \"\"\"\n    # DP state: memo[node] stores the smallest string starting from that node.\n    memo = {} \n\n    def dfs(node):\n        if node in memo: \n            return memo[node]\n\n        # Base case: Leaf node\n        if not tree.get(node):\n            memo[node] = \"\" + str(node) \n            return memo[node]\n\n        # Recursive step: Calculate results for all children\n        child_results = []\n        for neighbor in tree.get(node, []):\n            result = dfs(neighbor)\n            child_results.append(result)\n\n        # Find the lexicographically smallest result among all paths starting from children\n        smallest_child_string = min(child_results)\n\n        # The string starting at 'node' is 'node' concatenated with the smallest child string.\n        current_result = str(node) + smallest_child_string\n        memo[node] = current_result\n        return current_result\n\n    # Start DFS from an arbitrary root (assuming a connected tree)\n    if not tree: \n        return \"\"\n\n    root = list(tree.keys())[0]\n    return dfs(root)'''",
+    "steps": [
+      "Step 1: Define the DP state. The state memo[node] will store the lexicographically smallest string that can be formed starting from that specific node.",
+      "Step 2: Implement a Depth First Search (DFS) function to traverse the tree bottom-up. For any given node, recursively calculate the smallest string resulting from its children.",
+      "Step 3: Establish the base case. If a node is a leaf (has no children), the smallest string starting from it is simply the node's value (character/string representation).",
+      "Step 4: Implement the transition step. For an internal node, recursively call DFS on all neighbors (children). Collect the resulting strings from these recursive calls. Select the lexicographically smallest string among these results.",
+      "Step 5: Construct the final result for the current node by concatenating the current node's value with the selected smallest child string. Store this result in the memoization table and return it."
+    ],
+    "success_criteria": [
+      "C1: The algorithm correctly identifies the lexicographically smallest string path starting from any leaf node.",
+      "C2: The time complexity is O(N * L), where N is the number of nodes and L is the maximum length of the resulting strings, due to the string concatenations and comparisons during the DP process."
+    ]
+  },
+  "Pyramid Transition Matrix": {
+    "reference": "def pyramid_transition_matrix(n):\n    \"\"\"\n    Calculates the transition matrix or path counts for an N-level pyramid structure.\n    This implementation uses Dynamic Programming to count the number of ways\n    to reach each position based on transitions from the previous level.\n    \"\"\"\n    if n <= 0:\n        return []\n\n    # Initialize DP table (list of lists) for N levels\n    dp = [[0] * (i + 1) for i in range(n)]\n\n    # Base case: The top level (level 0) has one way to be at position 0.\n    dp[0][0] = 1\n\n    # Fill the DP table iteratively\n    for i in range(1, n):\n        for j in range(i + 1):\n            # Transition from the left (j-1) and transition from above (j)\n            # Transition from left: dp[i][j-1]\n            if j > 0:\n                dp[i][j] += dp[i][j - 1]\n\n            # Transition from above: dp[i-1][j]\n            dp[i][j] += dp[i - 1][j]\n\n    # The result is the count at the bottom level (level n-1)\n    return dp[n - 1]\n",
+    "steps": [
+      "Step 1: Initialization. Create a DP table of size N x (N+1) to store the number of ways to reach each position in the pyramid.",
+      "Step 2: Base Case Setup. Set the starting condition, typically dp[0][0] = 1, representing the single way to start at the top position.",
+      "Step 3: Iterative Transition. Iterate through the levels (i) and positions (j). Apply the DP recurrence relation: dp[i][j] = dp[i][j-1] + dp[i-1][j], handling boundary conditions (j > 0)."
+    ],
+    "success_criteria": [
+      "C1: Correctness. The function must accurately calculate the total number of valid paths or transition counts for the given pyramid size N.",
+      "C2: Efficiency. The solution must run in O(N^2) time complexity, which is optimal for filling an N-level triangular structure."
+    ]
+  },
+  "Kafka Deep Dive for System Design Interviews": {
+    "reference": "import json\nfrom kafka import KafkaProducer, KafkaConsumer\nimport time\n\n# Configuration\nBOOTSTRAP_SERVERS = 'localhost:9092'\nTOPIC_NAME = 'user_events'\nCONSUMER_GROUP_ID = 'analytics_group'\n\nclass StreamProcessor:\n    def __init__(self):\n        # Producer setup\n        self.producer = KafkaProducer(\n            bootstrap_servers=BOOTSTRAP_SERVERS,\n            value_serializer=lambda v: json.dumps(v).encode('utf-8')\n        )\n        # Consumer setup\n        self.consumer = KafkaConsumer(\n            TOPIC_NAME,\n            bootstrap_servers=BOOTSTRAP_SERVERS,\n            group_id=CONSUMER_GROUP_ID,\n            auto_offset_reset='earliest',\n            value_deserializer=lambda m: json.loads(m.decode('utf-8'))\n        )\n\n    def produce_event(self, data):\n        \"\"\"Sends a message to Kafka.\"\"\"\n        print(\"Producing event:\", data)\n        future = self.producer.send(TOPIC_NAME, value=data)\n        future.get(timeout=10)\n        print(\"Event sent successfully.\")\n\n    def consume_events(self):\n        \"\"\"Consumes events from Kafka using a consumer group.\"\"\"\n        print(\"Starting consumption...\")\n        for message in self.consumer:\n            print(\"Received message:\", message.value)\n            # Simulate processing time\n            time.sleep(0.1)\n\nif __name__ == \"__main__\":\n    processor = StreamProcessor()\n    \n    # 1. Produce data\n    event_data = {\"user_id\": 123,\n                     \"action\": \"login\",\n                     \"timestamp\": time.time()}\n    processor.produce_event(event_data)\n\n    # 2. Consume data (This would run continuously in a real system)\n    # processor.consume_events()\n",
+    "steps": [
+      "Step 1: Topic and Partition Design. Define the Kafka topic based on the data type (e.g., user_events). Determine the number of partitions based on expected throughput and parallelism requirements to ensure horizontal scalability.",
+      "Step 2: Producer Configuration. Implement robust producer logic, ensuring proper serialization (e.g., JSON to bytes) and configuring acknowledgments (acks=all) for high durability guarantees before sending data to the topic.",
+      "Step 3: Consumer Group Strategy. Define a consumer group ID. Use this group ID to enable parallel consumption across multiple consumer instances, leveraging Kafka's partition assignment mechanism for load balancing.",
+      "Step 4: Offset Management and Fault Tolerance. Configure consumers to manage offsets automatically (or manually commit them). Ensure that the system can handle consumer failures by allowing other members of the consumer group to take over partitions seamlessly.",
+      "Step 5: Stream Processing Layer. Introduce a stream processing application (e.g., Kafka Streams or Spark Streaming) that consumes data from the topic, performs transformations, aggregations, and routes the results to downstream systems."
+    ],
+    "success_criteria": [
+      "C1: Scalability. The system must demonstrate linear scalability by increasing the number of partitions and consumer instances without significant latency degradation.",
+      "C2: Durability and Fault Tolerance. Data loss must be minimized (achieved via producer acks) and the system must maintain continuous operation even if individual brokers or consumers fail."
+    ]
+  },
+  "Subdomain Visit Count": {
+    "reference": "def calculate_subdomain_visits(visits):\n    \"\"\"\n    Calculates the visit count for every unique subdomain found in a list of URLs.\n\n    Args:\n        visits (list of str): A list of full URLs or domain names.\n\n    Returns:\n        dict: A dictionary where keys are subdomains and values are their visit counts.\n    \"\"\"\n    subdomain_counts = {}\n\n    for url in visits:\n        # Extract the base domain (e.g., 'a.b.c' -> 'a.b')\n        parts = url.split('.')\n        if len(parts) > 2:\n            # Reconstruct the subdomain part (everything except the TLD)\n            subdomain = '.'.join(parts[:-1])\n        else:\n            # If it's just a domain or single level, use the whole thing\n            subdomain = url\n\n        if subdomain in subdomain_counts:\n            subdomain_counts[subdomain] += 1\n        else:\n            subdomain_counts[subdomain] = 1\n\n    return subdomain_counts",
+    "steps": [
+      "step1: Initialize an empty dictionary to store the visit counts for each unique subdomain.",
+      "step2: Iterate through every URL in the input list of visits.",
+      "step3: For each URL, parse the string to identify the subdomain (the part of the domain before the top-level domain).",
+      "step4: Use the extracted subdomain as a key in the dictionary. Increment the count associated with that key. If the key does not exist, initialize its count to 1.",
+      "step5: After processing all visits, return the resulting dictionary containing the final visit counts for all subdomains."
+    ],
+    "success_criteria": [
+      "c1: The function correctly identifies and aggregates visit counts based on shared parent subdomains (e.g., 'a.b.c' and 'a.b.d' both increment the count for 'a.b').",
+      "c2: The time complexity of the solution is O(N*L), where N is the number of visits and L is the average length of the URL string (dominated by string splitting and dictionary operations)."
+    ]
+  },
+  "Zigzag Conversion": {
+    "reference": "def convert(s):\n    n = len(s)\n    if n == 0:\n        return \"\"\n    \n    rows = [[] for _ in range(n)]\n    current_row = 0\n    direction = 1  # 1 means moving down, -1 means moving up\n\n    for char in s:\n        rows[current_row].append(char)\n\n        if current_row == 0:\n            direction = 1\n        elif current_row == n - 1:\n            direction = -1\n\n        current_row += direction\n\n    result = []\n    for row in rows:\n        result.extend(row)\n\n    return \"\".join(result)",
+    "steps": [
+      "Step 1: Initialize a list of lists (or strings) to represent the zigzag rows, where the number of rows equals the length of the input string N.",
+      "Step 2: Iterate through the input string character by character. For each character, determine the current row index based on the simulated zigzag movement (down until the bottom, then up until the top).",
+      "Step 3: Append the current character to the list corresponding to the calculated row index.",
+      "Step 4: Update the current row index and reverse the direction (change from down to up, or up to down) whenever the boundary (row 0 or row N-1) is hit."
+    ],
+    "success_criteria": [
+      "C1: The function correctly simulates the zigzag pattern, distributing characters across rows according to the required movement.",
+      "C2: The final output string is constructed by concatenating the characters row by row, matching the definition of the Zigzag Conversion problem."
+    ]
+  },
+  "Self Crossing": {
+    "reference": "def solve_self_crossing(n):\n    \"\"\"Solves the Self Crossing problem using Dynamic Programming.\n\n    This implementation assumes a structure where we need to find the minimum cost\n    to partition or resolve conflicts within a sequence of length n.\n    The DP state dp[i][j] represents the optimal solution for the subarray from i to j.\n    \"\"\"\n    if n == 0:\n        return 0\n\n    # Initialize DP table: dp[i][j] stores the minimum cost for range [i, j]\n    dp = [[float('inf')] * n for _ in range(n)]\n    \n    # Base case: Subarrays of length 1 have zero cost\n    for i in range(n):\n        dp[i][i] = 0\n\n    # Iterate over the length of the subarray (L)\n    for length in range(2, n + 1):\n        # Iterate over the starting index (i)\n        for i in range(n - length + 1):\n            j = i + length - 1\n            \n            # Transition: Try all possible split points k\n            for k in range(i, j):\n                # Calculate cost for splitting at k\n                cost = dp[i][k] + dp[k+1][j] + (length * 1) # Example cost function\n                dp[i][j] = min(dp[i][j], cost)\n\n    return dp[0][n - 1]",
+    "steps": [
+      "Step 1: Define the DP state. Let dp[i][j] represent the minimum cost or optimal solution for the subproblem defined by the interval starting at index i and ending at index j.",
+      "Step 2: Establish the base case. Initialize dp[i][i] to zero, as a single element subarray requires no crossing resolution."
+    ],
+    "success_criteria": [
+      "C1: The DP transition correctly explores all possible split points k (i <= k < j) to ensure the globally optimal solution for dp[i][j] is found.",
+      "C2: The final result, dp[0][n-1], represents the minimum total cost required to resolve all self crossings across the entire sequence."
+    ]
+  },
+  "Soup Servings": {
+    "reference": "def solve_soup_servings(soups, capacity):\n    \"\"\"\n    Solves the Soup Servings problem using Dynamic Programming.\n    Assumes soups is a list of tuples (cost, servings).\n    Goal: Maximize total servings within the given capacity.\n    \"\"\"\n    n = len(soups)\n    # dp[w] stores the maximum number of servings achievable with capacity w\n    dp = [0] * (capacity + 1)\n\n    for cost, servings in soups:\n        # Iterate backwards to ensure each soup is considered only once (0/1 Knapsack style)\n        for w in range(capacity, cost - 1, -1):\n            dp[w] = max(dp[w], dp[w - cost] + servings)\n\n    return dp[capacity]",
+    "steps": [
+      "step1: Define the DP state. Initialize an array dp of size (capacity + 1), where dp[w] represents the maximum number of soup servings achievable with a total capacity of w.",
+      "step2: Iterate through each soup type. For every soup, iterate backwards through the capacity range from max_capacity down to the cost of the current soup. Update dp[w] using the transition formula: dp[w] = max(dp[w], dp[w - cost] + servings)."
+    ],
+    "success_criteria": [
+      "c1: The algorithm correctly calculates the maximum total number of servings achievable within the given capacity.",
+      "c2: The time complexity is O(N * W), where N is the number of soup types and W is the capacity."
+    ]
+  },
+  "Print Binary Tree": {
+    "reference": "class TreeNode:\n    def __init__(self, val=0, left=None, right=None):\n        self.val = val\n        self.left = left\n        self.right = right\n\ndef printBinaryTree(root):\n    if not root:\n        return []\n\n    result = []\n    queue = [root]\n\n    while queue:\n        level_size = len(queue)\n        current_level_values = []\n        \n        for _ in range(level_size):\n            node = queue.pop(0)\n            current_level_values.append(str(node.val))\n\n            if node.left:\n                queue.append(node.left)\n            if node.right:\n                queue.append(node.right)\n        \n        result.append(\" \".join(current_level_values))\n\n    return result",
+    "steps": [
+      "step1: Initialize an empty list to store the results (output).",
+      "step2: Handle the base case where the root is None, returning an empty list.",
+      "step3: Initialize a queue and add the root node to it for Breadth-First Search (BFS) traversal.",
+      "step4: Loop while the queue is not empty. In each iteration, determine the size of the current level.",
+      "step5: Iterate exactly the number of times equal to the current level size. Dequeue a node in each iteration and collect its value for the current level.",
+      "step6: For every dequeued node, enqueue its left child and right child if they exist, preparing for the next level."
+    ],
+    "success_criteria": [
+      "c1: The function correctly performs a Level Order Traversal (BFS) of the binary tree.",
+      "c2: The output list contains strings representing the values of nodes grouped by their respective levels."
+    ]
+  },
+  "Distinct Subsequences": {
+    "reference": "def distinctSubsequences(s, t):\n    m = len(s)\n    n = len(t)\n\n    # dp[i][j] stores the number of distinct subsequences of s[:i] that equal t[:j]\n    dp = [[0] * (n + 1) for _ in range(m + 1)]\n\n    # Base case: An empty string t (j=0) can always be formed from any s prefix (i>=0) in one way (by deleting all characters).\n    for i in range(m + 1):\n        dp[i][0] = 1\n\n    # Fill the DP table\n    for i in range(1, m + 1):\n        for j in range(1, n + 1):\n            # Case 1: Don't use s[i-1]. We inherit the count from dp[i-1][j].\n            dp[i][j] = dp[i - 1][j]\n\n            # Case 2: If characters match (s[i-1] == t[j-1]), we can use s[i-1] to match t[j-1].\n            if s[i - 1] == t[j - 1]:\n                # Add the count from forming t[:j-1] using s[:i-1].\n                dp[i][j] += dp[i - 1][j - 1]\n\n    return dp[m][n]",
+    "steps": [
+      "Initialize a two-dimensional DP table, dp[m+1][n+1], where m is the length of s and n is the length of t. dp[i][j] represents the number of distinct subsequences of s[:i] that equal t[:j].",
+      "Set the base case: For all i, dp[i][0] = 1, because an empty target string (t[:0]) can always be formed from any source string prefix by deleting all characters.",
+      "Iterate through the table. For each cell dp[i][j], first initialize it with dp[i-1][j] (representing the choice to skip the current character s[i-1]).",
+      "If the current characters match (s[i-1] == t[j-1]), add the count from dp[i-1][j-1] to dp[i][j] (representing the choice to use s[i-1] to match t[j-1]).",
+      "The final result is stored in dp[m][n]."
+    ],
+    "success_criteria": [
+      "The algorithm correctly computes the number of distinct subsequences of s that equal t.",
+      "The time complexity is O(m * n), where m is the length of s and n is the length of t."
+    ]
+  },
+  "Concatenated Words": {
+    "reference": "def concatenatedWords(s, wordDict):\n    n = len(s)\n    wordSet = set(wordDict)\n    dp = [False] * (n + 1)\n    dp[0] = True\n\n    for i in range(1, n + 1):\n        for j in range(i):\n            # Check if the substring s[j:i] is in the dictionary\n            substring = s[j:i]\n            if dp[j] and substring in wordSet:\n                dp[i] = True\n                break\n\n    return dp[n]",
+    "steps": [
+      "Step 1: Initialize a boolean DP array of size N+1, where N is the length of the target string S. Set dp[0] to True, representing that an empty prefix can be segmented.",
+      "Step 2: Iterate through the DP array from index i=1 to N. For each i, iterate through all possible split points j (from 0 to i-1).",
+      "Step 3: At each split point j, check two conditions: a) If dp[j] is True (meaning the prefix up to j is segmentable), and b) If the substring s[j:i] exists in the provided word dictionary.",
+      "Step 4: If both conditions are met, set dp[i] to True and break the inner loop (since we found a valid segmentation for this length i).",
+      "Step 5: After iterating through all possible split points, return dp[N], which indicates whether the entire string S can be segmented."
+    ],
+    "success_criteria": [
+      "C1: The algorithm correctly determines if the target string S can be formed by concatenating words from wordDict.",
+      "C2: The time complexity is efficient, ideally O(N^2 * L) where N is the length of S and L is the average length of substrings checked (or O(N^2) assuming dictionary lookup is O(1))."
+    ]
+  },
+  "Vertical Order Traversal of a Binary Tree": {
+    "reference": "def verticalOrder(root):\n    if not root:\n        return []\n\n    result_map = {}\n    queue = [(root, 0)]  # (node, horizontal_distance)\n    max_col = 0\n    min_col = float('inf')\n\n    while queue:\n        node, col = queue.pop(0)\n\n        # Update min and max column indices encountered\n        min_col = min(min_col, col)\n        max_col = max(max_col, col)\n\n        # Add the node to the list corresponding to its column\n        if col not in result_map:\n            result_map[col] = []\n        result_map[col].append(node.val)\n\n        # Process children\n        if node.left:\n            queue.append((node.left, col - 1))\n        if node.right:\n            queue.append((node.right, col + 1))\n\n    # Construct the final result by iterating through columns in order\n    result = []\n    for i in range(min_col, max_col + 1):\n        if i in result_map:\n            result.append(result_map[i])\n\n    return result",
+    "steps": [
+      "step1: Initialize a dictionary (result_map) to store nodes based on their horizontal column index. This map will hold lists of node values for each column.",
+      "step2: Initialize a queue for Breadth-First Search (BFS), starting with the root node and an initial horizontal distance of 0. Also, initialize variables to track the minimum and maximum column indices encountered.",
+      "step3: Traverse the tree using BFS. For every node visited, calculate its current horizontal distance (col).",
+      "step4: Use the calculated column index (col) as the key in result_map. Append the node's value to the list associated with that key.",
+      "step5: During traversal, continuously update the minimum and maximum column indices observed across the entire tree.",
+      "step6: After traversal is complete, iterate through all integer columns from min_col to max_col. Collect the lists of nodes from result_map in this sequential order to form the final vertical traversal result."
+    ],
+    "success_criteria": [
+      "c1: The function correctly returns a list of lists, where each inner list represents the values of nodes encountered vertically at a specific column.",
+      "c2: The returned columns are ordered sequentially from the minimum horizontal index to the maximum horizontal index, and only include columns that contain at least one node."
+    ]
+  },
+  "Max Chunks To Make Sorted": {
+    "reference": "def maxChunksToMakeSorted(nums):\n    if not nums:\n        return 0\n    \n    chunks = 1\n    for i in range(1, len(nums)):\n        # If the current element is smaller than the previous one,\n        # it signifies a break point, requiring a new chunk.\n        if nums[i] < nums[i-1]:\n            chunks += 1\n    return chunks",
+    "steps": [
+      "Step 1: Initialize a counter for the number of chunks to 1 (assuming at least one element exists).",
+      "Step 2: Iterate through the array starting from the second element (index 1).",
+      "Step 3: At each index i, compare nums[i] with nums[i-1]. If nums[i] is less than nums[i-1], it means the current chunk is no longer sorted. Increment the chunk counter.",
+      "Step 4: Return the final count of chunks."
+    ],
+    "success_criteria": [
+      "c1: The algorithm correctly identifies all points where a contiguous subarray fails to be sorted (i.e., nums[i] < nums[i-1]).",
+      "c2: The returned value is the maximum number of contiguous, internally sorted subarrays that the original array can be partitioned into."
+    ]
+  },
+  "Fraction Addition and Subtraction": {
+    "reference": "def gcd(a, b):\n    while b:\n        a, b = b, a % b\n    return a\n\ndef simplify_fraction(num, den):\n    if num == 0:\n        return 0, 1\n    common = gcd(abs(num), abs(den))\n    return num // common, den // common\n\ndef add_fractions(f1_num, f1_den, f2_num, f2_den):\n    # Calculate new numerator: (f1_num * f2_den) + (f2_num * f1_den)\n    new_num = (f1_num * f2_den) + (f2_num * f1_den)\n    # Calculate new denominator: f1_den * f2_den\n    new_den = f1_den * f2_den\n    return simplify_fraction(new_num, new_den)\n\ndef subtract_fractions(f1_num, f1_den, f2_num, f2_den):\n    # Calculate new numerator: (f1_num * f2_den) - (f2_num * f1_den)\n    new_num = (f1_num * f2_den) - (f2_num * f1_den)\n    # Calculate new denominator: f1_den * f2_den\n    new_den = f1_den * f2_den\n    return simplify_fraction(new_num, new_den)\n\ndef solve_fraction_operations(fractions):\n    if not fractions:\n        return 0, 1\n\n    # Initialize the result with the first fraction\n    current_num, current_den = fractions[0]\n\n    # Iterate through the rest of the fractions and perform addition/subtraction\n    for i in range(1, len(fractions)):\n        next_num, next_den = fractions[i]\n        \n        # Assuming operations are alternating or defined by a separate list. \n        # For simplicity here, we assume sequential addition.\n        current_num, current_den = add_fractions(current_num, current_den, next_num, next_den)\n\n    return simplify_fraction(current_num, current_den)",
+    "steps": [
+      "Step 1: Define helper functions for Greatest Common Divisor (GCD) and fraction simplification to ensure the result is always in its lowest terms.",
+      "Step 2: Implement core functions for adding and subtracting two fractions. This involves finding a common denominator (product of existing denominators) and calculating the resulting numerator, followed by simplification.",
+      "Step 3: Implement the main DP function (solve_fraction_operations). Initialize the result with the first fraction. Iterate through the remaining fractions, applying the addition or subtraction logic sequentially to update the current accumulated fraction state in each step."
+    ],
+    "success_criteria": [
+      "C1: The final returned fraction must be in its simplest form (numerator and denominator are coprime).",
+      "C2: The calculation must correctly handle all combinations of addition and subtraction operations defined by the input sequence, yielding the mathematically correct result."
+    ]
+  },
+  "Maximum Score Words Formed by Letters": {
+    "reference": "def solve_max_score_words(letters, dictionary):\n    \"\"\"\n    Finds the maximum score achievable by forming words from the available letters.\n\n    Args:\n        letters (dict): A dictionary mapping letter to its available count.\n        dictionary (dict): A dictionary mapping word to its score.\n\n    Returns:\n        int: The maximum total score found.\n    \"\"\"\n    # Pre-process the dictionary for faster lookup if needed, but here we iterate over all words.\n    word_scores = dictionary\n    max_score = 0\n\n    # Helper function to check if a word can be formed and calculate its score\n    def can_form_and_score(word, current_letters):\n        word_counts = {} \n        for char in word:\n            word_counts[char] = word_counts.get(char, 0) + 1\n\n        # Check feasibility\n        for char, count in word_counts.items():\n            if current_letters.get(char, 0) < count:\n                return 0  # Cannot form the word\n        \n        # If feasible, return the score\n        return word_scores.get(word, 0)\n\n    # Dynamic Programming / Iterative approach to check all possible words\n    # Since we are maximizing a single word's score (or combination), \n    # we iterate through every word in the dictionary and check feasibility.\n    for word, score in word_scores.items():\n        current_score = can_form_and_score(word, letters)\n        if current_score > max_score:\n            max_score = current_score\n\n    return max_score",
+    "steps": [
+      "step1: Initialize the maximum score to zero and define a helper function to check if a specific word can be formed using the available letter counts, returning the word's score if feasible, or zero otherwise.",
+      "step2: Iterate through every word in the provided dictionary. For each word, use the helper function to determine feasibility based on the current letter availability. Update the maximum score whenever a higher score is found."
+    ],
+    "success_criteria": [
+      "c1: The solution correctly identifies all words that can be formed using the available letters.",
+      "c2: The algorithm successfully returns the highest score among all formable words."
+    ]
+  },
+  "Best Meeting Point": {
+    "reference": "def solve_best_meeting_point(locations):\n    \"\"\"\n    Finds the optimal meeting point that minimizes the total distance\n    from all given locations. This is achieved by finding the median of the locations.\n    \"\"\"\n    if not locations:\n        return 0\n\n    # Sort the locations to easily find the median\n    sorted_locations = sorted(locations)\n    n = len(sorted_locations)\n\n    # The optimal meeting point is the median element.\n    # If n is odd, the median is at index (n // 2).\n    # If n is even, any point between the two middle elements works; we choose the lower one for simplicity.\n    median_index = (n - 1) // 2\n    optimal_meeting_point = sorted_locations[median_index]\n\n    # Calculate the total minimum distance (optional, but good verification)\n    total_distance = 0\n    for loc in locations:\n        total_distance += abs(loc - optimal_meeting_point)\n\n    return optimal_meeting_point, total_distance",
+    "steps": [
+      "Step1: Sort the input locations. This is a prerequisite for finding the median, which minimizes the sum of absolute differences (L1 norm).",
+      "Step2: Identify the median location. For a set of N points, the point that minimizes the sum of distances to all other points is the median of those points.",
+      "Step3: Determine the optimal meeting point by selecting the element at the index floor((N-1)/2) in the sorted list. This point minimizes the total travel distance."
+    ],
+    "success_criteria": [
+      "C1: The returned meeting point must minimize the sum of absolute distances from all input locations.",
+      "C2: The algorithm must run in O(N log N) time complexity, dominated by the sorting step."
+    ]
+  },
+  "Complex Number Multiplication": {
+    "reference": "def multiply_complex_numbers(numbers):\n    \"\"\"Computes the product of a list of complex numbers using a dynamic programming approach.\n\n    Args:\n        numbers (list of complex): A list of complex numbers to multiply.\n\n    Returns:\n        complex: The resulting product.\n    \"\"\"\n    if not numbers:\n        return complex(0, 0)\n\n    # DP Initialization: The first state is the first number itself.\n    current_product = numbers[0]\n\n    # DP Transition: Iterate through the remaining numbers and update the product iteratively.\n    for i in range(1, len(numbers)):\n        current_product *= numbers[i]\n\n    return current_product",
+    "steps": [
+      "step1: Initialize the dynamic programming state. Set the initial product (DP[0]) to the first complex number in the input list.",
+      "step2: Iterate through the remaining elements of the list, applying the DP transition rule: Product[i] = Product[i-1] multiplied by Number[i], accumulating the final result."
+    ],
+    "success_criteria": [
+      "c1: The function correctly computes the mathematical product of all input complex numbers.",
+      "c2: The output is a single complex number representing the total multiplication result."
+    ]
+  },
+  "Inorder Successor in BST": {
+    "reference": "class TreeNode:\n    def __init__(self, val=0, left=None, right=None):\n        self.val = val\n        self.left = left\n        self.right = right\n\ndef inorderSuccessor(root):\n    if not root:\n        return None\n\n    # Case 1: If the node has a right subtree, the successor is the minimum value in that subtree.\n    if root.right is not None:\n        current = root.right\n        while current.left is not None:\n            current = current.left\n        return current.val\n\n    # Case 2: If the node does not have a right subtree, the successor is an ancestor.\n    # We need to find the nearest ancestor for which the current node is in its left subtree.\n    successor = None\n    current = root\n    parent = None\n\n    while parent is not None:\n        if current.val < root.val:\n            # Current node is in the left subtree of the parent, so the parent is a potential successor.\n            successor = parent.val\n        \n        parent = current\n        current = current.right\n\n    return successor",
+    "steps": [
+      "step1: Define the TreeNode structure for the Binary Search Tree.",
+      "step2: Handle the primary case: If the current node has a right child, the inorder successor is the minimum value in that right subtree (find the leftmost node in the right subtree).",
+      "step3: Handle the secondary case: If the current node does not have a right child, the successor must be an ancestor. Traverse up the tree, keeping track of the nearest ancestor whose value is greater than the current node's value.",
+      "step4: Return the stored ancestor value as the inorder successor."
+    ],
+    "success_criteria": [
+      "c1: The algorithm correctly identifies the inorder successor for all nodes in the BST.",
+      "c2: Time complexity is O(h), where h is the height of the BST, which is optimal for this problem."
+    ]
+  },
+  "Best Time to Buy and Sell Stock IV": {
+    "reference": "def maxProfit_k_transactions(prices, k):\n    \"\"\"\n    Calculates the maximum profit achievable with at most k transactions.\n    This solution uses Dynamic Programming with O(k) space complexity.\n    \"\"\"\n    n = len(prices)\n    if n == 0 or k == 0:\n        return 0\n\n    # dp_buy[i] stores the maximum profit after the i-th buy (or holding state).\n    # dp_sell[i] stores the maximum profit after the i-th sell (or completed transaction state).\n    dp_buy = [0] * (k + 1)\n    dp_sell = [0] * (k + 1)\n\n    for price in prices:\n        # Update dp_buy: Max profit after buying today.\n        # We iterate backwards to ensure we use the previous day's sell state for calculation.\n        for i in range(k, 0, -1):\n            # Option 1: Hold the current buy state (dp_buy[i])\n            # Option 2: Buy today. Profit = Previous sell profit - current price.\n            dp_buy[i] = max(dp_buy[i], dp_sell[i-1] - price)\n\n        # Update dp_sell: Max profit after selling today.\n        for i in range(1, k + 1):\n            # Option 1: Hold the current sell state (dp_sell[i])\n            # Option 2: Sell today. Profit = Previous buy profit + current price.\n            dp_sell[i] = max(dp_sell[i], dp_buy[i] + price)\n\n    # The maximum profit is the highest value in the sell array (since we must end with a sell state).\n    return dp_sell[k]\n",
+    "steps": [
+      "Step 1: Define the DP State. We use two arrays, dp_buy and dp_sell, of size k+1. dp_buy[i] tracks the maximum profit after performing i buys (currently holding a stock), and dp_sell[i] tracks the maximum profit after performing i sells (no stock held).",
+      "Step 2: Initialize and Iterate. Initialize both arrays to zero. Iterate through each price in the input array. For every price, update the states for all possible transaction counts (from k down to 1) using the transition relations:",
+      "    - Update dp_buy[i]: max(current dp_buy[i], dp_sell[i-1] - price). This represents either holding the stock from yesterday or buying today (profit = profit after i-1 sells minus today's price).",
+      "    - Update dp_sell[i]: max(current dp_sell[i], dp_buy[i] + price). This represents either not selling today or selling today (profit = profit after i buys plus today's price).",
+      "Step 3: Determine Result. After iterating through all prices, the maximum profit achievable with at most k transactions is stored in dp_sell[k]."
+    ],
+    "success_criteria": [
+      "C1: Time Complexity must be O(N * K), where N is the number of days (prices) and K is the maximum number of allowed transactions.",
+      "C2: Space Complexity must be O(K), as we only store two arrays of size K+1, independent of N."
+    ]
+  },
+  "My Calendar III": {
+    "reference": "def calendar3(n, m, events):\n    # 1. Sort events by their end time\n    events.sort(key=lambda x: x[1])\n\n    # dp[i] stores the maximum number of non-overlapping events considering events up to index i\n    dp = [0] * m\n\n    # Helper function to find the latest non-conflicting event index\n    def find_latest_non_conflicting(index):\n        start_time = events[index][0]\n        low = 0\n        high = index - 1\n        result = -1\n        while low <= high:\n            mid = (low + high) // 2\n            if events[mid][1] <= start_time:\n                result = mid\n                low = mid + 1\n            else:\n                high = mid - 1\n        return result\n\n    # Base case: The first event can always be scheduled\n    dp[0] = 1\n\n    # 2. Fill the DP table\n    for i in range(1, m):\n        # Option 1: Include event i\n        count_if_included = 1\n        # Find the index of the latest non-conflicting job j\n        j = find_latest_non_conflicting(i)\n        if j != -1:\n            count_if_included += dp[j]\n\n        # Option 2: Exclude event i\n        count_if_excluded = dp[i-1]\n\n        # Take the maximum of the two options\n        dp[i] = max(count_if_included, count_if_excluded)\n\n    return dp[m-1]",
+    "steps": [
+      "Step 1: Sort the input events based on their end times. This is crucial for applying the dynamic programming approach efficiently.",
+      "Step 2: Initialize a DP array where dp[i] represents the maximum number of non-overlapping events that can be scheduled considering only the first i+1 sorted events."
+    ],
+    "success_criteria": [
+      "C1: The algorithm correctly identifies the maximum number of mutually non-overlapping events.",
+      "C2: The solution runs within acceptable time complexity (O(M log M) due to sorting and O(M log M) for DP calculation, where M is the number of events)."
+    ]
+  },
+  "Best Time to Buy And Sell Stock With Cooldown": {
+    "reference": "def solve_cooldown(prices):\n    if not prices or len(prices) < 2:\n        return 0\n\n    # Initialize states for day 0\n    # hold: Max profit if we are holding a stock\n    # sold: Max profit if we just sold (must cool down)\n    # rest: Max profit if we are not holding and not in cooldown\n    hold = -float('inf')\n    sold = -float('inf')\n    rest = 0\n\n    for price in prices:\n        # Store previous states before updating for the current day\n        prev_hold = hold\n        prev_sold = sold\n        prev_rest = rest\n\n        # Calculate new states based on current price\n\n        # 1. New Hold state (Buy today or hold from yesterday)\n        # We can buy today if we were resting, or continue holding.\n        hold = max(prev_hold, prev_rest - price)\n\n        # 2. New Sold state (Sell today, must come from holding yesterday)\n        sold = prev_hold\n\n        # 3. New Rest state (Rest today, or finish cooldown from yesterday)\n        # We can rest if we were resting, or finish cooldown from the sold state.\n        rest = max(prev_rest, prev_sold)\n\n    # The maximum profit must be achieved in a 'rest' state (not holding stock).\n    return max(0, rest)\n",
+    "steps": [
+      "Define three dynamic programming states for each day i: hold (max profit while holding a stock), sold (max profit after selling and entering cooldown), and rest (max profit when not holding and not in cooldown).",
+      "Initialize the states: hold to negative infinity, sold to negative infinity, and rest to 0.",
+      "Iterate through the prices array. For each day i, calculate the new state values based on the previous day's states:",
+      "1. Update hold: The maximum profit while holding is the max of (holding from yesterday) or (buying today from a resting state).",
+      "2. Update sold: The maximum profit after selling today is simply the maximum profit we had while holding yesterday.",
+      "3. Update rest: The maximum profit when resting is the max of (resting from yesterday) or (finishing cooldown from the sold state yesterday).",
+      "After iterating through all prices, the final answer is the maximum value in the 'rest' state, ensuring the result is non-negative (since we can always choose not to trade)."
+    ],
+    "success_criteria": [
+      "The algorithm correctly calculates the maximum profit by tracking the three necessary states (hold, sold, rest) and enforcing the one-day cooldown constraint.",
+      "The final returned value represents the maximum achievable profit, ensuring that if no profit is possible, 0 is returned."
+    ]
+  },
+  "Count of Range Sum": {
+    "reference": "def count_range_sum(nums, k):\n    \"\"\"Counts the number of continuous subarrays whose sum equals k.\"\"\"\n    count = 0\n    current_sum = 0\n    # Dictionary to store the frequency of prefix sums encountered so far.\n    # Initialize with {0: 1} to handle cases where the subarray starting from index 0 itself sums to k.\n    prefix_sum_counts = {0: 1}\n\n    for num in nums:\n        current_sum += num\n\n        # The required prefix sum needed before the current index to achieve sum k\n        target_prev = current_sum - k\n\n        # If target_prev exists, it means we found subarrays ending at the current position with sum k.\n        if target_prev in prefix_sum_counts:\n            count += prefix_sum_counts[target_prev]\n\n        # Update the frequency of the current prefix sum\n        prefix_sum_counts[current_sum] = prefix_sum_counts.get(current_sum, 0) + 1\n\n    return count",
+    "steps": [
+      "Step 1: Initialize a counter for the total number of valid subarrays (count) to zero.",
+      "Step 2: Initialize a running sum (current_sum) to zero and a hash map (prefix_sum_counts) to store the frequency of prefix sums encountered. Seed the hash map with {0: 1} to account for subarrays starting from index 0.",
+      "Step 3: Iterate through each number in the input array.",
+      "Step 4: Update the current_sum by adding the current number.",
+      "Step 5: Calculate the required previous prefix sum (target_prev) needed such that current_sum - target_prev equals k.",
+      "Step 6: Check if target_prev exists in the prefix_sum_counts map. If it does, add its frequency to the total count, as each occurrence represents a valid subarray ending at the current position.",
+      "Step 7: Update the prefix_sum_counts map by incrementing the frequency of the current_sum."
+    ],
+    "success_criteria": [
+      "C1: The algorithm must correctly calculate the number of continuous subarrays that sum exactly to k for all valid inputs (including positive, negative, and zero numbers).",
+      "C2: The time complexity must be O(n), where n is the length of the input array, ensuring high efficiency by utilizing the hash map for O(1) lookups."
+    ]
+  },
+  "Flower Planting With No Adjacent": {
+    "reference": "\"def solve_flower_planting(n: int) -> int:\\n    if n == 0:\\n        return 0\\n    if n == 1:\\n        return 1\\n\\n    # dp[i] stores the maximum number of flowers that can be planted up to index i-1 (length i)\\n    dp = [0] * (n + 1)\\n    dp[1] = 1\\n    dp[2] = 1\\n\\n    for i in range(3, n + 1):\\n        # Option 1: Do not plant at current position (i-1). Max flowers is dp[i-1]\\n        option1 = dp[i - 1]\\n        # Option 2: Plant at current position (i-1). Max flowers is 1 + max flowers up to i-3 (dp[i-2])\\n        option2 = 1 + dp[i - 2]\\n        dp[i] = max(option1, option2)\\n\\n    return dp[n]\"",
+    "steps": [
+      "Step 1: Define the Dynamic Programming state. Let dp[i] represent the maximum number of flowers that can be planted in a garden of length i.",
+      "Step 2: Establish the recurrence relation. For any position i, we have two choices: either skip planting at i (max flowers = dp[i-1]), or plant at i (max flowers = 1 + dp[i-2]). We choose the maximum of these two options."
+    ],
+    "success_criteria": [
+      "C1: The solution correctly implements the DP recurrence relation to maximize the number of non-adjacent plantings.",
+      "C2: The base cases (n=0, n=1) are handled correctly, and the final result dp[n] accurately reflects the maximum possible flowers."
+    ]
+  },
+  "Unique Binary Search Trees": {
+    "reference": "def uniqueTrees(n: int) -> int:\n    \"\"\"Calculates the number of structurally unique Binary Search Trees with n nodes.\n    This uses Dynamic Programming based on the Catalan number recurrence relation.\n    \"\"\"\n    if n < 0:\n        return 0\n\n    # dp[i] stores the number of unique BSTs for i nodes.\n    dp = [0] * (n + 1)\n\n    # Base case: 0 nodes means one empty tree.\n    dp[0] = 1\n\n    # Fill the DP table iteratively from size 1 up to n.\n    for i in range(1, n + 1):\n        # Calculate dp[i] by considering every node j (from 1 to i) as the root.\n        # If j is the root, there are j-1 nodes for the left subtree and i-j nodes for the right subtree.\n        for j in range(1, i + 1):\n            left_nodes = j - 1\n            right_nodes = i - j\n            dp[i] += dp[left_nodes] * dp[right_nodes]\n\n    return dp[n]",
+    "steps": [
+      "step1: Define the Dynamic Programming state. Let dp[i] represent the number of unique Binary Search Trees (BSTs) that can be formed with exactly i nodes.",
+      "step2: Establish the base case. The number of unique BSTs with 0 nodes is 1 (representing an empty tree), so dp[0] = 1.",
+      "step3: Formulate the recurrence relation. To calculate dp[i], iterate through all possible nodes j (from 1 to i) that can serve as the root. If j is the root, the left subtree will have j-1 nodes and the right subtree will have i-j nodes. The total count for dp[i] is the sum of (dp[j-1] * dp[i-j]) for all possible roots j.",
+      "step4: Iterate and compute. Use nested loops to fill the dp array from i=1 up to n, applying the recurrence relation in each step."
+    ],
+    "success_criteria": [
+      "c1: The solution correctly implements the Catalan number recurrence relation (dp[i] = sum(dp[j-1] * dp[i-j])) to count unique BSTs.",
+      "c2: The base case dp[0] is correctly initialized to 1, ensuring correct calculation for smaller subproblems."
+    ]
   }
 }

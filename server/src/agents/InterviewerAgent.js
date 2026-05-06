@@ -1,5 +1,7 @@
 const LLMService = require('../services/LLMService');
 const SearchService = require('../services/SearchService');
+const fs = require('fs');
+const path = require('path');
 
 class InterviewerAgent {
   constructor() {
@@ -11,119 +13,160 @@ class InterviewerAgent {
     const question = state.state?.selectedQuestion;
     const hints = question?.hints || [];
     const codeBuffer = state.state?.codeBuffer || '';
-    const referenceCode = question?.python_code || '';
     const currentHintIndex = state.state?.currentHintIndex || 0;
 
-    // Check if user is explicitly asking for the solution
     const askingSolution = /show.*solution|give.*code|i give up|@showsolution/i.test(userInput);
     const hintsExhausted = currentHintIndex >= hints.length;
+    const currentHint = !hintsExhausted ? hints[currentHintIndex] : null;
 
-    console.log(`Starting ReAct loop for: ${question?.title || 'Unknown'}`);
+    console.log(`Starting agentic loop for: ${question?.title || 'Unknown'}`);
     console.log(`Hints available: ${hints.length}, Current index: ${currentHintIndex}`);
     onProgress('Thinking...');
 
-    let scratchpad = "";
-    let iterations = 0;
-    let nextHintIndex = currentHintIndex;
+    try {
+      const { callModel, tool, stepCountIs } = await import('@openrouter/agent');
+      const { OpenRouter } = await import('@openrouter/sdk');
+      const { z } = await import('zod');
 
-    while (iterations < this.MAX_ITERATIONS) {
-      iterations++;
-
-      const llmOutput = await LLMService.generateReActResponse(
-        userInput,
-        state,
-        scratchpad,
-        {
-          hints,
-          currentHintIndex,
-          askingSolution,
-          hintsExhausted
-        }
-      );
-      scratchpad += llmOutput + "\n";
-
-      console.log("\n" + "=".repeat(60));
-      console.log("🔍 ReAct Output Parsing");
-      console.log("=".repeat(60));
-      console.log(`📝 LLM Output (first 300 chars):\n${llmOutput.substring(0, 300)}`);
-      console.log("=".repeat(60));
-
-      // Parse LLM Output
-      const thoughtMatch = llmOutput.match(/Thought:\s*(.*)/i);
-      const actionMatch = llmOutput.match(/Action:\s*(\w+)/i);
-      const actionInputMatch = llmOutput.match(/Action Input:\s*(.*)/i);
-      const finalResponseMatch = llmOutput.match(/Final Response:\s*([\s\S]*)/i);
-
-      console.log(`✅ Thought found: ${!!thoughtMatch}`);
-      console.log(`✅ Action found: ${!!actionMatch} (${actionMatch ? actionMatch[1] : 'N/A'})`);
-      console.log(`✅ Action Input found: ${!!actionInputMatch}`);
-      console.log(`✅ Final Response found: ${!!finalResponseMatch}`);
-      console.log("=".repeat(60) + "\n");
-
-      const thought = thoughtMatch ? thoughtMatch[1] : "";
-      const action = actionMatch ? actionMatch[1].toUpperCase() : "NONE";
-      const actionInput = actionInputMatch ? actionInputMatch[1] : "";
-
-      if (thought) {
-        onProgress(`Thought: ${thought}`);
-      }
-
-      if (finalResponseMatch) {
-        // Increment hint index if a hint was shown (and not asking for solution)
-        if (!askingSolution && !hintsExhausted && /hint|nudge|consider|think about/i.test(finalResponseMatch[1])) {
-          nextHintIndex = Math.min(currentHintIndex + 1, hints.length);
-        }
-
-        return {
-          text: finalResponseMatch[1].trim(),
-          nextHintIndex
-        };
-      }
-
-      // If no strict ReAct format found, use the LLM output directly (it's already helpful!)
-      if (iterations >= this.MAX_ITERATIONS) {
-        console.log("✨ Using LLM output directly (ReAct format not required for good responses)");
-
-        // Increment hint index if a hint was shown
-        if (!askingSolution && !hintsExhausted && /hint|nudge|consider|think about/i.test(llmOutput)) {
-          nextHintIndex = Math.min(currentHintIndex + 1, hints.length);
-        }
-
-        return {
-          text: llmOutput.trim(),
-          nextHintIndex
-        };
-      }
-
-      if (action === "SEARCH" && actionInput) {
-        onProgress(`Searching: ${actionInput}...`);
-        const result = await SearchService.performSearch(actionInput);
-        scratchpad += `Observation: ${result}\n`;
-      } else if (action === "CRITIQUE") {
-        onProgress(`Critiquing design...`);
-        const critique = await LLMService.analyzeCode(codeBuffer, { problem: question?.title });
-        scratchpad += `Observation: ${JSON.stringify(critique)}\n`;
-      } else {
-        // No valid action, but we have a response - use it!
-        if (!finalResponseMatch && llmOutput.trim().length > 20) {
-          console.log("✨ Direct response (no ReAct markers found, but response is valid)");
-          if (!askingSolution && !hintsExhausted && /hint|nudge|consider|think about/i.test(llmOutput)) {
-            nextHintIndex = Math.min(currentHintIndex + 1, hints.length);
+      const apiKey = process.env.OPENROUTER_API_KEY || process.env.LLM_API_KEY || "sk-or-v1-";
+      const client = new OpenRouter({ apiKey });
+      
+      const searchTool = tool({
+        name: 'search',
+        description: 'Search for technical documentation or concept verification',
+        inputSchema: z.object({
+          query: z.string().describe('What to search for')
+        }),
+        outputSchema: z.object({
+          results: z.string()
+        }),
+        execute: async ({ query }) => {
+          onProgress(`Searching: ${query}...`);
+          try {
+            const results = await SearchService.performSearch(query);
+            return { results };
+          } catch (e) {
+            return { results: `Error executing search: ${e.message}` };
           }
-          return {
-            text: llmOutput.trim(),
-            nextHintIndex
-          };
+        }
+      });
+
+      const critiqueTool = tool({
+        name: 'critique',
+        description: 'Perform deep technical critique of the candidate code',
+        inputSchema: z.object({
+          problem: z.string().describe('Problem name for context')
+        }),
+        outputSchema: z.object({
+          results: z.string()
+        }),
+        execute: async ({ problem }) => {
+          onProgress('Critiquing code...');
+          try {
+            const critique = await LLMService.analyzeCode(codeBuffer, { problem });
+            return { results: JSON.stringify(critique) };
+          } catch (e) {
+            return { results: `Error executing critique: ${e.message}` };
+          }
+        }
+      });
+
+      const agentPromptPath = path.join(__dirname, '../prompts/agent.md');
+      let basePrompt = '';
+      if (fs.existsSync(agentPromptPath)) {
+        basePrompt = fs.readFileSync(agentPromptPath, 'utf8');
+      } else {
+        basePrompt = "You are an Expert Interviewer and Principal Engineer.";
+      }
+
+      const systemPrompt = `
+${basePrompt}
+
+----------------------------------
+📌 CURRENT CONTEXT
+----------------------------------
+Problem: ${question?.title || 'Unknown'}
+
+PEDAGOGICAL RULES (STRICT):
+1. CURRENT HINT (index ${currentHintIndex}): ${currentHint ? `Use this hint for your nudge: "${currentHint.replace(/"/g, '\\"')}"` : "'No more hints. If they are finished, tell them to run the tests.'"}
+2. If user asks for solution AND hints are exhausted: Provide the code. Otherwise, decline politely and give a nudge.
+3. NO REDUNDANCY: Do not repeat what the user said or what you've already said.
+`;
+
+      const userContext = `
+CURRENT CODE (from candidate's editor):
+<user_code>
+${codeBuffer || '# No code yet'}
+</user_code>
+
+Candidate's Input: "${userInput.replace(/"/g, '\\"').replace(/\n/g, '\\n')}"
+`;
+      
+      const pastMessages = (state.state?.conversationHistory || []).map(msg => ({
+        role: msg.role === 'assistant' ? 'assistant' : msg.role === 'user' ? 'user' : 'system',
+        content: msg.content
+      }));
+
+      const modelName = process.env.LLM_MODEL || LLMService.model;
+
+      const inputItems = [
+        { role: 'system', content: systemPrompt },
+        ...pastMessages,
+        { role: 'user', content: userContext }
+      ];
+
+      const enableTools = process.env.LLM_ENABLE_TOOLS === 'true';
+      let finalText = '';
+
+      try {
+        if (enableTools) {
+          console.log("🛠️ Tool calling enabled. Attempting agentic loop...");
+          const result = callModel(client, {
+            model: modelName,
+            input: inputItems,
+            tools: [searchTool, critiqueTool],
+            stopWhen: stepCountIs(5)
+          });
+          finalText = await result.getText();
+        } else {
+          console.log("📝 Tool calling disabled. Using standard completion.");
+          const result = callModel(client, {
+            model: modelName,
+            input: inputItems
+          });
+          finalText = await result.getText();
+        }
+      } catch (apiError) {
+        if (enableTools && (apiError.status === 404 || apiError.message?.includes('tool use'))) {
+          console.warn(`Model doesn't support tools. Falling back to standard completion. Error: ${apiError.message}`);
+          const fallbackResult = callModel(client, {
+            model: modelName,
+            input: inputItems
+          });
+          finalText = await fallbackResult.getText();
+        } else {
+          throw apiError;
         }
       }
-    }
+      let nextHintIndex = currentHintIndex;
+      
+      if (!askingSolution && !hintsExhausted && /hint|nudge|consider|think about/i.test(finalText)) {
+        nextHintIndex = Math.min(currentHintIndex + 1, hints.length);
+      }
 
-    // Final fallback - only if we have nothing else
-    console.log("⚠️ Using generic fallback response");
-    return {
-      text: "Let's take a step back and look at the core logic. What are our main constraints here?",
-      nextHintIndex
-    };
+      console.log(`✅ Agentic response generated (${finalText.length} chars)`);
+      return {
+        text: finalText.trim(),
+        nextHintIndex
+      };
+
+    } catch (error) {
+      console.error('Agentic loop error:', error.message);
+      return {
+        text: "I encountered an issue processing your request. How can we simplify your current approach?",
+        nextHintIndex: currentHintIndex
+      };
+    }
   }
 
   async generateInitialProbe(question) {

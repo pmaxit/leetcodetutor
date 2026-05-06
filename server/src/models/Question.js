@@ -1,23 +1,5 @@
-const { Sequelize, DataTypes } = require('sequelize');
-const path = require('path');
-require('dotenv').config();
-
-const dbPath = path.resolve(__dirname, '../../database.sqlite');
-
-const sequelize = new Sequelize({
-  dialect: process.env.DB_DIALECT || 'sqlite',
-  storage: process.env.DB_STORAGE || dbPath,
-  host: process.env.DB_HOST,
-  username: process.env.DB_USER,
-  password: process.env.DB_PASSWORD,
-  database: process.env.DB_NAME,
-  logging: false,
-  dialectOptions: process.env.DB_DIALECT === 'mysql' ? {
-    ssl: {
-      rejectUnauthorized: false
-    }
-  } : {}
-});
+const { DataTypes } = require('sequelize');
+const sequelize = require('./db');
 
 const Question = sequelize.define('Question', {
   title: { type: DataTypes.STRING, allowNull: false },
@@ -44,10 +26,15 @@ const Question = sequelize.define('Question', {
   python_code: { type: DataTypes.TEXT, allowNull: true },
   solution_format: { type: DataTypes.TEXT, allowNull: true },
   hints: { type: DataTypes.JSON, allowNull: true },
-  initial_probe: { type: DataTypes.TEXT, allowNull: true }
+  initial_probe: { type: DataTypes.TEXT, allowNull: true },
+  neetcode_url: { type: DataTypes.STRING, allowNull: true },
+  leetcode_url: { type: DataTypes.STRING, allowNull: true },
+  youtube_url: { type: DataTypes.STRING, allowNull: true }
 }, {
   tableName: 'problems', // The table name in neetcode_db
-  timestamps: false // The remote DB doesn't have createdAt/updatedAt
+  timestamps: false, // The remote DB doesn't have createdAt/updatedAt
+  toJSON: { virtuals: true },
+  toObject: { virtuals: true }
 });
 
 module.exports = { Question, sequelize };
