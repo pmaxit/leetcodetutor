@@ -25,18 +25,18 @@ class LLMService {
 
     // ─── Initialize Clients ───────────────────────────────────────────────
     this.clients = {
-      local: new OpenAI({
+      local: CONFIG.local.key && CONFIG.local.url ? new OpenAI({
         baseURL: CONFIG.local.url,
         apiKey: CONFIG.local.key,
-      }),
-      remote: new OpenAI({
+      }) : null,
+      remote: CONFIG.remote.key && CONFIG.remote.url ? new OpenAI({
         baseURL: CONFIG.remote.url,
         apiKey: CONFIG.remote.key,
         defaultHeaders: {
           'HTTP-Referer': 'https://ai-interview-platform.local',
           'X-Title': 'AI Interview Platform',
         },
-      }),
+      }) : null,
     };
 
     this.modelSequence = MODELS;
@@ -86,6 +86,11 @@ class LLMService {
     for (let i = 0; i < this.modelSequence.length; i++) {
       const { id: modelId, provider } = this.modelSequence[i];
       const client = this.clients[provider];
+
+      if (!client) {
+        console.warn(`⚠️ Client for provider '${provider}' is not configured. Skipping ${modelId}...`);
+        continue;
+      }
 
       if (onStatus) {
         onStatus(`Trying ${modelId}...`, modelId);
