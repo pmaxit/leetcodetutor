@@ -883,9 +883,7 @@ return (
     {currentView === 'main' && isSidebarOpen && (
       <div className="sidebar-overlay" onClick={() => setIsSidebarOpen(false)}></div>
     )}
-    <header style={{
-      gridColumn: currentView === 'main' ? '2 / -1' : '1 / -1'
-    }}>
+    <header>
       <div className="header-left">
         {currentView === 'main' && (
           <button className="sidebar-toggle-btn" onClick={() => setIsSidebarOpen(!isSidebarOpen)} aria-label="Toggle Sidebar">
@@ -1134,9 +1132,13 @@ return (
     ) : (
       <main className="workspace split-view">
         {/* Left: Code and Problem Area */}
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'row', minWidth: 0 }}>
+        <div className="workspace-content-container">
           {/* Top Section: Problem Description (Always Visible) */}
-          <section className="problem-pane" style={{ width: `${problemPaneWidth}%`, minWidth: 0, overflow: 'auto' }}>
+          <section className="problem-pane" style={{ 
+            width: `var(--problem-pane-width, ${problemPaneWidth}%)`, 
+            minWidth: 0, 
+            overflow: 'auto' 
+          }}>
             <div className="workspace-header">
               <div className="panel-header" style={{ background: 'transparent', padding: '0' }}>Problem Description</div>
               {selectedQuestion && (
@@ -1155,15 +1157,15 @@ return (
             </div>
           </section>
 
-          {/* Draggable Divider */}
+          {/* Draggable Divider (Hide on mobile via CSS) */}
           <div
-            className="resize-divider"
+            className="resize-divider desktop-only"
             onMouseDown={handleDividerMouseDown}
             style={{ cursor: isDraggingDivider ? 'col-resize' : 'default' }}
           />
 
           {/* Bottom Section: Interactive Area (Tabs) */}
-          <section className="action-pane" style={{ flex: 1, minWidth: 0, overflow: 'auto' }}>
+          <section className="action-pane">
             <div className="workspace-header">
               <div className="tabs">
                 <div
