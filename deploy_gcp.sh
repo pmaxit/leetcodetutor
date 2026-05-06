@@ -42,11 +42,37 @@ echo -e "\n${BLUE}Step 3: Deploying to Cloud Run...${NC}"
 # Load local .env if it exists for environment variables
 if [ -f .env ]; then
     echo "Loading environment variables from .env..."
-    # Export vars while ignoring comments
-    export $(grep -v '^#' .env | xargs)
+    # Export vars while ignoring comments and empty lines
+    export $(grep -v '^#' .env | grep -v '^\s*$' | xargs)
 else
     echo -e "${RED}⚠️  No .env file found. Deploying with default environment variables.${NC}"
 fi
+
+# Create a temporary env-vars file (Cloud Run format, not shell format)
+TEMP_ENV_FILE=".env.cloud-run"
+cat > "$TEMP_ENV_FILE" <<EOF
+GEMINI_API_KEY=$GEMINI_API_KEY
+OPENROUTER_API_KEY=$OPENROUTER_API_KEY
+OPENROUTER_FALLBACKS=$OPENROUTER_FALLBACKS
+OPENROUTER_URL=${OPENROUTER_URL:-https://openrouter.ai/api/v1}
+LM_STUDIO_URL=$LM_STUDIO_URL
+LM_STUDIO_KEY=$LM_STUDIO_KEY
+LM_STUDIO_MODEL=$LM_STUDIO_MODEL
+LLM_BASE_URL=$LLM_BASE_URL
+LLM_API_KEY=$LLM_API_KEY
+LLM_MODEL=$LLM_MODEL
+LLM_ENABLE_TOOLS=${LLM_ENABLE_TOOLS:-false}
+TAVILY_API_KEY=$TAVILY_API_KEY
+DB_HOST=$DB_HOST
+DB_USER=$DB_USER
+DB_PASSWORD=$DB_PASSWORD
+DB_NAME=$DB_NAME
+DB_DIALECT=${DB_DIALECT:-mysql}
+DB_SOCKET_PATH=/cloudsql/adveralabs:us-central1:adveralabs-mysql
+NODE_ENV=production
+EOF
+
+echo "Deploying with environment variables from $TEMP_ENV_FILE"
 
 gcloud run deploy $SERVICE_NAME \
     --image $IMAGE_NAME \
@@ -58,7 +84,10 @@ gcloud run deploy $SERVICE_NAME \
     --timeout 120 \
     --cpu 2 \
     --memory 2Gi \
-    --set-env-vars "GEMINI_API_KEY=${GEMINI_API_KEY:-},OPENROUTER_API_KEY=${OPENROUTER_API_KEY:-},OPENROUTER_FALLBACKS=${OPENROUTER_FALLBACKS:-},OPENROUTER_URL=${OPENROUTER_URL:-https://openrouter.ai/api/v1},LM_STUDIO_URL=${LM_STUDIO_URL:-},LM_STUDIO_KEY=${LM_STUDIO_KEY:-},LM_STUDIO_MODEL=${LM_STUDIO_MODEL:-},LLM_BASE_URL=${LLM_BASE_URL:-},LLM_API_KEY=${LLM_API_KEY:-},LLM_MODEL=${LLM_MODEL:-},LLM_ENABLE_TOOLS=${LLM_ENABLE_TOOLS:-false},TAVILY_API_KEY=${TAVILY_API_KEY:-},DB_HOST=${DB_HOST:-},DB_USER=${DB_USER:-},DB_PASSWORD=${DB_PASSWORD:-},DB_NAME=${DB_NAME:-},DB_DIALECT=${DB_DIALECT:-mysql},DB_SOCKET_PATH=/cloudsql/adveralabs:us-central1:adveralabs-mysql"
+    --env-vars-file "$TEMP_ENV_FILE"
+
+# Clean up temp file
+rm "$TEMP_ENV_FILE"
 
 echo -e "\n${GREEN}════════════════════════════════════════════════════════════${NC}"
 echo -e "${GREEN}🎉 DEPLOYMENT COMPLETE!${NC}"
