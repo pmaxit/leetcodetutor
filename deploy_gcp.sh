@@ -95,7 +95,6 @@ gcloud run deploy $SERVICE_NAME \
     --timeout 120 \
     --cpu 2 \
     --memory 2Gi \
-    --clear-env-vars \
     --env-vars-file ".env.cloud-run.json"
 
 # Clean up temp file
