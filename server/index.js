@@ -525,7 +525,7 @@ app.post('/api/practice/save', authenticateToken, async (req, res) => {
 app.get('/api/practice/sessions', authenticateToken, async (req, res) => {
   try {
     const sessions = await PracticeSession.findAll({
-      where: { user_id: req.user.id },
+      where: { userId: req.user.id },
       attributes: ['id', 'sessionName', 'newPerDay', 'pastPerDay', 'createdAt', 'updatedAt'],
       order: [['createdAt', 'DESC']]
     });
@@ -540,7 +540,7 @@ app.get('/api/practice/sessions', authenticateToken, async (req, res) => {
 app.get('/api/practice/session/:id', authenticateToken, async (req, res) => {
   try {
     const session = await PracticeSession.findOne({
-      where: { id: req.params.id, user_id: req.user.id }
+      where: { id: req.params.id, userId: req.user.id }
     });
     if (!session) {
       return res.status(404).json({ error: 'Session not found' });
@@ -583,7 +583,7 @@ app.put('/api/practice/session/:id/progress', authenticateToken, async (req, res
   try {
     const { progress } = req.body;
     const session = await PracticeSession.findOne({
-      where: { id: req.params.id, user_id: req.user.id }
+      where: { id: req.params.id, userId: req.user.id }
     });
     if (!session) {
       return res.status(404).json({ error: 'Session not found' });
@@ -603,7 +603,7 @@ app.put('/api/practice/session/:id/rename', authenticateToken, async (req, res) 
   try {
     const { newName } = req.body;
     const session = await PracticeSession.findOne({
-      where: { id: req.params.id, user_id: req.user.id }
+      where: { id: req.params.id, userId: req.user.id }
     });
     if (!session) {
       return res.status(404).json({ error: 'Session not found' });
@@ -622,7 +622,7 @@ app.put('/api/practice/session/:id/rename', authenticateToken, async (req, res) 
 app.delete('/api/practice/session/:id', authenticateToken, async (req, res) => {
   try {
     const session = await PracticeSession.findOne({
-      where: { id: req.params.id, user_id: req.user.id }
+      where: { id: req.params.id, userId: req.user.id }
     });
     if (!session) {
       return res.status(404).json({ error: 'Session not found' });
