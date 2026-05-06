@@ -112,12 +112,15 @@ async function seed() {
       
       const { title, stages } = parseMarkdownToStages(content);
       
+      const urlMatch = content.match(/^URL:\s+(.+)$/m);
+      const originalUrl = urlMatch ? urlMatch[1].trim() : '';
+      
       questions.push({
         title,
         category: 'System Design',
         difficulty: 'Medium', // Or parsed if possible
         statement: `System Design Problem: ${title}`,
-        solution_format: JSON.stringify(stages)
+        solution_format: JSON.stringify({ stages, originalUrl })
       });
     }
 

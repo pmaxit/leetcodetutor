@@ -359,6 +359,11 @@ export default function SystemDesignView({ question }) {
               <div className="sd-ref-tip">
                 <strong>Pro Tip:</strong> Use the whiteboard tab to draw components and data flows. The AI evaluates both your drawing and typed answer together.
               </div>
+              {question.originalUrl && (
+                <a href={question.originalUrl} target="_blank" rel="noreferrer" className="sd-full-solution-link">
+                  🔗 View Full System Design Solution
+                </a>
+              )}
             </div>
           </div>
         )}

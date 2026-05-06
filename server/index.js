@@ -265,14 +265,25 @@ app.get('/api/sd/questions', async (req, res) => {
     const questions = await Question.findAll({ where: { category: 'System Design' } });
     const mappedQuestions = questions.map(q => {
       const data = q.toJSON();
+      let parsed = [];
       let stages = [];
-      try { stages = JSON.parse(data.solution_format || '[]'); } catch(e) {}
+      let originalUrl = '';
+      try { parsed = JSON.parse(data.solution_format || '[]'); } catch(e) {}
+      
+      if (!Array.isArray(parsed) && parsed.stages) {
+        stages = parsed.stages;
+        originalUrl = parsed.originalUrl || '';
+      } else {
+        stages = parsed;
+      }
+      
       return {
         id: data.id,
         title: data.title,
         difficulty: data.difficulty || 'Medium',
         category: data.category,
         description: data.statement,
+        originalUrl,
         stageCount: stages.length,
         stages: stages.map(({ id, name, icon, prompt, hint }) => ({ id, name, icon, prompt, hint }))
       };
@@ -291,8 +302,15 @@ app.post('/api/sd/stage/evaluate', async (req, res) => {
   if (!questionRaw) return res.status(404).json({ error: 'Question not found' });
   
   const question = questionRaw.toJSON();
+  let parsed = [];
   let stages = [];
-  try { stages = JSON.parse(question.solution_format || '[]'); } catch(e) {}
+  try { parsed = JSON.parse(question.solution_format || '[]'); } catch(e) {}
+  
+  if (!Array.isArray(parsed) && parsed.stages) {
+    stages = parsed.stages;
+  } else {
+    stages = parsed;
+  }
 
   const stage = stages.find(s => s.id === stageId);
   if (!stage) return res.status(404).json({ error: 'Stage not found' });
@@ -364,8 +382,15 @@ app.post('/api/sd/complete', async (req, res) => {
   const questionRaw = await Question.findOne({ where: { id: questionId } });
   if (!questionRaw) return res.status(404).json({ error: 'Question not found' });
   const question = questionRaw.toJSON();
+  let parsed = [];
   let stages = [];
-  try { stages = JSON.parse(question.solution_format || '[]'); } catch(e) {}
+  try { parsed = JSON.parse(question.solution_format || '[]'); } catch(e) {}
+  
+  if (!Array.isArray(parsed) && parsed.stages) {
+    stages = parsed.stages;
+  } else {
+    stages = parsed;
+  }
 
   const prompt = `
 You are a Senior Principal Engineer scoring a completed system design interview.

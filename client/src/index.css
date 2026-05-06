@@ -651,6 +651,28 @@ input {
 .sd-empty-title { font-size: 1.25rem; font-weight: 700; color: var(--text-primary); }
 .sd-empty-sub { font-size: 0.9rem; }
 
+.sd-full-solution-link {
+  display: inline-block;
+  margin-top: 1rem;
+  padding: 0.6rem 1rem;
+  background: rgba(56, 189, 248, 0.1);
+  border: 1px solid rgba(56, 189, 248, 0.3);
+  border-radius: 0.4rem;
+  color: var(--accent);
+  text-decoration: none;
+  font-size: 0.85rem;
+  font-weight: 600;
+  transition: all 0.2s;
+  width: 100%;
+  text-align: center;
+}
+
+.sd-full-solution-link:hover {
+  background: rgba(56, 189, 248, 0.2);
+  color: #fff;
+  border-color: var(--accent);
+}
+
 /* ─── Stage Progress Bar ─────────────────────────────────────────────────────── */
 .sd-top-bar {
   background: var(--bg-secondary);
