@@ -8,7 +8,7 @@ services:
     env_file:
       - .env
     environment:
-      - NODE_ENV=production
+      - NODE_ENV=development
       - PORT=8080
       - LLM_ENABLE_TOOLS=false
     restart: unless-stopped
