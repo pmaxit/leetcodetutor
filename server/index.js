@@ -105,7 +105,7 @@ app.post('/api/auth/login', async (req, res) => {
 // Get all question statuses as object
 app.get('/api/question-status', authenticateToken, async (req, res) => {
   try {
-    const statuses = await QuestionStatus.findAll({ where: { userId: req.user.id } });
+    const statuses = await QuestionStatus.findAll({ where: { user_id: req.user.id } });
     const statusMap = {};
     statuses.forEach(s => {
       statusMap[s.question_id] = { status: s.status, user_code: s.user_code };
@@ -128,7 +128,7 @@ app.put('/api/question-status/:questionId', authenticateToken, async (req, res) 
     }
 
     const [statusRecord] = await QuestionStatus.findOrCreate({
-      where: { question_id: questionId, userId: req.user.id },
+      where: { question_id: questionId, user_id: req.user.id },
       defaults: { status, updatedAt: new Date() }
     });
 
@@ -309,7 +309,7 @@ app.post('/api/code', authenticateToken, async (req, res) => {
     const timer = setTimeout(async () => {
       try {
         const [statusRecord] = await QuestionStatus.findOrCreate({
-          where: { question_id: selectedQuestion.id, userId: req.user.id },
+          where: { question_id: selectedQuestion.id, user_id: req.user.id },
           defaults: { status: 'needs_review', user_code: code, updatedAt: new Date() }
         });
         if (!statusRecord.isNewRecord) {
@@ -334,7 +334,7 @@ app.post('/api/code/reset', authenticateToken, async (req, res) => {
   const { questionId } = req.body;
   try {
     const statusRecord = await QuestionStatus.findOne({
-      where: { question_id: questionId, userId: req.user.id }
+      where: { question_id: questionId, user_id: req.user.id }
     });
     if (statusRecord) {
       statusRecord.user_code = null;
@@ -348,7 +348,7 @@ app.post('/api/code/reset', authenticateToken, async (req, res) => {
 
 app.post('/api/code/reset-all', authenticateToken, async (req, res) => {
   try {
-    await QuestionStatus.update({ user_code: null }, { where: { userId: req.user.id } });
+    await QuestionStatus.update({ user_code: null }, { where: { user_id: req.user.id } });
     res.json({ success: true });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -507,12 +507,12 @@ app.post('/api/practice/save', authenticateToken, async (req, res) => {
       schedule: idOnlySchedule,
       newPerDay,
       pastPerDay,
-      userId: req.user.id,
+      user_id: req.user.id,
       progress: {}
     });
 
     // Reset all code when creating a new session
-    await QuestionStatus.update({ user_code: null }, { where: { userId: req.user.id } });
+    await QuestionStatus.update({ user_code: null }, { where: { user_id: req.user.id } });
 
     res.json({ success: true, session });
   } catch (error) {
@@ -525,7 +525,7 @@ app.post('/api/practice/save', authenticateToken, async (req, res) => {
 app.get('/api/practice/sessions', authenticateToken, async (req, res) => {
   try {
     const sessions = await PracticeSession.findAll({
-      where: { userId: req.user.id },
+      where: { user_id: req.user.id },
       attributes: ['id', 'sessionName', 'newPerDay', 'pastPerDay', 'createdAt', 'updatedAt'],
       order: [['createdAt', 'DESC']]
     });
@@ -540,7 +540,7 @@ app.get('/api/practice/sessions', authenticateToken, async (req, res) => {
 app.get('/api/practice/session/:id', authenticateToken, async (req, res) => {
   try {
     const session = await PracticeSession.findOne({
-      where: { id: req.params.id, userId: req.user.id }
+      where: { id: req.params.id, user_id: req.user.id }
     });
     if (!session) {
       return res.status(404).json({ error: 'Session not found' });
@@ -583,7 +583,7 @@ app.put('/api/practice/session/:id/progress', authenticateToken, async (req, res
   try {
     const { progress } = req.body;
     const session = await PracticeSession.findOne({
-      where: { id: req.params.id, userId: req.user.id }
+      where: { id: req.params.id, user_id: req.user.id }
     });
     if (!session) {
       return res.status(404).json({ error: 'Session not found' });
@@ -603,7 +603,7 @@ app.put('/api/practice/session/:id/rename', authenticateToken, async (req, res) 
   try {
     const { newName } = req.body;
     const session = await PracticeSession.findOne({
-      where: { id: req.params.id, userId: req.user.id }
+      where: { id: req.params.id, user_id: req.user.id }
     });
     if (!session) {
       return res.status(404).json({ error: 'Session not found' });
@@ -622,7 +622,7 @@ app.put('/api/practice/session/:id/rename', authenticateToken, async (req, res) 
 app.delete('/api/practice/session/:id', authenticateToken, async (req, res) => {
   try {
     const session = await PracticeSession.findOne({
-      where: { id: req.params.id, userId: req.user.id }
+      where: { id: req.params.id, user_id: req.user.id }
     });
     if (!session) {
       return res.status(404).json({ error: 'Session not found' });
@@ -631,7 +631,7 @@ app.delete('/api/practice/session/:id', authenticateToken, async (req, res) => {
     await session.destroy();
     
     // Reset all code when resetting a session
-    await QuestionStatus.update({ user_code: null }, { where: { userId: req.user.id } });
+    await QuestionStatus.update({ user_code: null }, { where: { user_id: req.user.id } });
     
     res.json({ success: true, message: 'Session deleted' });
   } catch (error) {

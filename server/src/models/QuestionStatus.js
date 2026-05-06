@@ -2,7 +2,7 @@ const { DataTypes } = require('sequelize');
 const sequelize = require('./db');
 
 const QuestionStatus = sequelize.define('QuestionStatus', {
-  userId: {
+  user_id: {
     type: DataTypes.INTEGER,
     primaryKey: true,
     allowNull: false,
@@ -29,16 +29,8 @@ const QuestionStatus = sequelize.define('QuestionStatus', {
 }, {
   tableName: 'question_status',
   timestamps: false,
-  createdAt: false
+  createdAt: false,
+  underscores: false
 });
-
-// Sync the model with the database
-(async () => {
-  try {
-    await sequelize.sync({ alter: true });
-  } catch (err) {
-    console.error('Error syncing QuestionStatus model:', err);
-  }
-})();
 
 module.exports = { QuestionStatus };
