@@ -86,6 +86,7 @@ function App() {
     message: '',
     onConfirm: null
   });
+  const [isChatOpen, setIsChatOpen] = useState(false);
 
   // ─── Auth State ─────────────────────────────────────────────────────────────
   const [token, setToken] = useState(localStorage.getItem('ag_token'));
@@ -1253,15 +1254,18 @@ return (
 
         {/* Draggable Divider for Feedback Panel */}
         <div
-          className="resize-divider"
+          className="resize-divider desktop-only"
           onMouseDown={handleFeedbackDividerMouseDown}
           style={{ cursor: isDraggingFeedbackDivider ? 'col-resize' : 'default', borderLeft: '1px solid var(--border)' }}
         />
 
-        {/* Right: Feedback Panel */}
-        <aside className="panel feedback-panel" style={{ minWidth: 0, width: `${feedbackPaneWidth}px` }}>
-          {/* Interviewer section moved here */}
-          <div className="interviewer-section">
+        {/* ─── INTERVIEWER PANEL ─────────────────────────────────────── */}
+        <aside className={`panel feedback-panel ${isChatOpen ? 'open' : ''}`} style={{ minWidth: 0, width: `${feedbackPaneWidth}px` }}>
+          <div className="panel-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <span>Interviewer</span>
+            <button className="mobile-only chat-close-btn" onClick={() => setIsChatOpen(false)}>×</button>
+          </div>
+          <div className="chat-container">
             {constraints.length > 0 && (
               <>
                 <div className="panel-header sub-header">Active Constraints</div>
@@ -1275,8 +1279,7 @@ return (
               </>
             )}
 
-            <div className="panel-header sub-header">Interviewer</div>
-            <div className="chat-container">
+            <div className="messages-list">
               {messages.map((msg, idx) => (
                 <div key={idx} className={`message ${msg.role}`}>
                   <ReactMarkdown
@@ -1353,6 +1356,22 @@ return (
         </aside>
       </main>
     ))}
+
+    {/* Floating Chat Button (Mobile Only) */}
+    {currentView === 'main' && (
+      <button 
+        className={`floating-chat-btn mobile-only ${isChatOpen ? 'hidden' : ''}`}
+        onClick={() => setIsChatOpen(true)}
+        aria-label="Open Interviewer"
+      >
+        <span className="chat-icon">💬</span>
+      </button>
+    )}
+
+    {/* Mobile Chat Overlay */}
+    {currentView === 'main' && isChatOpen && (
+      <div className="mobile-overlay" onClick={() => setIsChatOpen(false)}></div>
+    )}
 
     {currentView === 'main' && report && (
       <div className="modal-overlay">
