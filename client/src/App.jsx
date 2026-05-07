@@ -87,6 +87,7 @@ function App() {
     onConfirm: null
   });
   const [isChatOpen, setIsChatOpen] = useState(false);
+  const [showProfileMenu, setShowProfileMenu] = useState(false);
 
   // ─── Auth State ─────────────────────────────────────────────────────────────
   const [token, setToken] = useState(localStorage.getItem('ag_token'));
@@ -986,20 +987,30 @@ return (
         )}
       </div>
       <div className="header-right">
-        {currentView === 'main' && (
-          <div className="header-actions">
-            <button onClick={() => setCurrentView('stats')} className="header-icon-btn" title="Statistics">📊</button>
-            <button onClick={() => setCurrentView('settings')} className="header-icon-btn" title="Settings">⚙️</button>
-            <button className="header-icon-btn" title="Dashboard">📈</button>
-          </div>
-        )}
-        
-        <div className="profile-container">
-          <div className="profile-trigger" title={user?.email}>
+        <div className="profile-container" onMouseEnter={() => setShowProfileMenu(true)} onMouseLeave={() => setShowProfileMenu(false)}>
+          <div className="profile-trigger">
             <span className="profile-icon">👤</span>
             <span className="user-email desktop-only">{user?.email}</span>
-            <button onClick={handleLogout} className="logout-mini-btn" title="Logout">🚪</button>
           </div>
+          
+          {showProfileMenu && (
+            <div className="profile-dropdown">
+              <div className="dropdown-header desktop-only">{user?.email}</div>
+              <button onClick={() => { setCurrentView('stats'); setShowProfileMenu(false); }} className="dropdown-item">
+                <span className="item-icon">📊</span> Statistics
+              </button>
+              <button onClick={() => { setCurrentView('settings'); setShowProfileMenu(false); }} className="dropdown-item">
+                <span className="item-icon">⚙️</span> Settings
+              </button>
+              <button onClick={() => setShowProfileMenu(false)} className="dropdown-item">
+                <span className="item-icon">📈</span> Dashboard
+              </button>
+              <div className="dropdown-divider"></div>
+              <button onClick={handleLogout} className="dropdown-item logout">
+                <span className="item-icon">🚪</span> Logout
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </header>
