@@ -880,6 +880,26 @@ input {
   border-color: var(--accent);
 }
 
+.sd-original-solution-link {
+  display: block;
+  padding: 1rem;
+  background: linear-gradient(135deg, rgba(34, 197, 94, 0.1) 0%, rgba(34, 197, 94, 0.05) 100%);
+  border-left: 3px solid rgb(34, 197, 94);
+  border-radius: 0.4rem;
+  color: rgb(34, 197, 94);
+  text-decoration: none;
+  font-size: 0.95rem;
+  font-weight: 600;
+  transition: all 0.2s;
+  text-align: center;
+}
+
+.sd-original-solution-link:hover {
+  background: linear-gradient(135deg, rgba(34, 197, 94, 0.2) 0%, rgba(34, 197, 94, 0.1) 100%);
+  border-left-color: rgb(34, 197, 94);
+  transform: translateX(4px);
+}
+
 /* ─── Stage Progress Bar ─────────────────────────────────────────────────────── */
 .sd-top-bar {
   background: var(--bg-secondary);

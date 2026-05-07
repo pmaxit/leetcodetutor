@@ -605,105 +605,16 @@ export default function SystemDesignView({ question }) {
 
   const renderReferenceSolutionPanel = () => (
     <div className="sd-whiteboard-panel sd-reference-panel">
-      <div className="sd-wb-label">Reference Framework</div>
+      <div className="sd-wb-label">Reference</div>
       <div className="sd-ref-content">
-        <div className="sd-ref-title">HelloInterview Delivery Framework</div>
-        <div className="sd-ref-steps">
-          {stages.map((s, i) => (
-            <div key={s.id} className={`sd-ref-step ${i === currentStageIndex ? 'current' : ''} ${completedStages.has(i) ? 'done' : ''}`}>
-              <span className="sd-ref-step-icon">{s.icon}</span>
-              <span>{s.name}</span>
-              {completedStages.has(i) && <span className="sd-ref-check">✓</span>}
-            </div>
-          ))}
-        </div>
-        <div className="sd-ref-tip">
-          <strong>Pro Tip:</strong> Use this as your structured reference while practicing the interview flow.
-        </div>
         {question.originalUrl && (
-          <a href={question.originalUrl} target="_blank" rel="noreferrer" className="sd-full-solution-link">
-            🔗 View Full System Design Solution
+          <a href={question.originalUrl} target="_blank" rel="noreferrer" className="sd-original-solution-link">
+            🔗 View Full Solution
           </a>
         )}
-        {question.youtube_url && (
-          <div className="video-embed-container" style={{ marginTop: '1rem' }}>
-            <iframe
-              width="100%"
-              height="200"
-              src={`https://www.youtube.com/embed/${question.youtube_url.split('v=')[1]?.split('&')[0] || question.youtube_url.split('/').pop()}`}
-              title="YouTube video player"
-              frameBorder="0"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-              allowFullScreen
-              style={{ borderRadius: '8px', border: '1px solid var(--border)' }}
-            ></iframe>
-          </div>
+        {!question.originalUrl && (
+          <div className="placeholder-text">No reference solution link available.</div>
         )}
-
-        <div style={{ marginTop: '1rem', borderTop: '1px solid var(--border)', paddingTop: '0.75rem' }}>
-          <div style={{ fontWeight: 700, marginBottom: '0.5rem' }}>Full Solution (Markdown)</div>
-          {isSolutionLoading ? (
-            <div className="placeholder-text">Loading full solution...</div>
-          ) : solutionLoadError ? (
-            <div className="placeholder-text">{solutionLoadError}</div>
-          ) : solutionMarkdown ? (
-            <div className="sd-inline-solution-markdown">
-              {solutionTitle && (
-                <div style={{ fontWeight: 600, marginBottom: '0.5rem' }}>{solutionTitle}</div>
-              )}
-              <ReactMarkdown
-                remarkPlugins={[remarkGfm, remarkMath]}
-                rehypePlugins={[rehypeKatex]}
-                components={{
-                  code({ inline, className, children, ...props }) {
-                    const match = /language-(\w+)/.exec(className || '');
-                    return !inline && match ? (
-                      <SyntaxHighlighter
-                        style={vscDarkPlus}
-                        language={match[1]}
-                        PreTag="div"
-                        {...props}
-                      >
-                        {String(children).replace(/\n$/, '')}
-                      </SyntaxHighlighter>
-                    ) : (
-                      <code className={className} {...props}>
-                        {children}
-                      </code>
-                    );
-                  },
-                }}
-              >
-                {solutionMarkdown}
-              </ReactMarkdown>
-            </div>
-          ) : (
-            <div className="placeholder-text">No markdown solution available.</div>
-          )}
-        </div>
-
-        <div style={{ marginTop: '1rem', borderTop: '1px solid var(--border)', paddingTop: '0.75rem' }}>
-          <div style={{ fontWeight: 600, marginBottom: '0.5rem' }}>Practice Section: Full Solutions</div>
-          {isPracticeLoading ? (
-            <div className="placeholder-text">Loading solution pages...</div>
-          ) : practiceSolutions.length === 0 ? (
-            <div className="placeholder-text">No full solution pages found.</div>
-          ) : (
-            <div style={{ display: 'grid', gap: '0.35rem', maxHeight: '240px', overflowY: 'auto' }}>
-              {practiceSolutions.map((solution) => (
-                <a
-                  key={solution.slug}
-                  href={solution.url}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="resource-link"
-                >
-                  📘 {solution.title}
-                </a>
-              ))}
-            </div>
-          )}
-        </div>
       </div>
     </div>
   );
