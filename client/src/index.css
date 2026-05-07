@@ -1854,16 +1854,25 @@ input {
 
 /* ─── Mobile UI Layout ────────────────────────────────────────────── */
 @media (max-width: 1024px) {
+  *, *::before, *::after {
+    box-sizing: border-box !important;
+  }
+
   .app-container {
     grid-template-columns: 1fr !important;
     grid-template-rows: 60px 1fr 28px !important;
     height: 100vh !important;
-    width: 100vw !important;
+    width: 100% !important;
+    max-width: 100% !important;
     overflow: hidden !important;
   }
 
   body {
-    overflow: hidden;
+    overflow: hidden !important;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
   }
 
   header {
@@ -1887,10 +1896,11 @@ input {
     flex-direction: column;
     height: 100%;
     width: 100%;
-    overflow-y: auto;
-    overflow-x: hidden;
-    scroll-behavior: smooth;
+    max-width: 100%;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
     -webkit-overflow-scrolling: touch;
+    position: relative;
   }
 
   .workspace-content-container {
@@ -1901,19 +1911,20 @@ input {
 
   .problem-pane {
     width: 100% !important;
+    max-width: 100% !important;
     flex: none !important;
     min-height: 300px;
     height: auto !important;
     border-right: none;
     border-bottom: 1px solid var(--border);
-    overflow-y: auto !important;
-    overflow-x: auto !important;
+    overflow: visible !important;
   }
 
   .action-pane {
     width: 100% !important;
+    max-width: 100% !important;
     flex: none !important;
-    height: 600px !important;
+    height: auto !important;
     min-height: 500px;
     overflow: visible !important;
   }
@@ -4144,4 +4155,67 @@ input {
 .dropdown-divider {
   height: 1px;
   background: var(--border);
+}
+
+/* Mobile Viewport Fixes */
+@media (max-width: 1024px) {
+  .workspace-header {
+    flex-direction: column;
+    align-items: stretch;
+    padding: 0.5rem;
+    gap: 0.5rem;
+  }
+
+  .workspace-header > div {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+  }
+
+  .tabs {
+    width: 100%;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch;
+    border-bottom: 1px solid var(--border);
+    scrollbar-width: none; /* Hide scrollbar for cleaner look */
+  }
+
+  .tabs::-webkit-scrollbar {
+    display: none;
+  }
+
+  .tab {
+    padding: 0.5rem 0.75rem;
+    white-space: nowrap;
+    font-size: 0.75rem;
+    flex: 1;
+    text-align: center;
+  }
+
+  .problem-resources {
+    padding: 0 1rem 2rem 1rem;
+  }
+
+  /* Ensure action buttons don't overflow */
+  .ai-feedback-btn, .action-btn-secondary {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.65rem;
+    flex: 1;
+  }
+}
+
+/* Specific iPhone Fixes */
+@media (max-width: 480px) {
+  .app-container {
+    height: 100vh !important;
+    height: 100dvh !important;
+  }
+  
+  .problem-title {
+    font-size: 1.25rem;
+  }
+  
+  .nav-btn {
+    min-width: 40px;
+  }
 }
