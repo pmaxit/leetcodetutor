@@ -215,17 +215,7 @@ export default function SystemDesignView({ question }) {
   };
 
   const getSolutionSlugFromQuestion = (selectedQuestion) => {
-    const originalUrl = selectedQuestion?.originalUrl || '';
-    const segments = originalUrl.split('/').filter(Boolean);
-    if (segments.length >= 2) {
-      return `${segments[segments.length - 2]}-${segments[segments.length - 1]}`.toLowerCase();
-    }
-    if (segments.length === 1) return segments[0].toLowerCase();
-    const titleSlug = (selectedQuestion?.title || '')
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, '-')
-      .replace(/^-+|-+$/g, '');
-    return titleSlug || null;
+    return selectedQuestion?.solutionSlug || null;
   };
 
   const getRawTldrawSnapshot = () => {

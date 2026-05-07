@@ -839,14 +839,33 @@ app.get('/api/sd/questions', authenticateToken, async (req, res) => {
       let stages = [];
       let originalUrl = '';
       try { parsed = JSON.parse(data.solution_format || '[]'); } catch(e) {}
-      
+
       if (!Array.isArray(parsed) && parsed.stages) {
         stages = parsed.stages;
         originalUrl = parsed.originalUrl || '';
       } else {
         stages = parsed;
       }
-      
+
+      // Derive solution slug: from originalUrl last two segments, or title, then verify it exists
+      let solutionSlug = null;
+      if (originalUrl) {
+        const segments = originalUrl.split('/').filter(Boolean);
+        if (segments.length >= 2) {
+          solutionSlug = `${segments[segments.length - 2]}-${segments[segments.length - 1]}`.toLowerCase();
+        } else if (segments.length === 1) {
+          solutionSlug = segments[0].toLowerCase();
+        }
+      }
+      // Fallback: derive from title if no originalUrl or URL parsing failed
+      if (!solutionSlug) {
+        const titleSlug = (data.title || '')
+          .toLowerCase()
+          .replace(/[^a-z0-9]+/g, '-')
+          .replace(/^-+|-+$/g, '');
+        if (titleSlug) solutionSlug = titleSlug;
+      }
+
       return {
         id: data.id,
         title: data.title,
@@ -854,6 +873,7 @@ app.get('/api/sd/questions', authenticateToken, async (req, res) => {
         category: data.category,
         description: data.statement,
         originalUrl,
+        solutionSlug,
         neetcode_url: data.neetcode_url,
         youtube_url: data.youtube_url,
         stageCount: stages.length,
