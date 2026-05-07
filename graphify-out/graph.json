@@ -27,7 +27,7 @@
       "source_file": "scratch_check_boilerplate.js",
       "source_location": "L1",
       "id": "scratch_check_boilerplate_js",
-      "community": 19,
+      "community": 21,
       "norm_label": "scratch_check_boilerplate.js"
     },
     {
@@ -36,7 +36,7 @@
       "source_file": "scratch_check_boilerplate.js",
       "source_location": "L4",
       "id": "machine_learning_scratch_check_boilerplate_check",
-      "community": 19,
+      "community": 21,
       "norm_label": "check()"
     },
     {
@@ -45,7 +45,7 @@
       "source_file": "scratch_check_variations.js",
       "source_location": "L1",
       "id": "scratch_check_variations_js",
-      "community": 20,
+      "community": 22,
       "norm_label": "scratch_check_variations.js"
     },
     {
@@ -54,7 +54,7 @@
       "source_file": "scratch_check_variations.js",
       "source_location": "L3",
       "id": "machine_learning_scratch_check_variations_check",
-      "community": 20,
+      "community": 22,
       "norm_label": "check()"
     },
     {
@@ -63,7 +63,7 @@
       "source_file": "scratch_recheck_best.js",
       "source_location": "L1",
       "id": "scratch_recheck_best_js",
-      "community": 21,
+      "community": 23,
       "norm_label": "scratch_recheck_best.js"
     },
     {
@@ -72,7 +72,7 @@
       "source_file": "scratch_recheck_best.js",
       "source_location": "L3",
       "id": "machine_learning_scratch_recheck_best_check",
-      "community": 21,
+      "community": 23,
       "norm_label": "check()"
     },
     {
@@ -81,7 +81,7 @@
       "source_file": "scratch_show_dbs.js",
       "source_location": "L1",
       "id": "scratch_show_dbs_js",
-      "community": 22,
+      "community": 24,
       "norm_label": "scratch_show_dbs.js"
     },
     {
@@ -90,7 +90,7 @@
       "source_file": "scratch_show_dbs.js",
       "source_location": "L3",
       "id": "machine_learning_scratch_show_dbs_check",
-      "community": 22,
+      "community": 24,
       "norm_label": "check()"
     },
     {
@@ -117,7 +117,7 @@
       "source_file": "scratch_list_cols.js",
       "source_location": "L1",
       "id": "scratch_list_cols_js",
-      "community": 23,
+      "community": 25,
       "norm_label": "scratch_list_cols.js"
     },
     {
@@ -126,7 +126,7 @@
       "source_file": "scratch_list_cols.js",
       "source_location": "L3",
       "id": "machine_learning_scratch_list_cols_check",
-      "community": 23,
+      "community": 25,
       "norm_label": "check()"
     },
     {
@@ -135,7 +135,7 @@
       "source_file": "scratch_show_tables.js",
       "source_location": "L1",
       "id": "scratch_show_tables_js",
-      "community": 24,
+      "community": 26,
       "norm_label": "scratch_show_tables.js"
     },
     {
@@ -144,7 +144,7 @@
       "source_file": "scratch_show_tables.js",
       "source_location": "L3",
       "id": "machine_learning_scratch_show_tables_check",
-      "community": 24,
+      "community": 26,
       "norm_label": "check()"
     },
     {
@@ -153,7 +153,7 @@
       "source_file": "scratch_check_sidebar.js",
       "source_location": "L1",
       "id": "scratch_check_sidebar_js",
-      "community": 25,
+      "community": 27,
       "norm_label": "scratch_check_sidebar.js"
     },
     {
@@ -162,7 +162,7 @@
       "source_file": "scratch_check_sidebar.js",
       "source_location": "L3",
       "id": "machine_learning_scratch_check_sidebar_check",
-      "community": 25,
+      "community": 27,
       "norm_label": "check()"
     },
     {
@@ -171,7 +171,7 @@
       "source_file": "scratch_check_columns.js",
       "source_location": "L1",
       "id": "scratch_check_columns_js",
-      "community": 26,
+      "community": 28,
       "norm_label": "scratch_check_columns.js"
     },
     {
@@ -180,7 +180,7 @@
       "source_file": "scratch_check_columns.js",
       "source_location": "L3",
       "id": "machine_learning_scratch_check_columns_check",
-      "community": 26,
+      "community": 28,
       "norm_label": "check()"
     },
     {
@@ -189,7 +189,7 @@
       "source_file": "scratch_check_scaffold.js",
       "source_location": "L1",
       "id": "scratch_check_scaffold_js",
-      "community": 27,
+      "community": 29,
       "norm_label": "scratch_check_scaffold.js"
     },
     {
@@ -198,7 +198,7 @@
       "source_file": "scratch_check_scaffold.js",
       "source_location": "L4",
       "id": "machine_learning_scratch_check_scaffold_check",
-      "community": 27,
+      "community": 29,
       "norm_label": "check()"
     },
     {
@@ -207,7 +207,7 @@
       "source_file": "scratch_check_duplicates.js",
       "source_location": "L1",
       "id": "scratch_check_duplicates_js",
-      "community": 28,
+      "community": 30,
       "norm_label": "scratch_check_duplicates.js"
     },
     {
@@ -216,7 +216,7 @@
       "source_file": "scratch_check_duplicates.js",
       "source_location": "L3",
       "id": "machine_learning_scratch_check_duplicates_check",
-      "community": 28,
+      "community": 30,
       "norm_label": "check()"
     },
     {
@@ -225,7 +225,7 @@
       "source_file": "scratch_search_urls.js",
       "source_location": "L1",
       "id": "scratch_search_urls_js",
-      "community": 29,
+      "community": 31,
       "norm_label": "scratch_search_urls.js"
     },
     {
@@ -234,7 +234,7 @@
       "source_file": "scratch_search_urls.js",
       "source_location": "L3",
       "id": "machine_learning_scratch_search_urls_check",
-      "community": 29,
+      "community": 31,
       "norm_label": "check()"
     },
     {
@@ -243,7 +243,7 @@
       "source_file": "scratch_check_duplicates_best.js",
       "source_location": "L1",
       "id": "scratch_check_duplicates_best_js",
-      "community": 30,
+      "community": 32,
       "norm_label": "scratch_check_duplicates_best.js"
     },
     {
@@ -252,7 +252,7 @@
       "source_file": "scratch_check_duplicates_best.js",
       "source_location": "L3",
       "id": "machine_learning_scratch_check_duplicates_best_check",
-      "community": 30,
+      "community": 32,
       "norm_label": "check()"
     },
     {
@@ -261,7 +261,7 @@
       "source_file": "scratch_view_question.js",
       "source_location": "L1",
       "id": "scratch_view_question_js",
-      "community": 31,
+      "community": 33,
       "norm_label": "scratch_view_question.js"
     },
     {
@@ -270,7 +270,7 @@
       "source_file": "scratch_view_question.js",
       "source_location": "L4",
       "id": "machine_learning_scratch_view_question_view",
-      "community": 31,
+      "community": 33,
       "norm_label": "view()"
     },
     {
@@ -279,7 +279,7 @@
       "source_file": "scratch_check_api.js",
       "source_location": "L1",
       "id": "scratch_check_api_js",
-      "community": 32,
+      "community": 34,
       "norm_label": "scratch_check_api.js"
     },
     {
@@ -288,7 +288,7 @@
       "source_file": "scratch_check_api.js",
       "source_location": "L3",
       "id": "machine_learning_scratch_check_api_check",
-      "community": 32,
+      "community": 34,
       "norm_label": "check()"
     },
     {
@@ -297,7 +297,7 @@
       "source_file": "scratch_check_ids.js",
       "source_location": "L1",
       "id": "scratch_check_ids_js",
-      "community": 33,
+      "community": 35,
       "norm_label": "scratch_check_ids.js"
     },
     {
@@ -306,7 +306,7 @@
       "source_file": "scratch_check_ids.js",
       "source_location": "L3",
       "id": "machine_learning_scratch_check_ids_check",
-      "community": 33,
+      "community": 35,
       "norm_label": "check()"
     },
     {
@@ -315,7 +315,7 @@
       "source_file": "scratch_find_urls.js",
       "source_location": "L1",
       "id": "scratch_find_urls_js",
-      "community": 34,
+      "community": 36,
       "norm_label": "scratch_find_urls.js"
     },
     {
@@ -324,7 +324,7 @@
       "source_file": "scratch_find_urls.js",
       "source_location": "L3",
       "id": "machine_learning_scratch_find_urls_check",
-      "community": 34,
+      "community": 36,
       "norm_label": "check()"
     },
     {
@@ -333,7 +333,7 @@
       "source_file": "scratch_raw_query.js",
       "source_location": "L1",
       "id": "scratch_raw_query_js",
-      "community": 35,
+      "community": 37,
       "norm_label": "scratch_raw_query.js"
     },
     {
@@ -342,7 +342,7 @@
       "source_file": "scratch_raw_query.js",
       "source_location": "L3",
       "id": "machine_learning_scratch_raw_query_check",
-      "community": 35,
+      "community": 37,
       "norm_label": "check()"
     },
     {
@@ -351,7 +351,7 @@
       "source_file": "scratch_check_api_questions.js",
       "source_location": "L1",
       "id": "scratch_check_api_questions_js",
-      "community": 36,
+      "community": 38,
       "norm_label": "scratch_check_api_questions.js"
     },
     {
@@ -360,7 +360,7 @@
       "source_file": "scratch_check_api_questions.js",
       "source_location": "L3",
       "id": "machine_learning_scratch_check_api_questions_check",
-      "community": 36,
+      "community": 38,
       "norm_label": "check()"
     },
     {
@@ -369,7 +369,7 @@
       "source_file": "scratch_check_sd_schema.js",
       "source_location": "L1",
       "id": "scratch_check_sd_schema_js",
-      "community": 37,
+      "community": 39,
       "norm_label": "scratch_check_sd_schema.js"
     },
     {
@@ -378,7 +378,7 @@
       "source_file": "scratch_check_sd_schema.js",
       "source_location": "L3",
       "id": "machine_learning_scratch_check_sd_schema_check",
-      "community": 37,
+      "community": 39,
       "norm_label": "check()"
     },
     {
@@ -387,7 +387,7 @@
       "source_file": "scratch_stats.js",
       "source_location": "L1",
       "id": "scratch_stats_js",
-      "community": 38,
+      "community": 40,
       "norm_label": "scratch_stats.js"
     },
     {
@@ -396,7 +396,7 @@
       "source_file": "scratch_stats.js",
       "source_location": "L3",
       "id": "machine_learning_scratch_stats_check",
-      "community": 38,
+      "community": 40,
       "norm_label": "check()"
     },
     {
@@ -405,7 +405,7 @@
       "source_file": "scratch_check_fields.js",
       "source_location": "L1",
       "id": "scratch_check_fields_js",
-      "community": 39,
+      "community": 41,
       "norm_label": "scratch_check_fields.js"
     },
     {
@@ -414,7 +414,7 @@
       "source_file": "scratch_check_fields.js",
       "source_location": "L3",
       "id": "machine_learning_scratch_check_fields_check",
-      "community": 39,
+      "community": 41,
       "norm_label": "check()"
     },
     {
@@ -423,7 +423,7 @@
       "source_file": "scratch_check_hashing.js",
       "source_location": "L1",
       "id": "scratch_check_hashing_js",
-      "community": 40,
+      "community": 42,
       "norm_label": "scratch_check_hashing.js"
     },
     {
@@ -432,7 +432,7 @@
       "source_file": "scratch_check_hashing.js",
       "source_location": "L3",
       "id": "machine_learning_scratch_check_hashing_check",
-      "community": 40,
+      "community": 42,
       "norm_label": "check()"
     },
     {
@@ -441,7 +441,7 @@
       "source_file": "client/vite.config.js",
       "source_location": "L1",
       "id": "client_vite_config_js",
-      "community": 62,
+      "community": 64,
       "norm_label": "vite.config.js"
     },
     {
@@ -450,7 +450,7 @@
       "source_file": "client/eslint.config.js",
       "source_location": "L1",
       "id": "client_eslint_config_js",
-      "community": 63,
+      "community": 65,
       "norm_label": "eslint.config.js"
     },
     {
@@ -459,7 +459,7 @@
       "source_file": "client/src/SystemDesignView.jsx",
       "source_location": "L1",
       "id": "client_src_systemdesignview_jsx",
-      "community": 10,
+      "community": 9,
       "norm_label": "systemdesignview.jsx"
     },
     {
@@ -468,7 +468,7 @@
       "source_file": "client/src/SystemDesignView.jsx",
       "source_location": "L8",
       "id": "src_systemdesignview_stageprogressbar",
-      "community": 10,
+      "community": 9,
       "norm_label": "stageprogressbar()"
     },
     {
@@ -477,7 +477,7 @@
       "source_file": "client/src/SystemDesignView.jsx",
       "source_location": "L28",
       "id": "src_systemdesignview_evaluationcard",
-      "community": 10,
+      "community": 9,
       "norm_label": "evaluationcard()"
     },
     {
@@ -486,7 +486,7 @@
       "source_file": "client/src/SystemDesignView.jsx",
       "source_location": "L75",
       "id": "src_systemdesignview_finalreport",
-      "community": 10,
+      "community": 9,
       "norm_label": "finalreport()"
     },
     {
@@ -495,7 +495,7 @@
       "source_file": "client/src/SystemDesignView.jsx",
       "source_location": "L141",
       "id": "src_systemdesignview_systemdesignview",
-      "community": 10,
+      "community": 9,
       "norm_label": "systemdesignview()"
     },
     {
@@ -504,7 +504,7 @@
       "source_file": "client/src/main.jsx",
       "source_location": "L1",
       "id": "client_src_main_jsx",
-      "community": 64,
+      "community": 66,
       "norm_label": "main.jsx"
     },
     {
@@ -513,7 +513,7 @@
       "source_file": "client/src/DebugBar.jsx",
       "source_location": "L1",
       "id": "client_src_debugbar_jsx",
-      "community": 41,
+      "community": 43,
       "norm_label": "debugbar.jsx"
     },
     {
@@ -522,7 +522,7 @@
       "source_file": "client/src/DebugBar.jsx",
       "source_location": "L3",
       "id": "src_debugbar_debugbar",
-      "community": 41,
+      "community": 43,
       "norm_label": "debugbar()"
     },
     {
@@ -567,7 +567,7 @@
       "source_file": "client/src/utils/formatProblemDescription.js",
       "source_location": "L1",
       "id": "client_src_utils_formatproblemdescription_js",
-      "community": 42,
+      "community": 44,
       "norm_label": "formatproblemdescription.js"
     },
     {
@@ -576,7 +576,7 @@
       "source_file": "client/src/utils/formatProblemDescription.js",
       "source_location": "L1",
       "id": "utils_formatproblemdescription_formatproblemdescription",
-      "community": 42,
+      "community": 44,
       "norm_label": "formatproblemdescription()"
     },
     {
@@ -585,7 +585,7 @@
       "source_file": "client/src/utils/formatLeetcodeHTML.js",
       "source_location": "L1",
       "id": "client_src_utils_formatleetcodehtml_js",
-      "community": 43,
+      "community": 45,
       "norm_label": "formatleetcodehtml.js"
     },
     {
@@ -594,7 +594,7 @@
       "source_file": "client/src/utils/formatLeetcodeHTML.js",
       "source_location": "L1",
       "id": "utils_formatleetcodehtml_formatleetcodehtml",
-      "community": 43,
+      "community": 45,
       "norm_label": "formatleetcodehtml()"
     },
     {
@@ -603,7 +603,7 @@
       "source_file": "client/src/components/StatsPage.jsx",
       "source_location": "L1",
       "id": "client_src_components_statspage_jsx",
-      "community": 44,
+      "community": 46,
       "norm_label": "statspage.jsx"
     },
     {
@@ -612,7 +612,7 @@
       "source_file": "client/src/components/StatsPage.jsx",
       "source_location": "L3",
       "id": "components_statspage_statspage",
-      "community": 44,
+      "community": 46,
       "norm_label": "statspage()"
     },
     {
@@ -621,7 +621,7 @@
       "source_file": "client/src/components/SettingsPage.jsx",
       "source_location": "L1",
       "id": "client_src_components_settingspage_jsx",
-      "community": 45,
+      "community": 47,
       "norm_label": "settingspage.jsx"
     },
     {
@@ -630,7 +630,7 @@
       "source_file": "client/src/components/SettingsPage.jsx",
       "source_location": "L3",
       "id": "components_settingspage_settingspage",
-      "community": 45,
+      "community": 47,
       "norm_label": "settingspage()"
     },
     {
@@ -639,7 +639,7 @@
       "source_file": "client/src/components/Login.jsx",
       "source_location": "L1",
       "id": "client_src_components_login_jsx",
-      "community": 46,
+      "community": 48,
       "norm_label": "login.jsx"
     },
     {
@@ -648,7 +648,7 @@
       "source_file": "client/src/components/Login.jsx",
       "source_location": "L3",
       "id": "components_login_login",
-      "community": 46,
+      "community": 48,
       "norm_label": "login()"
     },
     {
@@ -657,7 +657,7 @@
       "source_file": "server/index.js",
       "source_location": "L1",
       "id": "server_index_js",
-      "community": 8,
+      "community": 7,
       "norm_label": "index.js"
     },
     {
@@ -666,7 +666,7 @@
       "source_file": "server/index.js",
       "source_location": "L34",
       "id": "server_index_mapquestion",
-      "community": 8,
+      "community": 7,
       "norm_label": "mapquestion()"
     },
     {
@@ -675,7 +675,7 @@
       "source_file": "server/index.js",
       "source_location": "L148",
       "id": "server_index_getsession",
-      "community": 8,
+      "community": 7,
       "norm_label": "getsession()"
     },
     {
@@ -684,7 +684,7 @@
       "source_file": "server/index.js",
       "source_location": "L211",
       "id": "server_index_sendevent",
-      "community": 8,
+      "community": 7,
       "norm_label": "sendevent()"
     },
     {
@@ -693,7 +693,7 @@
       "source_file": "server/index.js",
       "source_location": "L416",
       "id": "server_index_pickrandomquestion",
-      "community": 8,
+      "community": 7,
       "norm_label": "pickrandomquestion()"
     },
     {
@@ -702,7 +702,7 @@
       "source_file": "server/index.js",
       "source_location": "L842",
       "id": "server_index_startserver",
-      "community": 8,
+      "community": 7,
       "norm_label": "startserver()"
     },
     {
@@ -711,7 +711,7 @@
       "source_file": "server/src/state/StateManager.js",
       "source_location": "L1",
       "id": "server_src_state_statemanager_js",
-      "community": 6,
+      "community": 5,
       "norm_label": "statemanager.js"
     },
     {
@@ -720,7 +720,7 @@
       "source_file": "server/src/state/StateManager.js",
       "source_location": "L3",
       "id": "state_statemanager_statemanager",
-      "community": 6,
+      "community": 5,
       "norm_label": "statemanager"
     },
     {
@@ -729,7 +729,7 @@
       "source_file": "server/src/state/StateManager.js",
       "source_location": "L4",
       "id": "state_statemanager_statemanager_constructor",
-      "community": 6,
+      "community": 5,
       "norm_label": ".constructor()"
     },
     {
@@ -738,7 +738,7 @@
       "source_file": "server/src/state/StateManager.js",
       "source_location": "L25",
       "id": "state_statemanager_statemanager_addmessage",
-      "community": 6,
+      "community": 5,
       "norm_label": ".addmessage()"
     },
     {
@@ -747,7 +747,7 @@
       "source_file": "server/src/state/StateManager.js",
       "source_location": "L36",
       "id": "state_statemanager_statemanager_transitionto",
-      "community": 6,
+      "community": 5,
       "norm_label": ".transitionto()"
     },
     {
@@ -756,7 +756,7 @@
       "source_file": "server/src/state/StateManager.js",
       "source_location": "L54",
       "id": "state_statemanager_statemanager_updatestate",
-      "community": 6,
+      "community": 5,
       "norm_label": ".updatestate()"
     },
     {
@@ -765,7 +765,7 @@
       "source_file": "server/src/state/StateManager.js",
       "source_location": "L62",
       "id": "state_statemanager_statemanager_verifycriteria",
-      "community": 6,
+      "community": 5,
       "norm_label": "._verifycriteria()"
     },
     {
@@ -774,7 +774,7 @@
       "source_file": "server/src/state/StateManager.js",
       "source_location": "L74",
       "id": "state_statemanager_statemanager_getsummary",
-      "community": 6,
+      "community": 5,
       "norm_label": ".getsummary()"
     },
     {
@@ -783,7 +783,7 @@
       "source_file": "server/src/middleware/auth.js",
       "source_location": "L1",
       "id": "server_src_middleware_auth_js",
-      "community": 47,
+      "community": 49,
       "norm_label": "auth.js"
     },
     {
@@ -792,7 +792,7 @@
       "source_file": "server/src/middleware/auth.js",
       "source_location": "L5",
       "id": "middleware_auth_authenticatetoken",
-      "community": 47,
+      "community": 49,
       "norm_label": "authenticatetoken()"
     },
     {
@@ -801,7 +801,7 @@
       "source_file": "server/src/models/db.js",
       "source_location": "L1",
       "id": "server_src_models_db_js",
-      "community": 65,
+      "community": 67,
       "norm_label": "db.js"
     },
     {
@@ -810,7 +810,7 @@
       "source_file": "server/src/models/Question.js",
       "source_location": "L1",
       "id": "server_src_models_question_js",
-      "community": 66,
+      "community": 68,
       "norm_label": "question.js"
     },
     {
@@ -819,7 +819,7 @@
       "source_file": "server/src/models/User.js",
       "source_location": "L1",
       "id": "server_src_models_user_js",
-      "community": 67,
+      "community": 69,
       "norm_label": "user.js"
     },
     {
@@ -828,7 +828,7 @@
       "source_file": "server/src/models/QuestionStatus.js",
       "source_location": "L1",
       "id": "server_src_models_questionstatus_js",
-      "community": 68,
+      "community": 70,
       "norm_label": "questionstatus.js"
     },
     {
@@ -837,7 +837,7 @@
       "source_file": "server/src/models/PracticeSession.js",
       "source_location": "L1",
       "id": "server_src_models_practicesession_js",
-      "community": 69,
+      "community": 71,
       "norm_label": "practicesession.js"
     },
     {
@@ -846,7 +846,7 @@
       "source_file": "server/src/services/SearchService.js",
       "source_location": "L1",
       "id": "server_src_services_searchservice_js",
-      "community": 1,
+      "community": 14,
       "norm_label": "searchservice.js"
     },
     {
@@ -855,7 +855,7 @@
       "source_file": "server/src/services/SearchService.js",
       "source_location": "L4",
       "id": "services_searchservice_searchservice",
-      "community": 1,
+      "community": 14,
       "norm_label": "searchservice"
     },
     {
@@ -864,7 +864,7 @@
       "source_file": "server/src/services/SearchService.js",
       "source_location": "L5",
       "id": "services_searchservice_searchservice_constructor",
-      "community": 1,
+      "community": 14,
       "norm_label": ".constructor()"
     },
     {
@@ -873,7 +873,7 @@
       "source_file": "server/src/services/SearchService.js",
       "source_location": "L13",
       "id": "services_searchservice_searchservice_performsearch",
-      "community": 1,
+      "community": 14,
       "norm_label": ".performsearch()"
     },
     {
@@ -1008,7 +1008,7 @@
       "source_file": "server/src/services/LogStreamer.js",
       "source_location": "L1",
       "id": "server_src_services_logstreamer_js",
-      "community": 2,
+      "community": 1,
       "norm_label": "logstreamer.js"
     },
     {
@@ -1017,7 +1017,7 @@
       "source_file": "server/src/services/LogStreamer.js",
       "source_location": "L7",
       "id": "services_logstreamer_logstreamer",
-      "community": 2,
+      "community": 1,
       "norm_label": "logstreamer"
     },
     {
@@ -1026,7 +1026,7 @@
       "source_file": "server/src/services/LogStreamer.js",
       "source_location": "L8",
       "id": "services_logstreamer_logstreamer_constructor",
-      "community": 2,
+      "community": 1,
       "norm_label": ".constructor()"
     },
     {
@@ -1035,7 +1035,7 @@
       "source_file": "server/src/services/LogStreamer.js",
       "source_location": "L16",
       "id": "services_logstreamer_logstreamer_start",
-      "community": 2,
+      "community": 1,
       "norm_label": ".start()"
     },
     {
@@ -1044,7 +1044,7 @@
       "source_file": "server/src/services/LogStreamer.js",
       "source_location": "L34",
       "id": "services_logstreamer_logstreamer_stop",
-      "community": 2,
+      "community": 1,
       "norm_label": ".stop()"
     },
     {
@@ -1053,7 +1053,7 @@
       "source_file": "server/src/services/LogStreamer.js",
       "source_location": "L42",
       "id": "services_logstreamer_logstreamer_capturelog",
-      "community": 2,
+      "community": 1,
       "norm_label": ".capturelog()"
     },
     {
@@ -1062,7 +1062,7 @@
       "source_file": "server/src/services/LogStreamer.js",
       "source_location": "L61",
       "id": "services_logstreamer_logstreamer_detectloglevel",
-      "community": 2,
+      "community": 1,
       "norm_label": ".detectloglevel()"
     },
     {
@@ -1071,7 +1071,7 @@
       "source_file": "server/src/services/LogStreamer.js",
       "source_location": "L69",
       "id": "services_logstreamer_logstreamer_addlog",
-      "community": 2,
+      "community": 1,
       "norm_label": ".addlog()"
     },
     {
@@ -1080,7 +1080,7 @@
       "source_file": "server/src/services/LogStreamer.js",
       "source_location": "L88",
       "id": "services_logstreamer_logstreamer_broadcast",
-      "community": 2,
+      "community": 1,
       "norm_label": ".broadcast()"
     },
     {
@@ -1089,7 +1089,7 @@
       "source_file": "server/src/services/LogStreamer.js",
       "source_location": "L98",
       "id": "services_logstreamer_logstreamer_subscribe",
-      "community": 2,
+      "community": 1,
       "norm_label": ".subscribe()"
     },
     {
@@ -1098,7 +1098,7 @@
       "source_file": "server/src/services/LogStreamer.js",
       "source_location": "L116",
       "id": "services_logstreamer_logstreamer_getrecentlogs",
-      "community": 2,
+      "community": 1,
       "norm_label": ".getrecentlogs()"
     },
     {
@@ -1107,7 +1107,7 @@
       "source_file": "server/src/constants/Phases.js",
       "source_location": "L1",
       "id": "server_src_constants_phases_js",
-      "community": 70,
+      "community": 72,
       "norm_label": "phases.js"
     },
     {
@@ -1116,7 +1116,7 @@
       "source_file": "server/src/data/system_design_questions.js",
       "source_location": "L1",
       "id": "server_src_data_system_design_questions_js",
-      "community": 71,
+      "community": 73,
       "norm_label": "system_design_questions.js"
     },
     {
@@ -1125,7 +1125,7 @@
       "source_file": "server/src/agents/InterviewerAgent.js",
       "source_location": "L1",
       "id": "server_src_agents_intervieweragent_js",
-      "community": 1,
+      "community": 10,
       "norm_label": "intervieweragent.js"
     },
     {
@@ -1134,7 +1134,7 @@
       "source_file": "server/src/agents/InterviewerAgent.js",
       "source_location": "L6",
       "id": "agents_intervieweragent_intervieweragent",
-      "community": 1,
+      "community": 10,
       "norm_label": "intervieweragent"
     },
     {
@@ -1143,7 +1143,7 @@
       "source_file": "server/src/agents/InterviewerAgent.js",
       "source_location": "L7",
       "id": "agents_intervieweragent_intervieweragent_constructor",
-      "community": 1,
+      "community": 10,
       "norm_label": ".constructor()"
     },
     {
@@ -1152,7 +1152,7 @@
       "source_file": "server/src/agents/InterviewerAgent.js",
       "source_location": "L12",
       "id": "agents_intervieweragent_intervieweragent_generateresponse",
-      "community": 1,
+      "community": 10,
       "norm_label": ".generateresponse()"
     },
     {
@@ -1161,7 +1161,7 @@
       "source_file": "server/src/agents/InterviewerAgent.js",
       "source_location": "L204",
       "id": "agents_intervieweragent_intervieweragent_generateinitialprobe",
-      "community": 1,
+      "community": 10,
       "norm_label": ".generateinitialprobe()"
     },
     {
@@ -1170,7 +1170,7 @@
       "source_file": "server/src/agents/ProctorAgent.js",
       "source_location": "L1",
       "id": "server_src_agents_proctoragent_js",
-      "community": 1,
+      "community": 15,
       "norm_label": "proctoragent.js"
     },
     {
@@ -1179,7 +1179,7 @@
       "source_file": "server/src/agents/ProctorAgent.js",
       "source_location": "L3",
       "id": "agents_proctoragent_proctoragent",
-      "community": 1,
+      "community": 15,
       "norm_label": "proctoragent"
     },
     {
@@ -1188,7 +1188,7 @@
       "source_file": "server/src/agents/ProctorAgent.js",
       "source_location": "L4",
       "id": "agents_proctoragent_proctoragent_constructor",
-      "community": 1,
+      "community": 15,
       "norm_label": ".constructor()"
     },
     {
@@ -1197,7 +1197,7 @@
       "source_file": "server/src/agents/ProctorAgent.js",
       "source_location": "L8",
       "id": "agents_proctoragent_proctoragent_analyzecode",
-      "community": 1,
+      "community": 15,
       "norm_label": ".analyzecode()"
     },
     {
@@ -1206,7 +1206,7 @@
       "source_file": "server/src/agents/ScorerAgent.js",
       "source_location": "L1",
       "id": "server_src_agents_scoreragent_js",
-      "community": 4,
+      "community": 3,
       "norm_label": "scoreragent.js"
     },
     {
@@ -1215,7 +1215,7 @@
       "source_file": "server/src/agents/ScorerAgent.js",
       "source_location": "L3",
       "id": "agents_scoreragent_scoreragent",
-      "community": 4,
+      "community": 3,
       "norm_label": "scoreragent"
     },
     {
@@ -1224,7 +1224,7 @@
       "source_file": "server/src/agents/ScorerAgent.js",
       "source_location": "L4",
       "id": "agents_scoreragent_scoreragent_constructor",
-      "community": 4,
+      "community": 3,
       "norm_label": ".constructor()"
     },
     {
@@ -1233,7 +1233,7 @@
       "source_file": "server/src/agents/ScorerAgent.js",
       "source_location": "L8",
       "id": "agents_scoreragent_scoreragent_generatereport",
-      "community": 4,
+      "community": 3,
       "norm_label": ".generatereport()"
     },
     {
@@ -1242,7 +1242,7 @@
       "source_file": "server/src/agents/ScorerAgent.js",
       "source_location": "L36",
       "id": "agents_scoreragent_scoreragent_scorecommunication",
-      "community": 4,
+      "community": 3,
       "norm_label": "._scorecommunication()"
     },
     {
@@ -1251,7 +1251,7 @@
       "source_file": "server/src/agents/ScorerAgent.js",
       "source_location": "L44",
       "id": "agents_scoreragent_scoreragent_scoredepth",
-      "community": 4,
+      "community": 3,
       "norm_label": "._scoredepth()"
     },
     {
@@ -1260,7 +1260,7 @@
       "source_file": "server/src/agents/ScorerAgent.js",
       "source_location": "L51",
       "id": "agents_scoreragent_scoreragent_scorecomplexity",
-      "community": 4,
+      "community": 3,
       "norm_label": "._scorecomplexity()"
     },
     {
@@ -1269,7 +1269,7 @@
       "source_file": "server/src/agents/ScorerAgent.js",
       "source_location": "L59",
       "id": "agents_scoreragent_scoreragent_scorecorrectness",
-      "community": 4,
+      "community": 3,
       "norm_label": "._scorecorrectness()"
     },
     {
@@ -1278,7 +1278,7 @@
       "source_file": "server/src/agents/ScorerAgent.js",
       "source_location": "L63",
       "id": "agents_scoreragent_scoreragent_generatellmcritique",
-      "community": 4,
+      "community": 3,
       "norm_label": "._generatellmcritique()"
     },
     {
@@ -1332,7 +1332,7 @@
       "source_file": "server/scripts/check_remote_db.js",
       "source_location": "L1",
       "id": "server_scripts_check_remote_db_js",
-      "community": 72,
+      "community": 74,
       "norm_label": "check_remote_db.js"
     },
     {
@@ -1341,7 +1341,7 @@
       "source_file": "server/scripts/test_lm_studio.js",
       "source_location": "L1",
       "id": "server_scripts_test_lm_studio_js",
-      "community": 48,
+      "community": 50,
       "norm_label": "test_lm_studio.js"
     },
     {
@@ -1350,7 +1350,7 @@
       "source_file": "server/scripts/test_lm_studio.js",
       "source_location": "L4",
       "id": "scripts_test_lm_studio_testopenrouter",
-      "community": 48,
+      "community": 50,
       "norm_label": "testopenrouter()"
     },
     {
@@ -1359,7 +1359,7 @@
       "source_file": "server/scripts/test_agent_simple.js",
       "source_location": "L1",
       "id": "server_scripts_test_agent_simple_js",
-      "community": 73,
+      "community": 75,
       "norm_label": "test_agent_simple.js"
     },
     {
@@ -1368,7 +1368,7 @@
       "source_file": "server/scripts/generate_hints.js",
       "source_location": "L1",
       "id": "server_scripts_generate_hints_js",
-      "community": 49,
+      "community": 51,
       "norm_label": "generate_hints.js"
     },
     {
@@ -1377,7 +1377,7 @@
       "source_file": "server/scripts/generate_hints.js",
       "source_location": "L172",
       "id": "scripts_generate_hints_gethintsforpattern",
-      "community": 49,
+      "community": 51,
       "norm_label": "gethintsforpattern()"
     },
     {
@@ -1386,7 +1386,7 @@
       "source_file": "server/scripts/add_hints_migration.js",
       "source_location": "L1",
       "id": "server_scripts_add_hints_migration_js",
-      "community": 74,
+      "community": 76,
       "norm_label": "add_hints_migration.js"
     },
     {
@@ -1395,7 +1395,7 @@
       "source_file": "server/scripts/generate_scaffolds.js",
       "source_location": "L1",
       "id": "server_scripts_generate_scaffolds_js",
-      "community": 14,
+      "community": 16,
       "norm_label": "generate_scaffolds.js"
     },
     {
@@ -1404,7 +1404,7 @@
       "source_file": "server/scripts/generate_scaffolds.js",
       "source_location": "L7",
       "id": "scripts_generate_scaffolds_generatescaffold",
-      "community": 14,
+      "community": 16,
       "norm_label": "generatescaffold()"
     },
     {
@@ -1413,7 +1413,7 @@
       "source_file": "server/scripts/generate_scaffolds.js",
       "source_location": "L104",
       "id": "scripts_generate_scaffolds_processquestion",
-      "community": 14,
+      "community": 16,
       "norm_label": "processquestion()"
     },
     {
@@ -1422,7 +1422,7 @@
       "source_file": "server/scripts/generate_scaffolds.js",
       "source_location": "L117",
       "id": "scripts_generate_scaffolds_run",
-      "community": 14,
+      "community": 16,
       "norm_label": "run()"
     },
     {
@@ -1431,7 +1431,7 @@
       "source_file": "server/scripts/scrape-leetcode.js",
       "source_location": "L1",
       "id": "server_scripts_scrape_leetcode_js",
-      "community": 3,
+      "community": 2,
       "norm_label": "scrape-leetcode.js"
     },
     {
@@ -1440,7 +1440,7 @@
       "source_file": "server/scripts/scrape-leetcode.js",
       "source_location": "L58",
       "id": "scripts_scrape_leetcode_sleep",
-      "community": 3,
+      "community": 2,
       "norm_label": "sleep()"
     },
     {
@@ -1449,7 +1449,7 @@
       "source_file": "server/scripts/scrape-leetcode.js",
       "source_location": "L62",
       "id": "scripts_scrape_leetcode_fetchproblemviagraphql",
-      "community": 3,
+      "community": 2,
       "norm_label": "fetchproblemviagraphql()"
     },
     {
@@ -1458,7 +1458,7 @@
       "source_file": "server/scripts/scrape-leetcode.js",
       "source_location": "L107",
       "id": "scripts_scrape_leetcode_fetchallproblemslugs",
-      "community": 3,
+      "community": 2,
       "norm_label": "fetchallproblemslugs()"
     },
     {
@@ -1467,7 +1467,7 @@
       "source_file": "server/scripts/scrape-leetcode.js",
       "source_location": "L158",
       "id": "scripts_scrape_leetcode_saveimagestolocal",
-      "community": 3,
+      "community": 2,
       "norm_label": "saveimagestolocal()"
     },
     {
@@ -1476,7 +1476,7 @@
       "source_file": "server/scripts/scrape-leetcode.js",
       "source_location": "L207",
       "id": "scripts_scrape_leetcode_parseexamples",
-      "community": 3,
+      "community": 2,
       "norm_label": "parseexamples()"
     },
     {
@@ -1485,7 +1485,7 @@
       "source_file": "server/scripts/scrape-leetcode.js",
       "source_location": "L224",
       "id": "scripts_scrape_leetcode_enrichwithllm",
-      "community": 3,
+      "community": 2,
       "norm_label": "enrichwithllm()"
     },
     {
@@ -1494,7 +1494,7 @@
       "source_file": "server/scripts/scrape-leetcode.js",
       "source_location": "L285",
       "id": "scripts_scrape_leetcode_processproblem",
-      "community": 3,
+      "community": 2,
       "norm_label": "processproblem()"
     },
     {
@@ -1503,7 +1503,7 @@
       "source_file": "server/scripts/scrape-leetcode.js",
       "source_location": "L333",
       "id": "scripts_scrape_leetcode_extractfunctionparams",
-      "community": 3,
+      "community": 2,
       "norm_label": "extractfunctionparams()"
     },
     {
@@ -1512,7 +1512,7 @@
       "source_file": "server/scripts/scrape-leetcode.js",
       "source_location": "L339",
       "id": "scripts_scrape_leetcode_savetodatabase",
-      "community": 3,
+      "community": 2,
       "norm_label": "savetodatabase()"
     },
     {
@@ -1521,7 +1521,7 @@
       "source_file": "server/scripts/scrape-leetcode.js",
       "source_location": "L356",
       "id": "scripts_scrape_leetcode_main",
-      "community": 3,
+      "community": 2,
       "norm_label": "main()"
     },
     {
@@ -1530,7 +1530,7 @@
       "source_file": "server/scripts/enrich-from-leetcode.js",
       "source_location": "L1",
       "id": "server_scripts_enrich_from_leetcode_js",
-      "community": 5,
+      "community": 4,
       "norm_label": "enrich-from-leetcode.js"
     },
     {
@@ -1539,7 +1539,7 @@
       "source_file": "server/scripts/enrich-from-leetcode.js",
       "source_location": "L48",
       "id": "scripts_enrich_from_leetcode_connecttocloudsql",
-      "community": 5,
+      "community": 4,
       "norm_label": "connecttocloudsql()"
     },
     {
@@ -1548,7 +1548,7 @@
       "source_file": "server/scripts/enrich-from-leetcode.js",
       "source_location": "L92",
       "id": "scripts_enrich_from_leetcode_titletoslug",
-      "community": 5,
+      "community": 4,
       "norm_label": "titletoslug()"
     },
     {
@@ -1557,7 +1557,7 @@
       "source_file": "server/scripts/enrich-from-leetcode.js",
       "source_location": "L102",
       "id": "scripts_enrich_from_leetcode_fetchfromleetcode",
-      "community": 5,
+      "community": 4,
       "norm_label": "fetchfromleetcode()"
     },
     {
@@ -1566,7 +1566,7 @@
       "source_file": "server/scripts/enrich-from-leetcode.js",
       "source_location": "L144",
       "id": "scripts_enrich_from_leetcode_downloadandreplaceimages",
-      "community": 5,
+      "community": 4,
       "norm_label": "downloadandreplaceimages()"
     },
     {
@@ -1575,7 +1575,7 @@
       "source_file": "server/scripts/enrich-from-leetcode.js",
       "source_location": "L206",
       "id": "scripts_enrich_from_leetcode_updateproblemindb",
-      "community": 5,
+      "community": 4,
       "norm_label": "updateproblemindb()"
     },
     {
@@ -1584,7 +1584,7 @@
       "source_file": "server/scripts/enrich-from-leetcode.js",
       "source_location": "L230",
       "id": "scripts_enrich_from_leetcode_sleep",
-      "community": 5,
+      "community": 4,
       "norm_label": "sleep()"
     },
     {
@@ -1593,7 +1593,7 @@
       "source_file": "server/scripts/enrich-from-leetcode.js",
       "source_location": "L234",
       "id": "scripts_enrich_from_leetcode_respectfuldelay",
-      "community": 5,
+      "community": 4,
       "norm_label": "respectfuldelay()"
     },
     {
@@ -1602,7 +1602,7 @@
       "source_file": "server/scripts/enrich-from-leetcode.js",
       "source_location": "L244",
       "id": "scripts_enrich_from_leetcode_main",
-      "community": 5,
+      "community": 4,
       "norm_label": "main()"
     },
     {
@@ -1611,7 +1611,7 @@
       "source_file": "server/scripts/test_agent.js",
       "source_location": "L1",
       "id": "server_scripts_test_agent_js",
-      "community": 75,
+      "community": 77,
       "norm_label": "test_agent.js"
     },
     {
@@ -1620,7 +1620,7 @@
       "source_file": "server/scripts/enrich-fixed.js",
       "source_location": "L1",
       "id": "server_scripts_enrich_fixed_js",
-      "community": 9,
+      "community": 8,
       "norm_label": "enrich-fixed.js"
     },
     {
@@ -1629,7 +1629,7 @@
       "source_file": "server/scripts/enrich-fixed.js",
       "source_location": "L49",
       "id": "scripts_enrich_fixed_titletoslug",
-      "community": 9,
+      "community": 8,
       "norm_label": "titletoslug()"
     },
     {
@@ -1638,7 +1638,7 @@
       "source_file": "server/scripts/enrich-fixed.js",
       "source_location": "L56",
       "id": "scripts_enrich_fixed_sleep",
-      "community": 9,
+      "community": 8,
       "norm_label": "sleep()"
     },
     {
@@ -1647,7 +1647,7 @@
       "source_file": "server/scripts/enrich-fixed.js",
       "source_location": "L60",
       "id": "scripts_enrich_fixed_fetchfromleetcode",
-      "community": 9,
+      "community": 8,
       "norm_label": "fetchfromleetcode()"
     },
     {
@@ -1656,7 +1656,7 @@
       "source_file": "server/scripts/enrich-fixed.js",
       "source_location": "L88",
       "id": "scripts_enrich_fixed_updateviasql",
-      "community": 9,
+      "community": 8,
       "norm_label": "updateviasql()"
     },
     {
@@ -1665,7 +1665,7 @@
       "source_file": "server/scripts/enrich-fixed.js",
       "source_location": "L104",
       "id": "scripts_enrich_fixed_main",
-      "community": 9,
+      "community": 8,
       "norm_label": "main()"
     },
     {
@@ -1674,7 +1674,7 @@
       "source_file": "server/scripts/seed_all_patterns.js",
       "source_location": "L1",
       "id": "server_scripts_seed_all_patterns_js",
-      "community": 50,
+      "community": 52,
       "norm_label": "seed_all_patterns.js"
     },
     {
@@ -1683,7 +1683,7 @@
       "source_file": "server/scripts/seed_all_patterns.js",
       "source_location": "L125",
       "id": "scripts_seed_all_patterns_seed",
-      "community": 50,
+      "community": 52,
       "norm_label": "seed()"
     },
     {
@@ -1692,7 +1692,7 @@
       "source_file": "server/scripts/check_hints_data.js",
       "source_location": "L1",
       "id": "server_scripts_check_hints_data_js",
-      "community": 76,
+      "community": 78,
       "norm_label": "check_hints_data.js"
     },
     {
@@ -1701,7 +1701,7 @@
       "source_file": "server/scripts/check-enrichment-status.js",
       "source_location": "L1",
       "id": "server_scripts_check_enrichment_status_js",
-      "community": 51,
+      "community": 53,
       "norm_label": "check-enrichment-status.js"
     },
     {
@@ -1710,7 +1710,7 @@
       "source_file": "server/scripts/check-enrichment-status.js",
       "source_location": "L13",
       "id": "scripts_check_enrichment_status_checkstatus",
-      "community": 51,
+      "community": 53,
       "norm_label": "checkstatus()"
     },
     {
@@ -1719,7 +1719,7 @@
       "source_file": "server/scripts/enrich-with-images.js",
       "source_location": "L1",
       "id": "server_scripts_enrich_with_images_js",
-      "community": 7,
+      "community": 6,
       "norm_label": "enrich-with-images.js"
     },
     {
@@ -1728,7 +1728,7 @@
       "source_file": "server/scripts/enrich-with-images.js",
       "source_location": "L52",
       "id": "scripts_enrich_with_images_titletoslug",
-      "community": 7,
+      "community": 6,
       "norm_label": "titletoslug()"
     },
     {
@@ -1737,7 +1737,7 @@
       "source_file": "server/scripts/enrich-with-images.js",
       "source_location": "L59",
       "id": "scripts_enrich_with_images_sleep",
-      "community": 7,
+      "community": 6,
       "norm_label": "sleep()"
     },
     {
@@ -1746,7 +1746,7 @@
       "source_file": "server/scripts/enrich-with-images.js",
       "source_location": "L63",
       "id": "scripts_enrich_with_images_fetchfromleetcode",
-      "community": 7,
+      "community": 6,
       "norm_label": "fetchfromleetcode()"
     },
     {
@@ -1755,7 +1755,7 @@
       "source_file": "server/scripts/enrich-with-images.js",
       "source_location": "L91",
       "id": "scripts_enrich_with_images_downloadandreplaceimages",
-      "community": 7,
+      "community": 6,
       "norm_label": "downloadandreplaceimages()"
     },
     {
@@ -1764,7 +1764,7 @@
       "source_file": "server/scripts/enrich-with-images.js",
       "source_location": "L148",
       "id": "scripts_enrich_with_images_updateviasql",
-      "community": 7,
+      "community": 6,
       "norm_label": "updateviasql()"
     },
     {
@@ -1773,7 +1773,7 @@
       "source_file": "server/scripts/enrich-with-images.js",
       "source_location": "L164",
       "id": "scripts_enrich_with_images_main",
-      "community": 7,
+      "community": 6,
       "norm_label": "main()"
     },
     {
@@ -1782,7 +1782,7 @@
       "source_file": "server/scripts/reset_boilerplates.js",
       "source_location": "L1",
       "id": "server_scripts_reset_boilerplates_js",
-      "community": 15,
+      "community": 17,
       "norm_label": "reset_boilerplates.js"
     },
     {
@@ -1791,7 +1791,7 @@
       "source_file": "server/scripts/reset_boilerplates.js",
       "source_location": "L3",
       "id": "scripts_reset_boilerplates_extractboilerplate",
-      "community": 15,
+      "community": 17,
       "norm_label": "extractboilerplate()"
     },
     {
@@ -1800,7 +1800,7 @@
       "source_file": "server/scripts/reset_boilerplates.js",
       "source_location": "L31",
       "id": "scripts_reset_boilerplates_run",
-      "community": 15,
+      "community": 17,
       "norm_label": "run()"
     },
     {
@@ -1809,7 +1809,7 @@
       "source_file": "server/scripts/generate_hints_remote.js",
       "source_location": "L1",
       "id": "server_scripts_generate_hints_remote_js",
-      "community": 52,
+      "community": 54,
       "norm_label": "generate_hints_remote.js"
     },
     {
@@ -1818,7 +1818,7 @@
       "source_file": "server/scripts/generate_hints_remote.js",
       "source_location": "L157",
       "id": "scripts_generate_hints_remote_gethintsforcategory",
-      "community": 52,
+      "community": 54,
       "norm_label": "gethintsforcategory()"
     },
     {
@@ -1827,7 +1827,7 @@
       "source_file": "server/scripts/seed_dp.js",
       "source_location": "L1",
       "id": "server_scripts_seed_dp_js",
-      "community": 53,
+      "community": 55,
       "norm_label": "seed_dp.js"
     },
     {
@@ -1836,7 +1836,7 @@
       "source_file": "server/scripts/seed_dp.js",
       "source_location": "L41",
       "id": "scripts_seed_dp_seed",
-      "community": 53,
+      "community": 55,
       "norm_label": "seed()"
     },
     {
@@ -1845,7 +1845,7 @@
       "source_file": "server/scripts/seed_system_design.js",
       "source_location": "L1",
       "id": "server_scripts_seed_system_design_js",
-      "community": 16,
+      "community": 18,
       "norm_label": "seed_system_design.js"
     },
     {
@@ -1854,7 +1854,7 @@
       "source_file": "server/scripts/seed_system_design.js",
       "source_location": "L8",
       "id": "scripts_seed_system_design_parsemarkdowntostages",
-      "community": 16,
+      "community": 18,
       "norm_label": "parsemarkdowntostages()"
     },
     {
@@ -1863,7 +1863,7 @@
       "source_file": "server/scripts/seed_system_design.js",
       "source_location": "L99",
       "id": "scripts_seed_system_design_seed",
-      "community": 16,
+      "community": 18,
       "norm_label": "seed()"
     },
     {
@@ -1917,7 +1917,7 @@
       "source_file": "server/scripts/seed_hello_full.js",
       "source_location": "L1",
       "id": "server_scripts_seed_hello_full_js",
-      "community": 17,
+      "community": 19,
       "norm_label": "seed_hello_full.js"
     },
     {
@@ -1926,7 +1926,7 @@
       "source_file": "server/scripts/seed_hello_full.js",
       "source_location": "L67",
       "id": "scripts_seed_hello_full_getboilerplate",
-      "community": 17,
+      "community": 19,
       "norm_label": "getboilerplate()"
     },
     {
@@ -1935,7 +1935,7 @@
       "source_file": "server/scripts/seed_hello_full.js",
       "source_location": "L84",
       "id": "scripts_seed_hello_full_seed",
-      "community": 17,
+      "community": 19,
       "norm_label": "seed()"
     },
     {
@@ -1944,7 +1944,7 @@
       "source_file": "server/scripts/migrate_question_status.js",
       "source_location": "L1",
       "id": "server_scripts_migrate_question_status_js",
-      "community": 77,
+      "community": 79,
       "norm_label": "migrate_question_status.js"
     },
     {
@@ -1971,7 +1971,7 @@
       "source_file": "scratch/verify_3sum.js",
       "source_location": "L1",
       "id": "scratch_verify_3sum_js",
-      "community": 18,
+      "community": 20,
       "norm_label": "verify_3sum.js"
     },
     {
@@ -1980,7 +1980,7 @@
       "source_file": "scratch/verify_3sum.js",
       "source_location": "L5",
       "id": "scratch_verify_3sum_generatescaffold",
-      "community": 18,
+      "community": 20,
       "norm_label": "generatescaffold()"
     },
     {
@@ -1989,7 +1989,7 @@
       "source_file": "scratch/verify_3sum.js",
       "source_location": "L66",
       "id": "scratch_verify_3sum_run",
-      "community": 18,
+      "community": 20,
       "norm_label": "run()"
     },
     {
@@ -1998,7 +1998,7 @@
       "source_file": "scratch/migrate_sqlite_to_mysql.js",
       "source_location": "L1",
       "id": "scratch_migrate_sqlite_to_mysql_js",
-      "community": 54,
+      "community": 56,
       "norm_label": "migrate_sqlite_to_mysql.js"
     },
     {
@@ -2007,7 +2007,7 @@
       "source_file": "scratch/migrate_sqlite_to_mysql.js",
       "source_location": "L5",
       "id": "scratch_migrate_sqlite_to_mysql_migrate",
-      "community": 54,
+      "community": 56,
       "norm_label": "migrate()"
     },
     {
@@ -2016,7 +2016,7 @@
       "source_file": "scratch/check_tables.js",
       "source_location": "L1",
       "id": "scratch_check_tables_js",
-      "community": 55,
+      "community": 57,
       "norm_label": "check_tables.js"
     },
     {
@@ -2025,7 +2025,7 @@
       "source_file": "scratch/check_tables.js",
       "source_location": "L3",
       "id": "scratch_check_tables_checktables",
-      "community": 55,
+      "community": 57,
       "norm_label": "checktables()"
     },
     {
@@ -2034,7 +2034,7 @@
       "source_file": "scratch/check_db.js",
       "source_location": "L1",
       "id": "scratch_check_db_js",
-      "community": 56,
+      "community": 58,
       "norm_label": "check_db.js"
     },
     {
@@ -2043,7 +2043,7 @@
       "source_file": "scratch/check_db.js",
       "source_location": "L3",
       "id": "scratch_check_db_checkdb",
-      "community": 56,
+      "community": 58,
       "norm_label": "checkdb()"
     },
     {
@@ -2052,7 +2052,7 @@
       "source_file": "scratch/check_sqlite.js",
       "source_location": "L1",
       "id": "scratch_check_sqlite_js",
-      "community": 57,
+      "community": 59,
       "norm_label": "check_sqlite.js"
     },
     {
@@ -2061,7 +2061,7 @@
       "source_file": "scratch/check_sqlite.js",
       "source_location": "L4",
       "id": "scratch_check_sqlite_checksqlite",
-      "community": 57,
+      "community": 59,
       "norm_label": "checksqlite()"
     },
     {
@@ -2070,7 +2070,7 @@
       "source_file": "scratch/check_sd_content.js",
       "source_location": "L1",
       "id": "scratch_check_sd_content_js",
-      "community": 58,
+      "community": 60,
       "norm_label": "check_sd_content.js"
     },
     {
@@ -2079,7 +2079,7 @@
       "source_file": "scratch/check_sd_content.js",
       "source_location": "L3",
       "id": "scratch_check_sd_content_checksd",
-      "community": 58,
+      "community": 60,
       "norm_label": "checksd()"
     },
     {
@@ -2088,7 +2088,7 @@
       "source_file": "scratch/check_schemas.js",
       "source_location": "L1",
       "id": "scratch_check_schemas_js",
-      "community": 59,
+      "community": 61,
       "norm_label": "check_schemas.js"
     },
     {
@@ -2097,7 +2097,7 @@
       "source_file": "scratch/check_schemas.js",
       "source_location": "L3",
       "id": "scratch_check_schemas_checkschema",
-      "community": 59,
+      "community": 61,
       "norm_label": "checkschema()"
     },
     {
@@ -2106,7 +2106,7 @@
       "source_file": "scripts/reset_boilerplates.py",
       "source_location": "L1",
       "id": "scripts_reset_boilerplates_py",
-      "community": 60,
+      "community": 62,
       "norm_label": "reset_boilerplates.py"
     },
     {
@@ -2115,7 +2115,7 @@
       "source_file": "scripts/reset_boilerplates.py",
       "source_location": "L14",
       "id": "scripts_reset_boilerplates_extract_boilerplate",
-      "community": 60,
+      "community": 62,
       "norm_label": "extract_boilerplate()"
     },
     {
@@ -2124,7 +2124,7 @@
       "source_file": "scripts/scrape_hellointerview.js",
       "source_location": "L1",
       "id": "scripts_scrape_hellointerview_js",
-      "community": 61,
+      "community": 63,
       "norm_label": "scrape_hellointerview.js"
     },
     {
@@ -2133,88 +2133,8 @@
       "source_file": "scripts/scrape_hellointerview.js",
       "source_location": "L15",
       "id": "scripts_scrape_hellointerview_scrape",
-      "community": 61,
+      "community": 63,
       "norm_label": "scrape()"
-    },
-    {
-      "label": "AI Interview Platform Architecture",
-      "file_type": "document",
-      "source_file": ".claude/projects/-home-puneet-Projects-interviews-machine-learning/memory/MEMORY.md",
-      "community": 78,
-      "norm_label": "ai interview platform architecture",
-      "id": "memory_platform_architecture"
-    },
-    {
-      "label": "Connection Error Fix",
-      "file_type": "document",
-      "source_file": "CONNECTION_ERROR_FIX.md",
-      "community": 79,
-      "norm_label": "connection error fix",
-      "id": "connection_error_fix"
-    },
-    {
-      "label": "Database Analysis",
-      "file_type": "document",
-      "source_file": "DATABASE_ANALYSIS.md",
-      "community": 80,
-      "norm_label": "database analysis",
-      "id": "database_analysis"
-    },
-    {
-      "label": "Data Source Confirmation",
-      "file_type": "document",
-      "source_file": "DATA_SOURCE_CONFIRMATION.md",
-      "community": 81,
-      "norm_label": "data source confirmation",
-      "id": "data_source_confirmation"
-    },
-    {
-      "label": "Debug Guide",
-      "file_type": "document",
-      "source_file": "DEBUG_GUIDE.md",
-      "community": 82,
-      "norm_label": "debug guide",
-      "id": "debug_guide"
-    },
-    {
-      "label": "Deployment Documentation",
-      "file_type": "document",
-      "source_file": "DEPLOY.md",
-      "community": 83,
-      "norm_label": "deployment documentation",
-      "id": "deploy_documentation"
-    },
-    {
-      "label": "Deployment Guide",
-      "file_type": "document",
-      "source_file": "DEPLOYMENT_GUIDE.md",
-      "community": 84,
-      "norm_label": "deployment guide",
-      "id": "deployment_guide"
-    },
-    {
-      "label": "Deployment Scripts",
-      "file_type": "document",
-      "source_file": "DEPLOYMENT_SCRIPTS.md",
-      "community": 85,
-      "norm_label": "deployment scripts",
-      "id": "deployment_scripts"
-    },
-    {
-      "label": "Deploy Cheatsheet",
-      "file_type": "document",
-      "source_file": "DEPLOY_CHEATSHEET.txt",
-      "community": 86,
-      "norm_label": "deploy cheatsheet",
-      "id": "deploy_cheatsheet"
-    },
-    {
-      "label": "Ngrok Deployment Cheatsheet",
-      "file_type": "document",
-      "source_file": "DEPLOY_NGROK_CHEATSHEET.txt",
-      "community": 87,
-      "norm_label": "ngrok deployment cheatsheet",
-      "id": "ngrok_deployment_cheatsheet"
     }
   ],
   "links": [
@@ -2891,18 +2811,6 @@
       "confidence_score": 1.0
     },
     {
-      "relation": "calls",
-      "confidence": "INFERRED",
-      "confidence_score": 0.8,
-      "source_file": "server/src/agents/InterviewerAgent.js",
-      "source_location": "L100",
-      "weight": 1.0,
-      "_src": "services_searchservice_searchservice_performsearch",
-      "_tgt": "agents_intervieweragent_intervieweragent_generateresponse",
-      "source": "services_searchservice_searchservice_performsearch",
-      "target": "agents_intervieweragent_intervieweragent_generateresponse"
-    },
-    {
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "server/src/services/LLMService.js",
@@ -3359,18 +3267,6 @@
       "confidence_score": 1.0
     },
     {
-      "relation": "calls",
-      "confidence": "INFERRED",
-      "confidence_score": 0.8,
-      "source_file": "server/src/agents/InterviewerAgent.js",
-      "source_location": "L32",
-      "weight": 1.0,
-      "_src": "services_llmservice_llmservice_generatereactresponse",
-      "_tgt": "agents_intervieweragent_intervieweragent_generateresponse",
-      "source": "services_llmservice_llmservice_generatereactresponse",
-      "target": "agents_intervieweragent_intervieweragent_generateresponse"
-    },
-    {
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "server/src/services/LogStreamer.js",
@@ -3573,18 +3469,6 @@
       "source": "agents_intervieweragent_intervieweragent",
       "target": "agents_intervieweragent_intervieweragent_generateinitialprobe",
       "confidence_score": 1.0
-    },
-    {
-      "relation": "calls",
-      "confidence": "INFERRED",
-      "confidence_score": 0.8,
-      "source_file": "server/src/agents/InterviewerAgent.js",
-      "source_location": "L104",
-      "weight": 1.0,
-      "_src": "agents_intervieweragent_intervieweragent_generateresponse",
-      "_tgt": "agents_proctoragent_proctoragent_analyzecode",
-      "source": "agents_intervieweragent_intervieweragent_generateresponse",
-      "target": "agents_proctoragent_proctoragent_analyzecode"
     },
     {
       "relation": "contains",
