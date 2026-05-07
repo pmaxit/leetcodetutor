@@ -1921,6 +1921,8 @@ input {
     flex-direction: column !important;
     width: 100%;
     flex: none;
+    height: auto !important;
+    overflow: visible !important;
   }
 
   .problem-pane {
@@ -1941,6 +1943,21 @@ input {
     height: auto !important;
     min-height: 500px;
     overflow: visible !important;
+  }
+
+  /* Use one unified scroll container on mobile (the workspace) */
+  .problem-pane .problem-description-view,
+  .problem-description-view,
+  .problem-content-wrapper {
+    overflow: visible !important;
+    height: auto !important;
+    max-height: none !important;
+  }
+
+  .action-pane .canvas-area {
+    flex: none !important;
+    min-height: 55vh;
+    height: 55vh;
   }
 
   /* Sidebar acts as an off-canvas menu */
