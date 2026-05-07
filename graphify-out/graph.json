@@ -556,7 +556,7 @@
       "label": "ConfirmationModal()",
       "file_type": "code",
       "source_file": "client/src/App.jsx",
-      "source_location": "L1423",
+      "source_location": "L1518",
       "id": "src_app_confirmationmodal",
       "community": 13,
       "norm_label": "confirmationmodal()"
@@ -2618,7 +2618,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "client/src/App.jsx",
-      "source_location": "L1423",
+      "source_location": "L1518",
       "weight": 1.0,
       "_src": "client_src_app_jsx",
       "_tgt": "src_app_confirmationmodal",
