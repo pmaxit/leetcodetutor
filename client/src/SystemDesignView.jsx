@@ -616,12 +616,13 @@ export default function SystemDesignView({ question }) {
   const renderReferenceSolutionPanel = () => (
     <div className="sd-whiteboard-panel sd-reference-panel">
       <div className="sd-wb-label">Reference Framework</div>
-      <div style={{ padding: '0.5rem', background: 'rgba(255,0,0,0.1)', marginBottom: '1rem', fontSize: '0.8rem', borderRadius: '4px' }}>
-        <div>🐛 DEBUG INFO:</div>
-        <div>solutionSlug: {getSolutionSlugFromQuestion(question) || 'NULL'}</div>
-        <div>solutionLoading: {isSolutionLoading ? 'YES' : 'NO'}</div>
-        <div>solutionError: {solutionLoadError || 'NONE'}</div>
-        <div>hasMarkdown: {solutionMarkdown ? 'YES (' + solutionMarkdown.length + ' chars)' : 'NO'}</div>
+      <div style={{ padding: '0.5rem', background: 'rgba(0,255,0,0.1)', marginBottom: '1rem', fontSize: '0.8rem', borderRadius: '4px' }}>
+        <div>🐛 DEBUG:</div>
+        <div>Slug: {getSolutionSlugFromQuestion(question) || 'NULL'}</div>
+        <div>Loading: {isSolutionLoading ? 'YES' : 'NO'}</div>
+        <div>Error: {solutionLoadError ? solutionLoadError.substring(0, 30) : 'NONE'}</div>
+        <div>✓ Markdown: {solutionMarkdown.length} chars</div>
+        <div>Title: {solutionTitle || 'NONE'}</div>
       </div>
       <div className="sd-ref-content">
         <div className="sd-ref-title">HelloInterview Delivery Framework</div>
