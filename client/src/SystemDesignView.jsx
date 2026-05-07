@@ -617,15 +617,51 @@ export default function SystemDesignView({ question }) {
 
   const renderReferenceSolutionPanel = () => (
     <div className="sd-whiteboard-panel sd-reference-panel">
-      <div className="sd-wb-label">Reference</div>
+      <div className="sd-wb-label">Reference Solution</div>
       <div className="sd-ref-content">
         {question.originalUrl && (
-          <a href={question.originalUrl} target="_blank" rel="noreferrer" className="sd-original-solution-link">
+          <a href={question.originalUrl} target="_blank" rel="noreferrer" className="sd-original-solution-link" style={{ marginBottom: '1.5rem' }}>
             🔗 View Full Solution
           </a>
         )}
-        {!question.originalUrl && (
-          <div className="placeholder-text">No reference solution link available.</div>
+        
+        {isSolutionLoading ? (
+          <div className="placeholder-text">Loading solution markdown...</div>
+        ) : solutionLoadError ? (
+          <div className="placeholder-text" style={{ color: '#ef4444' }}>{solutionLoadError}</div>
+        ) : solutionMarkdown ? (
+          <div className="sd-inline-solution-markdown">
+            {solutionTitle && (
+              <div style={{ fontWeight: 800, marginBottom: '1.25rem', fontSize: '1.4rem', color: 'var(--accent)' }}>{solutionTitle}</div>
+            )}
+            <ReactMarkdown
+              remarkPlugins={[remarkGfm, remarkMath]}
+              rehypePlugins={[rehypeKatex]}
+              components={{
+                code({ inline, className, children, ...props }) {
+                  const match = /language-(\w+)/.exec(className || '');
+                  return !inline && match ? (
+                    <SyntaxHighlighter
+                      style={vscDarkPlus}
+                      language={match[1]}
+                      PreTag="div"
+                      {...props}
+                    >
+                      {String(children).replace(/\n$/, '')}
+                    </SyntaxHighlighter>
+                  ) : (
+                    <code className={className} {...props}>
+                      {children}
+                    </code>
+                  );
+                },
+              }}
+            >
+              {normalizeSdMarkdown(solutionMarkdown)}
+            </ReactMarkdown>
+          </div>
+        ) : (
+          <div className="placeholder-text">No reference solution available.</div>
         )}
       </div>
     </div>

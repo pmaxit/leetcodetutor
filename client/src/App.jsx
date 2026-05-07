@@ -1202,14 +1202,14 @@ return (
         )}
       </div>
       <div className="header-right">
-        <div className="profile-container" onMouseEnter={() => setShowProfileMenu(true)} onMouseLeave={() => setShowProfileMenu(false)}>
+        <div className="profile-container" onClick={() => setShowProfileMenu(!showProfileMenu)}>
           <div className="profile-trigger">
             <span className="profile-icon">👤</span>
             <span className="user-email desktop-only">{user?.email}</span>
           </div>
           
           {showProfileMenu && (
-            <div className="profile-dropdown">
+            <div className="profile-dropdown" onClick={(e) => e.stopPropagation()}>
               <div className="dropdown-header desktop-only">{user?.email}</div>
               <button onClick={() => { setCurrentView('stats'); setShowProfileMenu(false); }} className="dropdown-item">
                 <span className="item-icon">📊</span> Statistics
