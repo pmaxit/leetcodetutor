@@ -2299,6 +2299,14 @@ input {
   .sd-top-bar {
     padding: 0.6rem 0.8rem;
   }
+
+  .sd-content {
+    grid-template-columns: 1fr !important;
+  }
+
+  .sd-left-panel {
+    display: none !important;
+  }
 }
 
 /* ─── Practice Mode Styles ───────────────────────────────────────────────── */
