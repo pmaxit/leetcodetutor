@@ -53,6 +53,39 @@ const getSystemDesignSolutionFiles = () => {
     .sort((a, b) => a.localeCompare(b));
 };
 
+const resolveSdMarkdownFile = (rawSlug = '') => {
+  const normalized = String(rawSlug || '').trim().toLowerCase();
+  if (!/^[a-z0-9-]+$/.test(normalized)) return null;
+
+  const candidates = [
+    normalized,
+    `problem-breakdowns-${normalized}`,
+    `core-concepts-${normalized}`,
+    `deep-dives-${normalized}`,
+    `patterns-${normalized}`,
+    `in-a-hurry-${normalized}`,
+  ];
+
+  for (const slug of candidates) {
+    const filePath = path.join(SD_SOLUTIONS_DIR, `${slug}.md`);
+    if (fs.existsSync(filePath)) return { slug, filePath };
+  }
+
+  const allMarkdown = fs.existsSync(SD_SOLUTIONS_DIR)
+    ? fs.readdirSync(SD_SOLUTIONS_DIR).filter((name) => name.endsWith('.md'))
+    : [];
+  const suffixMatch = allMarkdown.find((fileName) => fileName.endsWith(`-${normalized}.md`));
+  if (suffixMatch) {
+    const slug = suffixMatch.replace('.md', '');
+    return {
+      slug,
+      filePath: path.join(SD_SOLUTIONS_DIR, suffixMatch),
+    };
+  }
+
+  return null;
+};
+
 const isSystemDesignQuestion = (question) => {
   if (!question) return false;
   const category = (question.category || question.pattern || '').toString().toLowerCase();
@@ -1157,19 +1190,26 @@ app.get('/api/sd/solutions', authenticateToken, (req, res) => {
 app.get('/api/sd/solutions/:slug/markdown', authenticateToken, (req, res) => {
   try {
     const { slug } = req.params;
-    if (!/^problem-breakdowns-[a-z0-9-]+$/.test(slug)) {
+    if (!/^[a-z0-9-]+$/.test(slug)) {
       return res.status(400).json({ error: 'Invalid solution slug' });
     }
 
-    const filePath = path.join(SD_SOLUTIONS_DIR, `${slug}.md`);
-    if (!fs.existsSync(filePath)) {
+    const resolved = resolveSdMarkdownFile(slug);
+    if (!resolved) {
       return res.status(404).json({ error: 'Solution not found' });
     }
 
-    const markdown = fs.readFileSync(filePath, 'utf8');
-    const title = toTitleCaseFromSlug(slug.replace('problem-breakdowns-', ''));
+    const markdown = fs.readFileSync(resolved.filePath, 'utf8');
+    const title = toTitleCaseFromSlug(
+      resolved.slug
+        .replace('problem-breakdowns-', '')
+        .replace('core-concepts-', '')
+        .replace('deep-dives-', '')
+        .replace('patterns-', '')
+        .replace('in-a-hurry-', '')
+    );
     return res.json({
-      slug,
+      slug: resolved.slug,
       title,
       markdown,
     });

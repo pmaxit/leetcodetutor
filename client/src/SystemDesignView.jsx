@@ -217,8 +217,12 @@ export default function SystemDesignView({ question }) {
   const getSolutionSlugFromQuestion = (selectedQuestion) => {
     const originalUrl = selectedQuestion?.originalUrl || '';
     const slugTail = originalUrl.split('/').filter(Boolean).pop();
-    if (!slugTail) return null;
-    return `problem-breakdowns-${slugTail}`;
+    if (slugTail) return slugTail.toLowerCase();
+    const titleSlug = (selectedQuestion?.title || '')
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '');
+    return titleSlug || null;
   };
 
   const getRawTldrawSnapshot = () => {
