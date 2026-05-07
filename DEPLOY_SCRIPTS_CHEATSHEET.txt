@@ -276,12 +276,12 @@ Logs:
  TYPICAL WORKFLOW
 ═══════════════════════════════════════════════════════════════════════════════
 
-Day 1 (First Time):
+7th May (First Time):
   1. Check prerequisites: lms status, node --version, npm --version, ngrok --version
   2. Deploy: ./deploy.sh
   3. Share URL from output
 
-Day 2+ (Continued Development):
+8th May onwards (Continued Development):
   1. Run: ./deploy.sh
   2. App is immediately available at public URL
   3. Make code changes
