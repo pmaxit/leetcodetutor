@@ -17,6 +17,9 @@ RUN npm install --omit=dev
 # Copy server code
 COPY server/ ./server/
 
+# Copy system design solutions
+COPY hellointerview-system-design/ ./hellointerview-system-design/
+
 # Copy built frontend from Stage 1
 COPY --from=frontend-builder /app/client/dist ./client/dist
 
