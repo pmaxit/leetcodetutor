@@ -19,12 +19,22 @@ import SettingsPage from './components/SettingsPage';
 import StatsPage from './components/StatsPage';
 
 const API = import.meta.env.PROD ? '' : 'http://127.0.0.1:3005';
+const TLDRAW_LICENSE_KEY = import.meta.env.VITE_TLDRAW_LICENSE_KEY;
+const CAN_USE_TLDRAW = !import.meta.env.PROD || Boolean(TLDRAW_LICENSE_KEY);
 
 // Component to access tldraw editor instance
 const TldrawWrapper = ({ onEditorMount }) => {
+  if (!CAN_USE_TLDRAW) {
+    return (
+      <div className="placeholder-text" style={{ padding: '1rem' }}>
+        Whiteboard is unavailable in production without a Tldraw license key.
+        Set `VITE_TLDRAW_LICENSE_KEY` and rebuild the client.
+      </div>
+    );
+  }
   return (
     <div style={{ position: 'absolute', inset: 0 }}>
-      <Tldraw onMount={onEditorMount} inferDarkMode />
+      <Tldraw onMount={onEditorMount} inferDarkMode licenseKey={TLDRAW_LICENSE_KEY} />
     </div>
   );
 };
@@ -46,6 +56,29 @@ function App() {
     return labelDate.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
   };
 
+  const getDefaultPracticeDay = (schedule) => {
+    if (!schedule) return null;
+    const dayKeys = Object.keys(schedule).sort((a, b) => {
+      const d1 = getPracticeDayNumber(a) ?? 0;
+      const d2 = getPracticeDayNumber(b) ?? 0;
+      return d1 - d2;
+    });
+    if (dayKeys.length === 0) return null;
+
+    const today = new Date();
+    const start = new Date(PRACTICE_START_DATE);
+    const diffMs = today.setHours(0, 0, 0, 0) - start.setHours(0, 0, 0, 0);
+    const dayOffset = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+    const todayPracticeDay = dayOffset + 1;
+
+    if (Number.isFinite(todayPracticeDay)) {
+      const todayKey = String(todayPracticeDay);
+      if (schedule[todayKey]) return todayKey;
+    }
+
+    return dayKeys[0];
+  };
+
   // ─── Mode: 'dsa' | 'system-design' | 'practice' ─────────────────────────────
   const [mode, setMode] = useState('dsa');
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -60,6 +93,7 @@ function App() {
   const [codeFeedback, setCodeFeedback] = useState([]);
   const [report, setReport] = useState(null);
   const [isAiLoading, setIsAiLoading] = useState(false);
+  const [isChatStreaming, setIsChatStreaming] = useState(false);
   const [problemPaneWidth, setProblemPaneWidth] = useState(45);
   const [questions, setQuestions] = useState([]);
   const [selectedQuestion, setSelectedQuestion] = useState(null);
@@ -305,6 +339,7 @@ function App() {
           const sessionData = await sessionRes.json();
 
           setPracticeSchedule(sessionData.schedule);
+          setSelectedPracticeDay(getDefaultPracticeDay(sessionData.schedule));
           setPracticeSessionName(sessionData.sessionName);
           setPracticeSessionId(sessionData.id);
           setPracticeProgress(sessionData.progress || {});
@@ -400,6 +435,13 @@ function App() {
     setMessages((prev) => [...prev, { role: 'user', content: userMessage }]);
     setInputValue('');
     setStatus({ text: 'Agent Thinking...', type: 'loading' });
+    setIsChatStreaming(true);
+    let streamingAiMessageIndex = null;
+    let sawDelta = false;
+    setMessages((prev) => {
+      streamingAiMessageIndex = prev.length;
+      return [...prev, { role: 'ai', content: '' }];
+    });
 
     try {
       const response = await fetchWithAuth(`${API}/api/chat`, {
@@ -432,8 +474,32 @@ function App() {
               if (data.type === 'status') {
                 setStatus({ text: data.message, type: 'loading' });
                 if (data.model) setActiveModel(data.model);
+              } else if (data.type === 'delta') {
+                sawDelta = true;
+                setMessages((prev) => {
+                  if (streamingAiMessageIndex === null || !prev[streamingAiMessageIndex]) return prev;
+                  const next = [...prev];
+                  const current = next[streamingAiMessageIndex];
+                  next[streamingAiMessageIndex] = {
+                    ...current,
+                    content: `${current.content || ''}${data.delta || ''}`
+                  };
+                  return next;
+                });
               } else if (data.type === 'result') {
-                setMessages((prev) => [...prev, { role: 'ai', content: data.response }]);
+                if (sawDelta && streamingAiMessageIndex !== null) {
+                  setMessages((prev) => {
+                    if (!prev[streamingAiMessageIndex]) return prev;
+                    const next = [...prev];
+                    next[streamingAiMessageIndex] = {
+                      ...next[streamingAiMessageIndex],
+                      content: data.response || next[streamingAiMessageIndex].content
+                    };
+                    return next;
+                  });
+                } else {
+                  setMessages((prev) => [...prev, { role: 'ai', content: data.response }]);
+                }
                 if (data.constraints) setConstraints(data.constraints);
                 setSession(data.state);
                 if (data.model) setActiveModel(data.model);
@@ -456,6 +522,8 @@ function App() {
     } catch (error) {
       console.error('Chat error:', error);
       setStatus({ text: 'Connection Error', type: 'error' });
+    } finally {
+      setIsChatStreaming(false);
     }
   };
 
@@ -648,6 +716,7 @@ function App() {
 
 
       setPracticeSchedule(data.schedule);
+      setSelectedPracticeDay(getDefaultPracticeDay(data.schedule));
       setPracticeSessionName(sessionName);
       setPracticeSessionId(savedSession.session.id);
       setPracticeProgress(data.progress || {});
@@ -696,6 +765,7 @@ function App() {
 
 
       setPracticeSchedule(session.schedule);
+      setSelectedPracticeDay(getDefaultPracticeDay(session.schedule));
       setPracticeSessionName(session.sessionName);
       setPracticeSessionId(session.id);
       setPracticeProgress(session.progress || {});
@@ -1093,7 +1163,7 @@ if (!token) {
 }
 
 return (
-  <div className={`app-container ${isSidebarOpen ? 'sidebar-open' : ''} ${currentView === 'main' ? '' : currentView + '-view'}`} style={{
+  <div className={`app-container mode-${mode} ${isSidebarOpen ? 'sidebar-open' : ''} ${currentView === 'main' ? '' : currentView + '-view'}`} style={{
     gridTemplateColumns: currentView === 'main' ? '280px 1fr' : '1fr'
   }}>
 
@@ -1239,7 +1309,7 @@ return (
           </div>
 
           {/* Active Sessions Section */}
-          <div className="tree-group">
+          <div className="tree-group active-sessions-group">
             <div className="tree-header tree-main-header">
               <span>📅</span> Active Sessions
             </div>
@@ -1363,7 +1433,7 @@ return (
     {/* ─── MAIN WORKSPACE ─────────────────────────────────────── */}
     {currentView === 'main' && (mode === 'system-design' ? (
       <div className="sd-workspace">
-        <SystemDesignView question={selectedSdQuestion} />
+        <SystemDesignView key={selectedSdQuestion?.id || 'sd-empty'} question={selectedSdQuestion} />
       </div>
     ) : (
       <main className="workspace split-view">
@@ -1551,7 +1621,9 @@ return (
                       },
                     }}
                   >
-                    {msg.content}
+                    {isChatStreaming && msg.role === 'ai' && idx === messages.length - 1
+                      ? `${msg.content}▋`
+                      : msg.content}
                   </ReactMarkdown>
                   {msg.role === 'user' && (
                     <button

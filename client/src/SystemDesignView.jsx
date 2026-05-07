@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { Tldraw } from 'tldraw';
+import { useState, useEffect, useRef } from 'react';
+import { Tldraw, getSnapshot, loadSnapshot } from 'tldraw';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
@@ -10,6 +10,8 @@ import 'tldraw/tldraw.css';
 import 'katex/dist/katex.min.css';
 
 const API = 'http://localhost:3005';
+const TLDRAW_LICENSE_KEY = import.meta.env.VITE_TLDRAW_LICENSE_KEY;
+const CAN_USE_TLDRAW = !import.meta.env.PROD || Boolean(TLDRAW_LICENSE_KEY);
 const normalizeHeading = (text = '') => text.toLowerCase().replace(/[^a-z]/g, '');
 const getSdHeadingChipClass = (text = '') => {
   const token = normalizeHeading(text);
@@ -168,7 +170,6 @@ function FinalReport({ report, onClose }) {
 // ─── Main System Design View ──────────────────────────────────────────────────
 export default function SystemDesignView({ question }) {
   const [currentStageIndex, setCurrentStageIndex] = useState(0);
-  const [answer, setAnswer] = useState('');
   const [evaluation, setEvaluation] = useState(null);
   const [isEvaluating, setIsEvaluating] = useState(false);
   const [completedStages, setCompletedStages] = useState(new Set());
@@ -178,14 +179,101 @@ export default function SystemDesignView({ question }) {
   const [activeTab, setActiveTab] = useState('whiteboard');
   const [practiceSolutions, setPracticeSolutions] = useState([]);
   const [isPracticeLoading, setIsPracticeLoading] = useState(false);
+  const [solutionMarkdown, setSolutionMarkdown] = useState('');
+  const [solutionTitle, setSolutionTitle] = useState('');
+  const [isSolutionLoading, setIsSolutionLoading] = useState(false);
+  const [solutionLoadError, setSolutionLoadError] = useState('');
   const [clarifyInput, setClarifyInput] = useState('');
   const [clarifyMessages, setClarifyMessages] = useState([]);
   const [isClarifying, setIsClarifying] = useState(false);
+  const [whiteboardReady, setWhiteboardReady] = useState(false);
+  const [isMobileViewport, setIsMobileViewport] = useState(false);
   const tldrawEditor = useRef(null);
   const textareaRef = useRef(null);
+  const blankWhiteboardSnapshotRef = useRef(null);
+  const pendingWhiteboardSnapshotRef = useRef(null);
+  const lastWhiteboardSerializedRef = useRef('');
+  const saveTimeoutRef = useRef(null);
+  const whiteboardSaveIntervalRef = useRef(null);
+  const isApplyingWhiteboardRef = useRef(false);
+  const isHydratingDraftRef = useRef(false);
+  const hasLoadedDraftRef = useRef(false);
 
   const stages = question?.stages || [];
   const currentStage = stages[currentStageIndex];
+  const answer = stageAnswers[currentStageIndex] || '';
+  const isSolutionOnlyMobile = isMobileViewport;
+  const fetchWithAuth = (url, options = {}) => {
+    const token = localStorage.getItem('ag_token');
+    return fetch(url, {
+      ...options,
+      headers: {
+        ...options.headers,
+        Authorization: `Bearer ${token}`,
+      },
+    });
+  };
+
+  const getSolutionSlugFromQuestion = (selectedQuestion) => {
+    const originalUrl = selectedQuestion?.originalUrl || '';
+    const slugTail = originalUrl.split('/').filter(Boolean).pop();
+    if (!slugTail) return null;
+    return `problem-breakdowns-${slugTail}`;
+  };
+
+  const getRawTldrawSnapshot = () => {
+    if (isSolutionOnlyMobile) return null;
+    if (!tldrawEditor.current) return null;
+    try {
+      return getSnapshot(tldrawEditor.current.store);
+    } catch (error) {
+      console.error('Failed to get SD whiteboard snapshot:', error);
+      return null;
+    }
+  };
+
+  const applyWhiteboardSnapshot = (snapshotPayload) => {
+    if (!tldrawEditor.current) return;
+    const payload = snapshotPayload || blankWhiteboardSnapshotRef.current;
+    if (!payload) return;
+    try {
+      isApplyingWhiteboardRef.current = true;
+      loadSnapshot(tldrawEditor.current.store, payload);
+      const rawSnapshot = getRawTldrawSnapshot();
+      lastWhiteboardSerializedRef.current = rawSnapshot ? JSON.stringify(rawSnapshot) : '';
+    } catch (error) {
+      console.error('Failed to load SD whiteboard snapshot:', error);
+    } finally {
+      setTimeout(() => {
+        isApplyingWhiteboardRef.current = false;
+      }, 0);
+    }
+  };
+
+  const buildDraftState = () => ({
+    currentStageIndex,
+    stageAnswers,
+    completedStages: Array.from(completedStages),
+  });
+
+  const persistDraft = async () => {
+    if (!question?.id || isHydratingDraftRef.current || !hasLoadedDraftRef.current) return;
+    const rawSnapshot = getRawTldrawSnapshot();
+    const whiteboardSnapshot = rawSnapshot || pendingWhiteboardSnapshotRef.current || null;
+
+    try {
+      await fetchWithAuth(`${API}/api/sd/draft/${question.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          draftState: buildDraftState(),
+          whiteboardSnapshot,
+        }),
+      });
+    } catch (error) {
+      console.error('Failed to save SD draft:', error);
+    }
+  };
   const getWhiteboardShapesForSubmission = () => {
     const shapes = tldrawEditor.current?.getCurrentPageShapes?.() || [];
     return shapes.map((s) => ({
@@ -195,18 +283,61 @@ export default function SystemDesignView({ question }) {
     }));
   };
 
-  // Reset when question changes
   useEffect(() => {
-    setCurrentStageIndex(0);
-    setAnswer('');
-    setEvaluation(null);
-    setCompletedStages(new Set());
-    setStageAnswers([]);
-    setFinalReport(null);
-    setShowHint(false);
-    setClarifyMessages([]);
-    setClarifyInput('');
-  }, [question?.id]);
+    if (typeof window === 'undefined') return undefined;
+    const media = window.matchMedia('(max-width: 1024px)');
+    const applyMatch = (eventLike) => setIsMobileViewport(Boolean(eventLike.matches));
+    applyMatch(media);
+    media.addEventListener('change', applyMatch);
+    return () => media.removeEventListener('change', applyMatch);
+  }, []);
+
+  useEffect(() => {
+    if (isSolutionOnlyMobile && activeTab !== 'answer') {
+      setActiveTab('answer');
+    }
+  }, [isSolutionOnlyMobile, activeTab]);
+
+  useEffect(() => {
+    if (!question?.id) return;
+    const token = localStorage.getItem('ag_token');
+    if (!token) return;
+
+    const loadDraft = async () => {
+      isHydratingDraftRef.current = true;
+      try {
+        const res = await fetchWithAuth(`${API}/api/sd/draft/${question.id}`);
+        const data = await res.json();
+        const draftState = data?.draftState;
+        const maxIndex = Math.max(0, stages.length - 1);
+        const safeIndex = Math.min(
+          Number.isInteger(draftState?.currentStageIndex) ? draftState.currentStageIndex : 0,
+          maxIndex
+        );
+        const answers = Array.isArray(draftState?.stageAnswers) ? draftState.stageAnswers : [];
+        const completed = Array.isArray(draftState?.completedStages)
+          ? draftState.completedStages.filter((idx) => Number.isInteger(idx))
+          : [];
+
+        setCurrentStageIndex(safeIndex);
+        setStageAnswers(answers);
+        setCompletedStages(new Set(completed));
+
+        const snapshot = data?.whiteboardSnapshot || null;
+        pendingWhiteboardSnapshotRef.current = snapshot;
+        if (tldrawEditor.current && !isSolutionOnlyMobile) {
+          applyWhiteboardSnapshot(snapshot);
+        }
+      } catch (error) {
+        console.error('Failed to load SD draft:', error);
+      } finally {
+        isHydratingDraftRef.current = false;
+        hasLoadedDraftRef.current = true;
+      }
+    };
+
+    loadDraft();
+  }, [question?.id, isSolutionOnlyMobile]);
 
   useEffect(() => {
     const token = localStorage.getItem('ag_token');
@@ -231,6 +362,40 @@ export default function SystemDesignView({ question }) {
     loadPracticeSolutions();
   }, []);
 
+  useEffect(() => {
+    if (!question?.id) return;
+    const solutionSlug = getSolutionSlugFromQuestion(question);
+    if (!solutionSlug) {
+      setSolutionMarkdown('');
+      setSolutionTitle('');
+      setSolutionLoadError('No linked markdown solution for this question.');
+      return;
+    }
+
+    const loadInlineSolution = async () => {
+      setIsSolutionLoading(true);
+      setSolutionLoadError('');
+      try {
+        const res = await fetchWithAuth(`${API}/api/sd/solutions/${solutionSlug}/markdown`);
+        if (!res.ok) {
+          const errorData = await res.json().catch(() => ({}));
+          throw new Error(errorData.error || `Failed to load solution (${res.status})`);
+        }
+        const data = await res.json();
+        setSolutionTitle(data?.title || '');
+        setSolutionMarkdown(data?.markdown || '');
+      } catch (error) {
+        setSolutionMarkdown('');
+        setSolutionTitle('');
+        setSolutionLoadError(error.message || 'Failed to load markdown solution.');
+      } finally {
+        setIsSolutionLoading(false);
+      }
+    };
+
+    loadInlineSolution();
+  }, [question?.id]);
+
   const handleSubmitAnswer = async () => {
     const whiteboardShapes = getWhiteboardShapesForSubmission();
     const hasWhiteboardContent = whiteboardShapes.some(
@@ -243,7 +408,7 @@ export default function SystemDesignView({ question }) {
     try {
       const res = await fetch(`${API}/api/sd/stage/evaluate`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${localStorage.getItem('ag_token')}` },
         body: JSON.stringify({
           questionId: question.id,
           stageId: currentStage.id,
@@ -275,7 +440,7 @@ export default function SystemDesignView({ question }) {
       try {
         const res = await fetch(`${API}/api/sd/complete`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${localStorage.getItem('ag_token')}` },
           body: JSON.stringify({ questionId: question.id, stageAnswers }),
         });
         const data = await res.json();
@@ -285,9 +450,39 @@ export default function SystemDesignView({ question }) {
       }
     } else {
       setCurrentStageIndex(prev => prev + 1);
-      setAnswer('');
       setEvaluation(null);
       setShowHint(false);
+    }
+  };
+
+  const handleResetAnswers = async () => {
+    if (!question?.id) return;
+    if (!window.confirm('Reset all stage answers and whiteboard for this system design question?')) return;
+
+    isHydratingDraftRef.current = true;
+    setCurrentStageIndex(0);
+    setStageAnswers([]);
+    setCompletedStages(new Set());
+    setEvaluation(null);
+    setFinalReport(null);
+    setShowHint(false);
+    setClarifyMessages([]);
+    setClarifyInput('');
+    pendingWhiteboardSnapshotRef.current = null;
+    if (tldrawEditor.current && blankWhiteboardSnapshotRef.current) {
+      applyWhiteboardSnapshot(null);
+    }
+    isHydratingDraftRef.current = false;
+    hasLoadedDraftRef.current = true;
+
+    try {
+      await fetchWithAuth(`${API}/api/sd/draft/reset`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ questionId: question.id }),
+      });
+    } catch (error) {
+      console.error('Failed to reset SD draft:', error);
     }
   };
 
@@ -411,6 +606,151 @@ export default function SystemDesignView({ question }) {
     }
   };
 
+  const renderReferenceSolutionPanel = () => (
+    <div className="sd-whiteboard-panel sd-reference-panel">
+      <div className="sd-wb-label">Reference Framework</div>
+      <div className="sd-ref-content">
+        <div className="sd-ref-title">HelloInterview Delivery Framework</div>
+        <div className="sd-ref-steps">
+          {stages.map((s, i) => (
+            <div key={s.id} className={`sd-ref-step ${i === currentStageIndex ? 'current' : ''} ${completedStages.has(i) ? 'done' : ''}`}>
+              <span className="sd-ref-step-icon">{s.icon}</span>
+              <span>{s.name}</span>
+              {completedStages.has(i) && <span className="sd-ref-check">✓</span>}
+            </div>
+          ))}
+        </div>
+        <div className="sd-ref-tip">
+          <strong>Pro Tip:</strong> Use this as your structured reference while practicing the interview flow.
+        </div>
+        {question.originalUrl && (
+          <a href={question.originalUrl} target="_blank" rel="noreferrer" className="sd-full-solution-link">
+            🔗 View Full System Design Solution
+          </a>
+        )}
+        {question.youtube_url && (
+          <div className="video-embed-container" style={{ marginTop: '1rem' }}>
+            <iframe
+              width="100%"
+              height="200"
+              src={`https://www.youtube.com/embed/${question.youtube_url.split('v=')[1]?.split('&')[0] || question.youtube_url.split('/').pop()}`}
+              title="YouTube video player"
+              frameBorder="0"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+              allowFullScreen
+              style={{ borderRadius: '8px', border: '1px solid var(--border)' }}
+            ></iframe>
+          </div>
+        )}
+
+        <div style={{ marginTop: '1rem', borderTop: '1px solid var(--border)', paddingTop: '0.75rem' }}>
+          <div style={{ fontWeight: 700, marginBottom: '0.5rem' }}>Full Solution (Markdown)</div>
+          {isSolutionLoading ? (
+            <div className="placeholder-text">Loading full solution...</div>
+          ) : solutionLoadError ? (
+            <div className="placeholder-text">{solutionLoadError}</div>
+          ) : solutionMarkdown ? (
+            <div className="sd-inline-solution-markdown">
+              {solutionTitle && (
+                <div style={{ fontWeight: 600, marginBottom: '0.5rem' }}>{solutionTitle}</div>
+              )}
+              <ReactMarkdown
+                remarkPlugins={[remarkGfm, remarkMath]}
+                rehypePlugins={[rehypeKatex]}
+                components={{
+                  code({ inline, className, children, ...props }) {
+                    const match = /language-(\w+)/.exec(className || '');
+                    return !inline && match ? (
+                      <SyntaxHighlighter
+                        style={vscDarkPlus}
+                        language={match[1]}
+                        PreTag="div"
+                        {...props}
+                      >
+                        {String(children).replace(/\n$/, '')}
+                      </SyntaxHighlighter>
+                    ) : (
+                      <code className={className} {...props}>
+                        {children}
+                      </code>
+                    );
+                  },
+                }}
+              >
+                {solutionMarkdown}
+              </ReactMarkdown>
+            </div>
+          ) : (
+            <div className="placeholder-text">No markdown solution available.</div>
+          )}
+        </div>
+
+        <div style={{ marginTop: '1rem', borderTop: '1px solid var(--border)', paddingTop: '0.75rem' }}>
+          <div style={{ fontWeight: 600, marginBottom: '0.5rem' }}>Practice Section: Full Solutions</div>
+          {isPracticeLoading ? (
+            <div className="placeholder-text">Loading solution pages...</div>
+          ) : practiceSolutions.length === 0 ? (
+            <div className="placeholder-text">No full solution pages found.</div>
+          ) : (
+            <div style={{ display: 'grid', gap: '0.35rem', maxHeight: '240px', overflowY: 'auto' }}>
+              {practiceSolutions.map((solution) => (
+                <a
+                  key={solution.slug}
+                  href={solution.url}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="resource-link"
+                >
+                  📘 {solution.title}
+                </a>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+
+  useEffect(() => {
+    if (!question?.id || isHydratingDraftRef.current || !hasLoadedDraftRef.current) return;
+    if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
+    saveTimeoutRef.current = setTimeout(() => {
+      persistDraft();
+    }, 700);
+
+    return () => {
+      if (saveTimeoutRef.current) {
+        clearTimeout(saveTimeoutRef.current);
+      }
+    };
+  }, [question?.id, currentStageIndex, stageAnswers, completedStages]);
+
+  useEffect(() => {
+    if (isSolutionOnlyMobile) return undefined;
+    if (!question?.id || !tldrawEditor.current || !whiteboardReady) return undefined;
+
+    whiteboardSaveIntervalRef.current = setInterval(() => {
+      if (isApplyingWhiteboardRef.current) return;
+      const rawSnapshot = getRawTldrawSnapshot();
+      if (!rawSnapshot) return;
+      const serialized = JSON.stringify(rawSnapshot);
+      if (serialized === lastWhiteboardSerializedRef.current) return;
+      lastWhiteboardSerializedRef.current = serialized;
+      pendingWhiteboardSnapshotRef.current = rawSnapshot;
+      if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
+      saveTimeoutRef.current = setTimeout(() => {
+        persistDraft();
+      }, 700);
+    }, 1500);
+
+    return () => {
+      if (whiteboardSaveIntervalRef.current) {
+        clearInterval(whiteboardSaveIntervalRef.current);
+        whiteboardSaveIntervalRef.current = null;
+      }
+    };
+  }, [question?.id, whiteboardReady, isSolutionOnlyMobile]);
+
   if (!question) {
     return (
       <div className="sd-empty">
@@ -441,6 +781,10 @@ export default function SystemDesignView({ question }) {
 
       {/* Main Content */}
       <div className="sd-content">
+        {isSolutionOnlyMobile ? (
+          renderReferenceSolutionPanel()
+        ) : (
+          <>
         {/* Left: Stage Prompt + Answer */}
         <div className="sd-left-panel">
           {/* Stage Header */}
@@ -472,12 +816,14 @@ export default function SystemDesignView({ question }) {
 
           {/* Tab toggle: Whiteboard vs Text Answer */}
           <div className="sd-answer-tabs">
-            <button
-              className={`sd-atab ${activeTab === 'whiteboard' ? 'active' : ''}`}
-              onClick={() => setActiveTab('whiteboard')}
-            >
-              🖊 Whiteboard
-            </button>
+            {!isSolutionOnlyMobile && (
+              <button
+                className={`sd-atab ${activeTab === 'whiteboard' ? 'active' : ''}`}
+                onClick={() => setActiveTab('whiteboard')}
+              >
+                🖊 Whiteboard
+              </button>
+            )}
             <button
               className={`sd-atab ${activeTab === 'answer' ? 'active' : ''}`}
               onClick={() => setActiveTab('answer')}
@@ -492,7 +838,14 @@ export default function SystemDesignView({ question }) {
             className="sd-answer-input"
             placeholder={`Type your answer for: ${currentStage?.name}... (⌘/Ctrl+Enter to submit)`}
             value={answer}
-            onChange={e => setAnswer(e.target.value)}
+            onChange={(e) => {
+              const nextAnswer = e.target.value;
+              setStageAnswers((prev) => {
+                const next = [...prev];
+                next[currentStageIndex] = nextAnswer;
+                return next;
+              });
+            }}
             onKeyDown={(e) => {
               if (e.key === 'Enter' && (e.metaKey || e.ctrlKey) && !e.nativeEvent.isComposing) {
                 e.preventDefault();
@@ -504,15 +857,21 @@ export default function SystemDesignView({ question }) {
           />
 
           {/* Submit */}
-          <button
-            className="sd-submit-btn"
-            onClick={handleSubmitAnswer}
-            disabled={isEvaluating}
-          >
-            {isEvaluating ? (
-              <span className="sd-loading-dot">Evaluating<span>.</span><span>.</span><span>.</span></span>
-            ) : 'Submit Answer →'}
-          </button>
+          <div style={{ display: 'flex', gap: '0.5rem' }}>
+            <button
+              className="sd-submit-btn"
+              onClick={handleSubmitAnswer}
+              disabled={isEvaluating}
+              style={{ flex: 1 }}
+            >
+              {isEvaluating ? (
+                <span className="sd-loading-dot">Evaluating<span>.</span><span>.</span><span>.</span></span>
+              ) : 'Submit Answer →'}
+            </button>
+            <button className="action-btn-secondary" onClick={handleResetAnswers} type="button">
+              Reset Answers
+            </button>
+          </div>
 
           {/* Evaluation Result */}
           <EvaluationCard
@@ -521,7 +880,8 @@ export default function SystemDesignView({ question }) {
             isLastStage={currentStageIndex >= stages.length - 1}
           />
 
-          <div className="sd-eval-card sd-clarify-card">
+          {!isSolutionOnlyMobile && (
+            <div className="sd-eval-card sd-clarify-card">
             <div className="sd-eval-label sd-clarify-title">
               🤖 Interviewer Clarification (Design Choices, Pros & Cons)
             </div>
@@ -537,7 +897,7 @@ export default function SystemDesignView({ question }) {
                         remarkPlugins={[remarkGfm, remarkMath]}
                         rehypePlugins={[rehypeKatex]}
                         components={{
-                          h3({ node, children, ...props }) {
+                          h3({ children, ...props }) {
                             const text = String(children || '');
                             const chipClass = getSdHeadingChipClass(text);
                             return (
@@ -546,7 +906,7 @@ export default function SystemDesignView({ question }) {
                               </h3>
                             );
                           },
-                          code({ node, inline, className, children, ...props }) {
+                          code({ inline, className, children, ...props }) {
                             const match = /language-(\w+)/.exec(className || '');
                             return !inline && match ? (
                               <SyntaxHighlighter
@@ -593,82 +953,50 @@ export default function SystemDesignView({ question }) {
                 {isClarifying ? 'Asking...' : 'Ask'}
               </button>
             </div>
-          </div>
+            </div>
+          )}
         </div>
 
         {/* Right: Whiteboard */}
-        <div className="sd-whiteboard-panel" style={{ display: activeTab === 'whiteboard' ? 'flex' : 'none' }}>
+        {!isSolutionOnlyMobile && (
+          <div className="sd-whiteboard-panel" style={{ display: activeTab === 'whiteboard' ? 'flex' : 'none' }}>
           <div className="sd-wb-label">Whiteboard — draw your architecture</div>
           <div className="sd-wb-canvas">
-            <Tldraw
-              onMount={(editor) => { tldrawEditor.current = editor; }}
-              inferDarkMode
-            />
+            {CAN_USE_TLDRAW ? (
+              <Tldraw
+                onMount={(editor) => {
+                  try {
+                    tldrawEditor.current = editor;
+                    setWhiteboardReady(true);
+                    const initialSnapshot = getSnapshot(editor.store);
+                    blankWhiteboardSnapshotRef.current = initialSnapshot;
+                    lastWhiteboardSerializedRef.current = JSON.stringify(initialSnapshot);
+                    if (pendingWhiteboardSnapshotRef.current) {
+                      applyWhiteboardSnapshot(pendingWhiteboardSnapshotRef.current);
+                    }
+                  } catch (error) {
+                    console.error('Failed to initialize SD whiteboard:', error);
+                    // Keep editor mounted even if snapshot bootstrap fails.
+                    tldrawEditor.current = editor;
+                    setWhiteboardReady(true);
+                  }
+                }}
+                inferDarkMode
+                licenseKey={TLDRAW_LICENSE_KEY}
+              />
+            ) : (
+              <div className="placeholder-text" style={{ padding: '1rem' }}>
+                Whiteboard is unavailable in production without a Tldraw license key.
+                Set `VITE_TLDRAW_LICENSE_KEY` and rebuild the client.
+              </div>
+            )}
           </div>
-        </div>
+          </div>
+        )}
 
         {/* Right: Hidden when text mode */}
-        {activeTab === 'answer' && (
-          <div className="sd-whiteboard-panel sd-reference-panel">
-            <div className="sd-wb-label">Reference Framework</div>
-            <div className="sd-ref-content">
-              <div className="sd-ref-title">HelloInterview Delivery Framework</div>
-              <div className="sd-ref-steps">
-                {stages.map((s, i) => (
-                  <div key={s.id} className={`sd-ref-step ${i === currentStageIndex ? 'current' : ''} ${completedStages.has(i) ? 'done' : ''}`}>
-                    <span className="sd-ref-step-icon">{s.icon}</span>
-                    <span>{s.name}</span>
-                    {completedStages.has(i) && <span className="sd-ref-check">✓</span>}
-                  </div>
-                ))}
-              </div>
-              <div className="sd-ref-tip">
-                <strong>Pro Tip:</strong> Use the whiteboard tab to draw components and data flows. The AI evaluates both your drawing and typed answer together.
-              </div>
-              {question.originalUrl && (
-                <a href={question.originalUrl} target="_blank" rel="noreferrer" className="sd-full-solution-link">
-                  🔗 View Full System Design Solution
-                </a>
-              )}
-              {question.youtube_url && (
-                <div className="video-embed-container" style={{ marginTop: '1rem' }}>
-                  <iframe
-                    width="100%"
-                    height="200"
-                    src={`https://www.youtube.com/embed/${question.youtube_url.split('v=')[1]?.split('&')[0] || question.youtube_url.split('/').pop()}`}
-                    title="YouTube video player"
-                    frameBorder="0"
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                    allowFullScreen
-                    style={{ borderRadius: '8px', border: '1px solid var(--border)' }}
-                  ></iframe>
-                </div>
-              )}
-
-              <div style={{ marginTop: '1rem', borderTop: '1px solid var(--border)', paddingTop: '0.75rem' }}>
-                <div style={{ fontWeight: 600, marginBottom: '0.5rem' }}>Practice Section: Full Solutions</div>
-                {isPracticeLoading ? (
-                  <div className="placeholder-text">Loading solution pages...</div>
-                ) : practiceSolutions.length === 0 ? (
-                  <div className="placeholder-text">No full solution pages found.</div>
-                ) : (
-                  <div style={{ display: 'grid', gap: '0.35rem', maxHeight: '240px', overflowY: 'auto' }}>
-                    {practiceSolutions.map((solution) => (
-                      <a
-                        key={solution.slug}
-                        href={solution.url}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="resource-link"
-                      >
-                        📘 {solution.title}
-                      </a>
-                    ))}
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
+        {activeTab === 'answer' && renderReferenceSolutionPanel()}
+          </>
         )}
       </div>
 

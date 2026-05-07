@@ -16,13 +16,88 @@ const jwt = require('jsonwebtoken');
 const { authenticateToken, JWT_SECRET } = require('./src/middleware/auth');
 
 const path = require('path');
+const fs = require('fs');
 const LogStreamer = require('./src/services/LogStreamer');
+const {
+  SD_SOLUTIONS_DIR,
+  getOriginalSolutionSectionsForQuestion,
+} = require('./src/utils/sdSolutionSections');
 
 const app = express();
 app.use(cors());
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
 const MAX_WHITEBOARD_SNAPSHOT_BYTES = 1_000_000;
+
+const escapeHtml = (value = '') =>
+  value
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+
+const toTitleCaseFromSlug = (slug = '') =>
+  slug
+    .split('-')
+    .filter(Boolean)
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(' ');
+
+const getSystemDesignSolutionFiles = () => {
+  if (!fs.existsSync(SD_SOLUTIONS_DIR)) return [];
+
+  return fs
+    .readdirSync(SD_SOLUTIONS_DIR)
+    .filter((fileName) => /^problem-breakdowns-.*\.md$/.test(fileName))
+    .sort((a, b) => a.localeCompare(b));
+};
+
+const isSystemDesignQuestion = (question) => {
+  if (!question) return false;
+  const category = (question.category || question.pattern || '').toString().toLowerCase();
+  return category.includes('system design');
+};
+
+const parseStagesFromSolutionFormat = (solutionFormat) => {
+  let parsed = [];
+  try {
+    parsed = JSON.parse(solutionFormat || '[]');
+  } catch (e) {
+    return [];
+  }
+  if (Array.isArray(parsed)) return parsed;
+  if (parsed && Array.isArray(parsed.stages)) return parsed.stages;
+  return [];
+};
+
+const buildSdContext = async (selectedQuestion, stageId, whiteboardShapes) => {
+  if (!selectedQuestion?.id) return null;
+  try {
+    const questionRaw = await Question.findOne({ where: { id: selectedQuestion.id } });
+    if (!questionRaw) return null;
+    const questionData = questionRaw.toJSON();
+
+    const stages = parseStagesFromSolutionFormat(questionData.solution_format);
+    const currentStage = stageId
+      ? stages.find((s) => String(s.id) === String(stageId)) || null
+      : null;
+
+    const whiteboardText = (whiteboardShapes || [])
+      .filter((s) => s && s.text)
+      .map((s) => s.text)
+      .join(', ');
+
+    return {
+      stages: stages.map(({ id, name, icon, prompt }) => ({ id, name, icon, prompt })),
+      currentStage,
+      whiteboardText,
+    };
+  } catch (error) {
+    console.error('Failed to build SD context:', error.message);
+    return null;
+  }
+};
 
 // Serve static files from the React app
 app.use(express.static(path.join(__dirname, '../client/dist')));
@@ -190,7 +265,11 @@ const getSession = (questionId, userId, type = 'DSA') => {
     console.log(`Initializing new session for: ${id} (${type})`);
     sessions.set(id, new StateManager(type));
   }
-  return sessions.get(id);
+  const session = sessions.get(id);
+  if (type && session.type !== type) {
+    session.type = type;
+  }
+  return session;
 };
 
 app.post('/api/session/start', authenticateToken, (req, res) => {
@@ -203,39 +282,55 @@ app.post('/api/session/start', authenticateToken, (req, res) => {
 
 app.post('/api/interviewer/init', authenticateToken, async (req, res) => {
   const { question } = req.body;
-  const session = getSession(question?.id, req.user.id, 'DSA');
-  
-  // Use pre-computed probe if available
-  if (question?.initial_probe) {
+  const isSD = isSystemDesignQuestion(question);
+  const sessionType = isSD ? 'SYSTEM_DESIGN' : 'DSA';
+  const session = getSession(question?.id, req.user.id, sessionType);
+
+  // For DSA, prefer the pre-computed probe if available.
+  if (!isSD && question?.initial_probe) {
     session.updateState({ currentHintIndex: 1, selectedQuestion: question });
     return res.json({ probe: question.initial_probe });
   }
 
-  const result = await interviewer.generateInitialProbe(question);
-  
+  const result = await interviewer.generateInitialProbe(question, sessionType);
+
   if (result.nextHintIndex !== undefined) {
     session.updateState({ currentHintIndex: result.nextHintIndex, selectedQuestion: question });
+  } else {
+    session.updateState({ selectedQuestion: question });
   }
 
   res.json({ probe: result.text || result });
 });
 
 app.post('/api/chat', authenticateToken, async (req, res) => {
-  const { message, selectedQuestion } = req.body;
-  const session = getSession(selectedQuestion?.id, req.user.id, 'DSA');
+  const { message, selectedQuestion, stageId, whiteboardShapes } = req.body;
+  const isSD = isSystemDesignQuestion(selectedQuestion);
+  const sessionType = isSD ? 'SYSTEM_DESIGN' : 'DSA';
+  const session = getSession(selectedQuestion?.id, req.user.id, sessionType);
 
   console.log("\n" + "=".repeat(60));
-  console.log("💬 CHAT REQUEST RECEIVED (User: " + req.user.id + ")");
+  console.log(`💬 CHAT REQUEST RECEIVED (User: ${req.user.id}, Mode: ${sessionType})`);
   console.log("=".repeat(60));
   console.log(`⏰ Time: ${new Date().toISOString()}`);
   console.log(`📋 Question: ${selectedQuestion?.title || 'Unknown'}`);
   console.log(`💬 Message: "${message.substring(0, 100)}${message.length > 100 ? '...' : ''}"`);
   console.log(`🔖 Session ID: ${req.user.id}_${selectedQuestion?.id || 'default'}`);
+  if (isSD) {
+    console.log(`🧱 SD stage: ${stageId || 'none'} | whiteboard shapes: ${(whiteboardShapes || []).length}`);
+  }
   console.log("=".repeat(60));
 
 
   if (selectedQuestion) {
     session.updateState({ selectedQuestion });
+  }
+
+  if (isSD) {
+    const sdContext = await buildSdContext(selectedQuestion, stageId, whiteboardShapes);
+    session.updateState({ sdContext });
+  } else {
+    session.updateState({ sdContext: null });
   }
 
   // Add user message to history
@@ -254,8 +349,10 @@ app.post('/api/chat', authenticateToken, async (req, res) => {
 
   try {
     console.log("🔄 Starting constraint extraction and response generation...");
-    // Extract constraints in background/parallel
-    const constraintsPromise = LLMService.extractConstraints(message, session.state.requirements || []);
+    // Constraint extraction is DSA-specific; SD already grounds via stage context.
+    const constraintsPromise = isSD
+      ? Promise.resolve([])
+      : LLMService.extractConstraints(message, session.state.requirements || []);
 
     const currentSummary = session.getSummary();
 
@@ -267,13 +364,16 @@ app.post('/api/chat', authenticateToken, async (req, res) => {
       (statusText, modelId) => {
         console.log(`📊 Progress: ${statusText} [${modelId || 'N/A'}]`);
         sendEvent('status', { message: statusText, model: modelId });
+      },
+      (delta) => {
+        sendEvent('delta', { delta });
       }
     );
 
     console.log("✅ AI Response generated successfully");
     const newConstraints = await constraintsPromise;
 
-    if (newConstraints && newConstraints.length > 0) {
+    if (!isSD && newConstraints && newConstraints.length > 0) {
       const updatedReqs = [...(session.state.requirements || []), ...newConstraints];
       session.updateState({ requirements: updatedReqs });
     }
@@ -733,8 +833,155 @@ app.get('/api/sd/questions', authenticateToken, async (req, res) => {
   }
 });
 
+app.get('/api/sd/draft', authenticateToken, async (req, res) => {
+  try {
+    const statuses = await QuestionStatus.findAll({ where: { user_id: req.user.id } });
+    const draftMap = {};
+
+    statuses.forEach((status) => {
+      if (!status.user_code && !status.whiteboard_snapshot) return;
+      let draftState = null;
+      try {
+        draftState = status.user_code ? JSON.parse(status.user_code) : null;
+      } catch (error) {
+        draftState = null;
+      }
+
+      if (!draftState || typeof draftState !== 'object' || draftState.__kind !== 'sd_draft') {
+        return;
+      }
+
+      draftMap[status.question_id] = {
+        draftState,
+        whiteboardSnapshot: status.whiteboard_snapshot || null,
+      };
+    });
+
+    res.json(draftMap);
+  } catch (error) {
+    console.error('Fetch SD drafts error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.get('/api/sd/draft/:questionId', authenticateToken, async (req, res) => {
+  try {
+    const { questionId } = req.params;
+    const statusRecord = await QuestionStatus.findOne({
+      where: { question_id: questionId, user_id: req.user.id },
+    });
+
+    if (!statusRecord?.user_code) {
+      return res.json({ draftState: null, whiteboardSnapshot: null });
+    }
+
+    let draftState = null;
+    try {
+      draftState = JSON.parse(statusRecord.user_code);
+    } catch (error) {
+      draftState = null;
+    }
+
+    if (!draftState || typeof draftState !== 'object' || draftState.__kind !== 'sd_draft') {
+      return res.json({ draftState: null, whiteboardSnapshot: null });
+    }
+
+    res.json({
+      draftState,
+      whiteboardSnapshot: statusRecord.whiteboard_snapshot || null,
+    });
+  } catch (error) {
+    console.error('Fetch SD draft error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.put('/api/sd/draft/:questionId', authenticateToken, async (req, res) => {
+  try {
+    const { questionId } = req.params;
+    const { draftState, whiteboardSnapshot } = req.body;
+
+    if (!draftState || typeof draftState !== 'object') {
+      return res.status(400).json({ error: 'Invalid draft state' });
+    }
+
+    if (whiteboardSnapshot !== null && whiteboardSnapshot !== undefined) {
+      const bytes = Buffer.byteLength(JSON.stringify(whiteboardSnapshot), 'utf8');
+      if (bytes > MAX_WHITEBOARD_SNAPSHOT_BYTES) {
+        return res.status(413).json({ error: 'Whiteboard snapshot exceeds 1MB limit' });
+      }
+    }
+
+    const persistedState = {
+      __kind: 'sd_draft',
+      currentStageIndex: Number.isInteger(draftState.currentStageIndex) ? draftState.currentStageIndex : 0,
+      stageAnswers: Array.isArray(draftState.stageAnswers) ? draftState.stageAnswers : [],
+      completedStages: Array.isArray(draftState.completedStages) ? draftState.completedStages : [],
+      savedAt: new Date().toISOString(),
+    };
+
+    const [statusRecord] = await QuestionStatus.findOrCreate({
+      where: { question_id: questionId, user_id: req.user.id },
+      defaults: {
+        status: 'needs_review',
+        user_code: JSON.stringify(persistedState),
+        whiteboard_snapshot: whiteboardSnapshot ?? null,
+        updatedAt: new Date(),
+      },
+    });
+
+    if (!statusRecord.isNewRecord) {
+      statusRecord.user_code = JSON.stringify(persistedState);
+      statusRecord.whiteboard_snapshot = whiteboardSnapshot ?? null;
+      statusRecord.updatedAt = new Date();
+      await statusRecord.save();
+    }
+
+    res.json({ success: true, questionId });
+  } catch (error) {
+    console.error('Save SD draft error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.post('/api/sd/draft/reset', authenticateToken, async (req, res) => {
+  try {
+    const { questionId } = req.body;
+    if (!questionId) {
+      return res.status(400).json({ error: 'questionId is required' });
+    }
+
+    const statusRecord = await QuestionStatus.findOne({
+      where: { question_id: questionId, user_id: req.user.id },
+    });
+
+    if (!statusRecord) {
+      return res.json({ success: true });
+    }
+
+    let parsed = null;
+    try {
+      parsed = statusRecord.user_code ? JSON.parse(statusRecord.user_code) : null;
+    } catch (error) {
+      parsed = null;
+    }
+
+    if (parsed?.__kind === 'sd_draft') {
+      statusRecord.user_code = null;
+      statusRecord.whiteboard_snapshot = null;
+      statusRecord.updatedAt = new Date();
+      await statusRecord.save();
+    }
+
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Reset SD draft error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // POST evaluate a user's answer for a specific stage — returns LLM-powered feedback + probe
-app.post('/api/sd/stage/evaluate', async (req, res) => {
+app.post('/api/sd/stage/evaluate', authenticateToken, async (req, res) => {
   const { questionId, stageId, userAnswer, whiteboardShapes } = req.body;
 
   const questionRaw = await Question.findOne({ where: { id: questionId } });
@@ -753,14 +1000,26 @@ app.post('/api/sd/stage/evaluate', async (req, res) => {
 
   const stage = stages.find(s => s.id === stageId);
   if (!stage) return res.status(404).json({ error: 'Stage not found' });
+  const originalSections = getOriginalSolutionSectionsForQuestion(question);
+  const stageSource = originalSections?.[stageId] || '';
 
-  // Combine typed answer + any whiteboard text
-  const whiteboardText = (whiteboardShapes || [])
-    .filter(s => s.text)
-    .map(s => s.text)
-    .join(', ');
+  // Combine typed answer + whiteboard signal (labels/text + non-text components)
+  const whiteboardLines = (whiteboardShapes || [])
+    .map((shape, idx) => {
+      const type = shape?.type || 'unknown';
+      const text = (shape?.text || shape?.label || '').trim();
+      if (text) return `${idx + 1}. [${type}] ${text}`;
+      return `${idx + 1}. [${type}]`;
+    })
+    .filter(Boolean);
+  const whiteboardSummary = whiteboardLines.length
+    ? whiteboardLines.join('\n')
+    : '';
 
-  const fullAnswer = [userAnswer, whiteboardText].filter(Boolean).join('\n\nWhiteboard: ');
+  const fullAnswer = [
+    userAnswer?.trim() ? `Typed Answer:\n${userAnswer.trim()}` : '',
+    whiteboardSummary ? `Whiteboard Content:\n${whiteboardSummary}` : ''
+  ].filter(Boolean).join('\n\n');
 
   const prompt = `
 You are a Senior Principal Engineer conducting a system design interview.
@@ -774,14 +1033,18 @@ Stage Prompt given to candidate:
 Reference Answer Key Points:
 ${JSON.stringify(stage.referenceAnswer, null, 2)}
 
-Candidate's Answer:
-"${fullAnswer}"
+Original Solution Section (Ground Truth for this stage):
+${stageSource ? stageSource.substring(0, 5000) : 'Not available'}
+
+Candidate's Combined Submission (typed + whiteboard):
+${fullAnswer || 'No answer provided.'}
 
 Your job (following Socratic / Karpathy principles):
 1. Identify what the candidate got RIGHT (be specific, 1-2 sentences max).
 2. Identify the SINGLE most critical gap or misconception. Do NOT reveal the answer; nudge with a Socratic probe.
 3. Determine if the candidate is ready to move to the next stage (score 1-5, where 3+ = ready).
 4. Generate the follow-up probe question (based on stage.probeQuestion but adapted to what the candidate actually said).
+5. Include at least one explicit design trade-off in the critique (pros/cons).
 
 Respond with ONLY a JSON object:
 {
@@ -816,7 +1079,7 @@ Respond with ONLY a JSON object:
 });
 
 // POST complete the system design interview — returns full rubric report
-app.post('/api/sd/complete', async (req, res) => {
+app.post('/api/sd/complete', authenticateToken, async (req, res) => {
   const { questionId, stageAnswers } = req.body;
   const questionRaw = await Question.findOne({ where: { id: questionId } });
   if (!questionRaw) return res.status(404).json({ error: 'Question not found' });
@@ -869,6 +1132,97 @@ Return ONLY a JSON object:
   } catch (error) {
     console.error('SD complete error:', error);
     res.status(500).json({ error: error.message });
+  }
+});
+
+app.get('/api/sd/solutions', authenticateToken, (req, res) => {
+  try {
+    const files = getSystemDesignSolutionFiles();
+    const solutions = files.map((fileName) => {
+      const slug = fileName.replace('.md', '');
+      return {
+        slug,
+        title: toTitleCaseFromSlug(slug.replace('problem-breakdowns-', '')),
+        url: `/sd/solutions/${slug}`
+      };
+    });
+
+    res.json({ solutions });
+  } catch (error) {
+    console.error('Failed to list system design solution pages:', error);
+    res.status(500).json({ error: 'Failed to load solution pages' });
+  }
+});
+
+app.get('/api/sd/solutions/:slug/markdown', authenticateToken, (req, res) => {
+  try {
+    const { slug } = req.params;
+    if (!/^problem-breakdowns-[a-z0-9-]+$/.test(slug)) {
+      return res.status(400).json({ error: 'Invalid solution slug' });
+    }
+
+    const filePath = path.join(SD_SOLUTIONS_DIR, `${slug}.md`);
+    if (!fs.existsSync(filePath)) {
+      return res.status(404).json({ error: 'Solution not found' });
+    }
+
+    const markdown = fs.readFileSync(filePath, 'utf8');
+    const title = toTitleCaseFromSlug(slug.replace('problem-breakdowns-', ''));
+    return res.json({
+      slug,
+      title,
+      markdown,
+    });
+  } catch (error) {
+    console.error('Failed to load markdown solution:', error);
+    return res.status(500).json({ error: 'Failed to load markdown solution' });
+  }
+});
+
+app.get('/sd/solutions/:slug', (req, res) => {
+  try {
+    const { slug } = req.params;
+    if (!/^problem-breakdowns-[a-z0-9-]+$/.test(slug)) {
+      return res.status(400).send('Invalid solution slug');
+    }
+
+    const filePath = path.join(SD_SOLUTIONS_DIR, `${slug}.md`);
+    if (!fs.existsSync(filePath)) {
+      return res.status(404).send('Solution not found');
+    }
+
+    const rawMarkdown = fs.readFileSync(filePath, 'utf8');
+    const title = toTitleCaseFromSlug(slug.replace('problem-breakdowns-', ''));
+    const escaped = escapeHtml(rawMarkdown);
+
+    res.setHeader('Content-Type', 'text/html; charset=utf-8');
+    return res.send(`<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>${escapeHtml(title)} - Full Solution</title>
+    <style>
+      body { margin: 0; background: #0b1020; color: #e6ecff; font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, sans-serif; }
+      .wrap { max-width: 1100px; margin: 0 auto; padding: 24px; }
+      h1 { margin: 0 0 12px; font-size: 1.5rem; }
+      .hint { color: #9fb0d9; margin-bottom: 16px; }
+      pre { white-space: pre-wrap; word-break: break-word; background: #121a33; border: 1px solid #2a365f; border-radius: 12px; padding: 16px; line-height: 1.45; overflow: auto; }
+      a { color: #8fb4ff; }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <h1>${escapeHtml(title)} - Full System Design Solution</h1>
+      <div class="hint">Source: ${escapeHtml(slug)}.md</div>
+      <pre>${escaped}</pre>
+      <p><a href="/">Back to app</a></p>
+    </div>
+  </body>
+</html>`);
+  } catch (error) {
+    console.error('Failed to render solution page:', error);
+    return res.status(500).send('Failed to load solution page');
   }
 });
 

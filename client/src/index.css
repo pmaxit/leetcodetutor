@@ -1476,6 +1476,16 @@ input {
   gap: 0.5rem;
 }
 
+.sd-inline-solution-markdown {
+  max-height: 46vh;
+  overflow-y: auto;
+  padding-right: 0.25rem;
+}
+
+.sd-inline-solution-markdown pre {
+  overflow-x: auto;
+}
+
 .sd-ref-title {
   font-size: 0.8rem;
   font-weight: 700;
@@ -2258,6 +2268,15 @@ input {
     grid-column: 1 / -1 !important;
     grid-row: 3;
     z-index: 100;
+  }
+
+  /* Mobile System Design: solution-only surface */
+  .app-container.mode-system-design .active-sessions-group {
+    display: none;
+  }
+
+  .app-container.mode-system-design .sd-clarify-card {
+    display: none;
   }
 }
 
