@@ -986,16 +986,21 @@ return (
         )}
       </div>
       <div className="header-right">
-        <div className="user-info">
-          <span className="user-email">{user?.email}</span>
-        </div>
         {currentView === 'main' && (
-          <>
+          <div className="header-actions">
             <button onClick={() => setCurrentView('stats')} className="header-icon-btn" title="Statistics">📊</button>
             <button onClick={() => setCurrentView('settings')} className="header-icon-btn" title="Settings">⚙️</button>
-          </>
+            <button className="header-icon-btn" title="Dashboard">📈</button>
+          </div>
         )}
-        <button onClick={handleLogout} className="header-icon-btn logout-btn" title="Logout">🚪</button>
+        
+        <div className="profile-container">
+          <div className="profile-trigger" title={user?.email}>
+            <span className="profile-icon">👤</span>
+            <span className="user-email desktop-only">{user?.email}</span>
+            <button onClick={handleLogout} className="logout-mini-btn" title="Logout">🚪</button>
+          </div>
+        </div>
       </div>
     </header>
 
