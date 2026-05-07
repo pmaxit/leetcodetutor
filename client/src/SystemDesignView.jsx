@@ -758,6 +758,17 @@ export default function SystemDesignView({ question }) {
     );
   }
 
+  if (!question) {
+    return (
+      <div className="sd-view">
+        <div style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-secondary)' }}>
+          <p>No system design question selected.</p>
+          <p>Please select a question from the sidebar to begin.</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="sd-view">
       {/* Stage Progress */}
