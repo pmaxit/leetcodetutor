@@ -79,7 +79,26 @@ echo -e "${BLUE}🔨 Building and Starting Docker Container${NC}"
 echo -e "${BLUE}════════════════════════════════════════════════════════════${NC}\n"
 
 echo "Running: $DOCKER_COMPOSE_CMD up --build -d"
-$DOCKER_COMPOSE_CMD up --build -d
+DEPLOY_OUTPUT_FILE="$(mktemp)"
+set +e
+$DOCKER_COMPOSE_CMD up --build -d 2>&1 | tee "$DEPLOY_OUTPUT_FILE"
+DEPLOY_EXIT_CODE=${PIPESTATUS[0]}
+set -e
+
+if [ $DEPLOY_EXIT_CODE -ne 0 ]; then
+    if grep -Eq "failed to prepare extraction snapshot|parent snapshot .* does not exist" "$DEPLOY_OUTPUT_FILE"; then
+        echo -e "${YELLOW}⚠️  Detected Docker BuildKit snapshot cache corruption.${NC}"
+        echo -e "${YELLOW}🧹 Running buildx cache prune and retrying with no cache...${NC}"
+        docker buildx prune -af || true
+        $DOCKER_COMPOSE_CMD build --no-cache
+        $DOCKER_COMPOSE_CMD up -d
+    else
+        echo -e "${RED}❌ Deployment failed. See logs above.${NC}"
+        rm -f "$DEPLOY_OUTPUT_FILE"
+        exit $DEPLOY_EXIT_CODE
+    fi
+fi
+rm -f "$DEPLOY_OUTPUT_FILE"
 
 echo -e "\n${BLUE}════════════════════════════════════════════════════════════${NC}"
 echo -e "${GREEN}🎉 DEPLOYMENT COMPLETE!${NC}"
