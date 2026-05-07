@@ -1210,14 +1210,11 @@ app.get('/api/sd/solutions', authenticateToken, (req, res) => {
 app.get('/api/sd/solutions/:slug/markdown', authenticateToken, (req, res) => {
   try {
     const { slug } = req.params;
-    console.log('[SD-API] Markdown request for slug:', slug);
     if (!/^[a-z0-9-]+$/.test(slug)) {
-      console.log('[SD-API] Invalid slug format');
       return res.status(400).json({ error: 'Invalid solution slug' });
     }
 
     const resolved = resolveSdMarkdownFile(slug);
-    console.log('[SD-API] Resolved:', resolved ? resolved.slug : 'NOT FOUND');
     if (!resolved) {
       return res.status(404).json({ error: 'Solution not found' });
     }
@@ -1231,14 +1228,13 @@ app.get('/api/sd/solutions/:slug/markdown', authenticateToken, (req, res) => {
         .replace('patterns-', '')
         .replace('in-a-hurry-', '')
     );
-    console.log('[SD-API] Returning markdown:', { slug: resolved.slug, title, markdownLength: markdown.length });
     return res.json({
       slug: resolved.slug,
       title,
       markdown,
     });
   } catch (error) {
-    console.error('[SD-API] Error:', error);
+    console.error('Failed to load markdown solution:', error);
     return res.status(500).json({ error: 'Failed to load markdown solution' });
   }
 });
