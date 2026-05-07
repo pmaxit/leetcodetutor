@@ -11,6 +11,8 @@ class LLMService {
       remote: { url: process.env.OPENROUTER_URL, key: process.env.OPENROUTER_API_KEY },
     };
 
+    const llmProviderStrategy = (process.env.LLM_PROVIDER_STRATEGY || "local-first").toLowerCase();
+
     // ─── Models (Primary + Fallbacks, in order, with provider) ────────────
     const fallbacks = (process.env.OPENROUTER_FALLBACKS || "")
       .split(",")
@@ -18,10 +20,12 @@ class LLMService {
       .filter(Boolean)
       .map(id => ({ id, provider: "remote" }));
 
-    const MODELS = [
-      { id: process.env.LM_STUDIO_MODEL || "gpt-4", provider: "local" },
-      ...fallbacks,
-    ];
+    const localModel = process.env.LM_STUDIO_MODEL || "gpt-4";
+    const remoteModels = fallbacks;
+
+    const MODELS = llmProviderStrategy === "openrouter-only"
+      ? remoteModels
+      : [{ id: localModel, provider: "local" }, ...remoteModels];
 
     // ─── Initialize Clients ───────────────────────────────────────────────
     this.clients = {
@@ -45,8 +49,10 @@ class LLMService {
     console.log("\n" + "=".repeat(60));
     console.log("🤖 LLMService Initialization");
     console.log("=".repeat(60));
-    console.log(`🎯 Primary Model: ${this.model} (Local)`);
-    console.log(`📋 Fallback Models: ${MODELS.slice(1).map(m => m.id).join(", ")}`);
+    const primaryProvider = MODELS[0]?.provider === "local" ? "LM Studio" : "OpenRouter";
+    console.log(`🧭 Provider strategy: ${llmProviderStrategy}`);
+    console.log(`🎯 Primary Model: ${this.model} (${primaryProvider})`);
+    console.log(`📋 Fallback Models: ${MODELS.slice(1).map(m => m.id).join(", ") || "None"}`);
     console.log("=".repeat(60) + "\n");
 
     this.dpSolutionsPath = path.join(__dirname, '../solutions/dp_solutions.json');

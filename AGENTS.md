@@ -1,61 +1,140 @@
-# AI Interview Agents: Behavioral Guidelines & Principles
+## graphify
 
-This document defines the operational logic and personas for the agents powering the AI Interview Preparation Platform. It is inspired by the **Karpathy Principles** for LLM agents: avoiding silent assumptions, prioritizing simplicity, and utilizing goal-driven execution loops.
+This project has a graphify knowledge graph at graphify-out/.
 
-## Core Behavioral Principles
-
-| Principle | Interview Application |
-|-----------|-----------|
-| **Socratic Nudging** | Never provide the answer directly. Use the minimum effective hint to guide the user back to the optimal path. |
-| **Think Before Probing** | Analyze the user's entire response and state before generating a follow-up. Identify the *single most critical* missing piece. |
-| **Adversarial Probing** | Don't just accept a correct-looking answer. Inject a new constraint (e.g., "Now assume $N$ is $10^9$") to test depth. |
-| **High-Fidelity Feedback** | Critique must be grounded in the rubric. No hallucinations of complexity or false positives on correctness. |
+Rules:
+- Before answering architecture or codebase questions, read graphify-out/GRAPH_REPORT.md for god nodes and community structure
+- If graphify-out/wiki/index.md exists, navigate it instead of reading raw files
+- For cross-module "how does X relate to Y" questions, prefer `graphify query "<question>"`, `graphify path "<A>" "<B>"`, or `graphify explain "<concept>"` over grep — these traverse the graph's EXTRACTED + INFERRED edges instead of scanning files
+- After modifying code files in this session, run `graphify update .` to keep the graph current (AST-only, no API cost)
 
 ---
 
-## 1. The Interviewer Agent (The Socratic Lead)
-**Role:** To facilitate the interview from initialization to conclusion.
+## Hints-Based Socratic Interview Chat Rules
 
-- **Persona:** A Senior Principal Engineer from a Tier-1 tech company. Calm, curious, and rigorous.
-- **Guidelines:**
-    - **Manage Confusion:** If the user's requirement gathering is vague, stop and ask: "I'm not clear on how you're defining 'low latency'—could you put a number on that?"
-    - **Push Back:** If the user picks an over-complex tool (e.g., Kafka for a 10 QPS task), ask them to justify the overhead.
-    - **State Transitions:** Explicitly track which phase the interview is in (Requirements -> High Level -> Deep Dive). Do not jump ahead until the current phase's "Success Criteria" are met.
+**For detailed hints pattern and examples, see: HINTS_PATTERN.md**
 
-## 2. The Architect (The Visual Sense)
-**Role:** To parse whiteboard sketches and convert them into a semantic architectural graph.
+### Data Structure
+Hints are stored as JSON arrays in the `Question.hints` field in the database:
+```json
+[
+  "Hint 1: Critical insight / problem framing (state definition, approach setup)",
+  "Hint 2: Core algorithm / approach step (recurrence, transitions, logic)",
+  "Hint 3: Edge cases / optimization (boundary conditions, pitfalls)"
+]
+```
+**Maximum 3 hints per problem. Each hint is 15-20 words and follows strict pattern.**
 
-- **Guidelines:**
-    - **Don't Assume Labels:** If a box is unlabeled, don't guess. Ask: "I see a component sitting between your Load Balancer and Database—what is its primary responsibility?"
-    - **Consistency Check:** Cross-reference the diagram with the verbal explanation. If they say "Async processing" but the diagram shows a synchronous API call, surface the inconsistency.
-    - **Surgical Extraction:** Only update the internal graph representation when a meaningful change is detected in the drawing.
+### Chat Interaction Rules
 
-## 3. The Proctor (The Code Validator)
-**Role:** To manage the code editor and execution sandbox.
+#### 1. **Progressive Hint Disclosure**
+- **Initial response**: Always start with **Hint 1** (automatic, no "I need help" required)
+- **State tracking**: Session tracks `currentHintIndex` (starts at 1 after initial probe)
+- **Progression**: When user asks for help, provide next hint (index 2, then 3)
+- **Frequency**: One hint per request, no stacking or skipping hints
+- **Session state after init**: `currentHintIndex = 1` (first hint already shown)
 
-- **Guidelines:**
-    - **Goal-Driven Execution:** Do not flag syntax errors in real-time. Wait for the user to "Run" or "Dry Run." 
-    - **Pattern Recognition:** Use AST parsing to identify if the user is implementing the intended pattern (e.g., "Sliding Window"). If they use a brute-force $O(N^2)$ solution, the proctor triggers the Interviewer to ask about optimization.
-    - **Silent Observations:** Track off-by-one errors and edge-case handling (nulls, empty sets) quietly until the feedback phase.
+#### 2. **Hint Usage in LLM Prompts**
+The LLM must:
+- Access the hints array from the question object
+- Use hint[currentHintIndex] to craft a Socratic response
+- Rephrase hints naturally without revealing the solution
+- Focus on the gap identified by the hint, not the gap itself
 
-## 4. The Scorer (The Evaluation Engine)
-**Role:** To generate the post-interview report and rubric-based grading.
+#### 3. **Solution Disclosure Rules**
+Show FULL SOLUTION code only when:
+- User explicitly asks: "show me the solution", "give me the code", "I give up"
+- Current hint index >= hints.length (user has exhausted all hints)
+- User explicitly requests: `@showsolution`
 
-- **Guidelines:**
-    - **Rubric-First Grading:** Every score must be linked to specific evidence from the session (e.g., "Communication Score: 4/5. Reason: Proactively asked about data retention policies.").
-    - **Multi-Solution Comparison:** Compare the user's code against a benchmark solution for cyclomatic complexity, memory overhead, and readability.
-    - **Actionable Critique:** "Your code works" is insufficient. The Scorer must say: "Your code passes, but using a recursive approach here risks a stack overflow with the constraints we discussed. Consider an iterative version."
+Otherwise:
+- Always provide Socratic nudges + hint-driven guidance
+- Never include working code in responses (pseudocode OK)
+- Explain WHY hints matter, not the implementation
+
+#### 4. **Chat Response Structure**
+```
+Socratic Response:
+### Current Gap
+[Identify the specific gap from the hint]
+
+### Nudge
+[Socratic question or direction, rephrased from hint]
+
+### Next Steps
+[What to try next without spoiling it]
+
+[IF hints exhausted]:
+Ready to see the full solution? Ask "show solution" or type @showsolution.
+```
+
+#### 5. **Tracking Hint Usage**
+- Increment `currentHintIndex` after each hint is shown
+- Log which hints were used in conversation history
+- Reset hints if user restarts a problem
+- Surface hint effectiveness: did user solve after hint N?
+
+#### 6. **Edge Cases**
+- **Ambiguous requests** ("I'm stuck", "help"): Show current hint, don't advance
+- **Multiple questions in one message**: Address the main blocker first
+- **Hints missing**: Fallback to reference solution's `success_criteria` instead
+- **Invalid hint index**: Clamp to bounds or fallback to full solution
 
 ---
 
-## Agentic Loop: The "Success Criteria"
-The system operates on a loop of **Verify -> Probe -> Evaluate**:
+## Deployment (Preferred Method)
 
-1. **Verify:** Does the user's input meet the criteria for the current interview phase?
-2. **Probe:** If not, what is the smallest Socratic question that points them to the missing criteria?
-3. **Evaluate:** Once phase criteria are met, transition the user and provide a "Micro-Critique" before moving deeper.
+**Always use the deploy.sh script for consistent deployments:**
+```bash
+./deploy.sh
+```
 
-## Failure Modes to Avoid
-- **The "Yes-Man" Loop:** Agreeing with everything the user says. Principal engineers are hired to find the flaws.
-- **Hallucinated Constraints:** Adding constraints that contradict the initial prompt.
-- **Revealing the Trick:** Giving away the "optimal algorithm" in the first 5 minutes.
+This script:
+- Checks for required dependencies (Docker, Docker Compose)
+- Verifies the .env configuration file exists
+- Builds and starts all services in isolated containers
+- Outputs access points and useful commands
+
+**Why**: The script ensures reproducible deployments across environments and handles all setup steps automatically.
+
+### LLM Provider Strategy by Deployment
+- **OpenRouter-only in deployments**: Both local Docker deployment (`./deploy.sh` via `docker-compose.yml`) and GCP Cloud Run deployment (`./deploy_gcp.sh`) must set `LLM_PROVIDER_STRATEGY=openrouter-only`.
+- **Fallback ordering**: `OPENROUTER_FALLBACKS` is the authoritative ordered model sequence. The service must try models in that exact order.
+- **No standalone OpenRouter primary var**: Do not introduce or use `OPENROUTER_MODEL`. Keep model routing controlled only by `OPENROUTER_FALLBACKS` (plus strategy mode).
+- **No local-first in deployed runs**: Deployed environments must not waste calls on LM Studio before OpenRouter.
+
+---
+
+## Architecture & Codebase Learnings
+
+### 1. Database Environment
+- **Primary DB**: The application uses a **MySQL database on GCP** (see `.env`) for production-like data, NOT the local `server/database.sqlite`.
+- **Table Name**: The `Question` model maps to the `problems` table in MySQL, but `Questions` in SQLite.
+- **Data Integrity**: Always verify question metadata against the live DB using scratch scripts if the local SQLite seems stale or incomplete.
+
+### 2. Database Safety & Seeding (CRITICAL)
+- **NO `force: true`**: Never use `sequelize.sync({ force: true })` in scripts. This drops all tables and wipes production data.
+- **Safe Seeding**: When creating seeding or migration scripts, always use `findOrCreate` or check for existence by `title` before inserting.
+- **Environment Isolation**: Be extremely careful when running scripts locally that are connected to the GCP MySQL host (check `.env` DB_HOST).
+- **Backups**: Daily backups are enabled in Cloud SQL. If a table is accidentally deleted, use `gcloud sql backups restore [ID] --instance=adveralabs-mysql`.
+
+### 2. Data Models (Question)
+- **Virtual Fields**: The `Question` model uses Sequelize `VIRTUAL` fields for `description`, `pattern`, and `boilerplate` to handle legacy column naming (e.g., `statement` vs `description`).
+- **API Hydration**: When mapping questions in server routes (`/api/questions`, `/api/practice/session/:id`), always use the spread operator `...data` to ensure all metadata (including virtuals and resource URLs like `neetcode_url`) are sent to the frontend.
+- **Mapping Pattern**:
+  ```javascript
+  const data = q.toJSON();
+  return {
+    ...data,
+    description: data.description || data.statement, // Prioritize virtual combined field
+    boilerplate: data.boilerplate || data.practice_scaffold,
+    pattern: data.pattern || data.category
+  };
+  ```
+
+### 3. Frontend Workspace (App.jsx)
+- **Unification**: All algorithmic solving (DSA + Practice) is unified in the `algorithm` mode.
+- **Problem Descriptions**: Always use `renderProblemDescription()` which handles HTML rendering and resource embedding (LeetCode/NeetCode links + YouTube).
+- **Sidebar Integration**: The practice session sidebar must hydrate questions with full metadata from the server to avoid empty description views.
+
+---

@@ -60,6 +60,7 @@ env_vars = {
     "OPENROUTER_API_KEY": os.environ.get("OPENROUTER_API_KEY", ""),
     "OPENROUTER_FALLBACKS": os.environ.get("OPENROUTER_FALLBACKS", ""),
     "OPENROUTER_URL": os.environ.get("OPENROUTER_URL", "https://openrouter.ai/api/v1"),
+    "LLM_PROVIDER_STRATEGY": "openrouter-only",
     "LM_STUDIO_URL": os.environ.get("LM_STUDIO_URL", ""),
     "LM_STUDIO_KEY": os.environ.get("LM_STUDIO_KEY", ""),
     "LM_STUDIO_MODEL": os.environ.get("LM_STUDIO_MODEL", ""),
@@ -87,7 +88,7 @@ PYTHON_EOF
 echo -e "\n${BLUE}Step 4: Clearing existing secret references to avoid type mismatch...${NC}"
 # This resolves the "Cannot update environment variable to string literal" error
 # List of variables that might have been set as secrets in previous deployments
-VARS_TO_CLEAR="OPENROUTER_API_KEY,LLM_BASE_URL,LLM_API_KEY,LLM_MODEL,LLM_ENABLE_TOOLS,DB_HOST,DB_USER,DB_PASSWORD,DB_NAME,DB_DIALECT,TAVILY_API_KEY,GEMINI_API_KEY,OPENROUTER_FALLBACKS,LM_STUDIO_KEY"
+VARS_TO_CLEAR="OPENROUTER_API_KEY,LLM_PROVIDER_STRATEGY,LLM_BASE_URL,LLM_API_KEY,LLM_MODEL,LLM_ENABLE_TOOLS,DB_HOST,DB_USER,DB_PASSWORD,DB_NAME,DB_DIALECT,TAVILY_API_KEY,GEMINI_API_KEY,OPENROUTER_FALLBACKS,LM_STUDIO_KEY"
 
 gcloud run services update $SERVICE_NAME \
     --region $REGION \

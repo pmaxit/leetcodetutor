@@ -9,4 +9,5 @@ services:
       - NODE_ENV=development
       - PORT=8080
       - LLM_ENABLE_TOOLS=false
+      - LLM_PROVIDER_STRATEGY=openrouter-only
     restart: unless-stopped
