@@ -1243,6 +1243,182 @@ input {
   color: var(--text-primary);
 }
 
+.sd-clarify-card {
+  margin-top: 0.75rem;
+  background: linear-gradient(180deg, rgba(11, 18, 39, 0.95), rgba(15, 23, 42, 0.95));
+  border: 1px solid rgba(56, 189, 248, 0.14);
+}
+
+.sd-clarify-title {
+  margin-bottom: 0.5rem;
+}
+
+.sd-clarify-thread {
+  display: grid;
+  gap: 0.6rem;
+  min-height: 240px;
+  max-height: 360px;
+  overflow-y: auto;
+  margin-bottom: 0.7rem;
+  padding-right: 0.2rem;
+}
+
+.sd-clarify-empty {
+  padding: 0.8rem;
+  border-radius: 0.5rem;
+  border: 1px dashed rgba(148, 163, 184, 0.25);
+  color: #93a7c8;
+}
+
+.sd-clarify-bubble {
+  padding: 0.7rem 0.8rem;
+  border-radius: 0.55rem;
+}
+
+.sd-clarify-user {
+  background: linear-gradient(180deg, rgba(18, 45, 77, 0.65), rgba(18, 45, 77, 0.4));
+  border-color: rgba(56, 189, 248, 0.35);
+}
+
+.sd-clarify-ai {
+  background: linear-gradient(180deg, rgba(42, 20, 78, 0.28), rgba(29, 23, 69, 0.18));
+  border-color: rgba(168, 85, 247, 0.35);
+}
+
+.sd-clarify-markdown p {
+  margin: 0.4rem 0 0.7rem;
+  line-height: 1.65;
+}
+
+.sd-clarify-markdown p:last-child {
+  margin-bottom: 0;
+}
+
+.sd-clarify-markdown h1,
+.sd-clarify-markdown h2,
+.sd-clarify-markdown h3 {
+  margin: 0.55rem 0 0.45rem;
+  color: #dbeafe;
+  font-size: 0.95rem;
+  letter-spacing: 0.01em;
+}
+
+.sd-heading-chip {
+  display: inline-block;
+  max-width: 100%;
+  box-sizing: border-box;
+  vertical-align: middle;
+  border-radius: 0.5rem;
+  padding: 0.22rem 0.6rem;
+  font-size: 0.72rem !important;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  margin: 0.55rem 0 0.45rem !important;
+  border: 1px solid transparent;
+  line-height: 1.45;
+  word-break: break-word;
+  overflow-wrap: anywhere;
+}
+
+.sd-heading-chip code {
+  background: rgba(15, 23, 42, 0.55) !important;
+  border: 1px solid rgba(148, 163, 184, 0.25) !important;
+  color: inherit !important;
+  font-size: 0.95em !important;
+  padding: 0 0.3rem !important;
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+.sd-chip-recommendation {
+  color: #c7f9cc;
+  background: rgba(34, 197, 94, 0.16);
+  border-color: rgba(34, 197, 94, 0.45);
+}
+
+.sd-chip-pros {
+  color: #86efac;
+  background: rgba(21, 128, 61, 0.2);
+  border-color: rgba(34, 197, 94, 0.35);
+}
+
+.sd-chip-cons {
+  color: #fecaca;
+  background: rgba(220, 38, 38, 0.18);
+  border-color: rgba(248, 113, 113, 0.4);
+}
+
+.sd-chip-alternative {
+  color: #dbeafe;
+  background: rgba(56, 189, 248, 0.16);
+  border-color: rgba(56, 189, 248, 0.4);
+}
+
+.sd-chip-probe {
+  color: #e9d5ff;
+  background: rgba(168, 85, 247, 0.2);
+  border-color: rgba(192, 132, 252, 0.45);
+}
+
+.sd-chip-default {
+  color: #cbd5e1;
+  background: rgba(148, 163, 184, 0.15);
+  border-color: rgba(148, 163, 184, 0.35);
+}
+
+.sd-clarify-markdown ul,
+.sd-clarify-markdown ol {
+  margin: 0.35rem 0 0.75rem 1.15rem;
+}
+
+.sd-clarify-markdown li {
+  margin-bottom: 0.35rem;
+  line-height: 1.6;
+}
+
+.sd-clarify-markdown li::marker {
+  color: #7dd3fc;
+}
+
+.sd-clarify-markdown code {
+  background: rgba(15, 23, 42, 0.9);
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  padding: 0.1rem 0.35rem;
+  border-radius: 0.25rem;
+  color: #fcd34d;
+}
+
+.sd-clarify-markdown div > pre {
+  margin: 0.7rem 0 !important;
+  border: 1px solid rgba(148, 163, 184, 0.18) !important;
+  border-radius: 0.55rem !important;
+}
+
+.sd-clarify-input-row {
+  display: flex;
+  gap: 0.45rem;
+}
+
+.sd-clarify-input {
+  flex: 1;
+  background: rgba(15, 23, 42, 0.9);
+  border: 1px solid rgba(148, 163, 184, 0.25);
+  color: var(--text-primary);
+  border-radius: 8px;
+  padding: 0.6rem 0.75rem;
+}
+
+.sd-clarify-input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.12);
+}
+
+.sd-clarify-ask-btn {
+  margin-top: 0;
+  padding: 0.55rem 0.9rem;
+}
+
 .probe-q {
   font-style: italic;
   color: #c4b5fd;
@@ -1956,8 +2132,8 @@ input {
 
   .action-pane .canvas-area {
     flex: none !important;
-    min-height: 55vh;
-    height: 55vh;
+    min-height: 50vh;
+    height: 50vh;
   }
 
   /* Sidebar acts as an off-canvas menu */

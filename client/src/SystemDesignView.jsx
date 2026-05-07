@@ -21,6 +21,17 @@ const getSdHeadingChipClass = (text = '') => {
   return 'sd-chip-default';
 };
 
+// LLMs frequently emit headings like `###Recommendation` (no space after the
+// hashes), which CommonMark treats as plain text. Insert the missing space so
+// ReactMarkdown can render them as <h3> and our chip styling kicks in.
+const normalizeSdMarkdown = (text = '') => {
+  if (!text) return text;
+  return text
+    .split('\n')
+    .map((line) => line.replace(/^(\s{0,3})(#{1,6})([^\s#])/, '$1$2 $3'))
+    .join('\n');
+};
+
 // ─── Stage Progress Bar ────────────────────────────────────────────────────────
 function StageProgressBar({ stages, currentStageIndex, completedStages }) {
   return (
@@ -555,8 +566,8 @@ export default function SystemDesignView({ question }) {
                         }}
                       >
                         {isClarifying && m.role === 'ai' && i === clarifyMessages.length - 1
-                          ? `${m.content}▋`
-                          : m.content}
+                          ? `${normalizeSdMarkdown(m.content)}▋`
+                          : normalizeSdMarkdown(m.content)}
                       </ReactMarkdown>
                     </div>
                   </div>
