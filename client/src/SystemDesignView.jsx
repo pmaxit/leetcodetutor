@@ -360,9 +360,14 @@ export default function SystemDesignView({ question }) {
   }, []);
 
   useEffect(() => {
-    if (!question?.id) return;
+    if (!question?.id) {
+      console.log('[SD] No question.id');
+      return;
+    }
     const solutionSlug = getSolutionSlugFromQuestion(question);
+    console.log('[SD] solutionSlug:', solutionSlug, 'question.solutionSlug:', question?.solutionSlug);
     if (!solutionSlug) {
+      console.log('[SD] No solutionSlug generated');
       setSolutionMarkdown('');
       setSolutionTitle('');
       setSolutionLoadError('No linked markdown solution for this question.');
@@ -372,16 +377,21 @@ export default function SystemDesignView({ question }) {
     const loadInlineSolution = async () => {
       setIsSolutionLoading(true);
       setSolutionLoadError('');
+      const url = `${API}/api/sd/solutions/${solutionSlug}/markdown`;
+      console.log('[SD] Loading solution from:', url);
       try {
-        const res = await fetchWithAuth(`${API}/api/sd/solutions/${solutionSlug}/markdown`);
+        const res = await fetchWithAuth(url);
+        console.log('[SD] Response status:', res.status, 'ok:', res.ok);
         if (!res.ok) {
           const errorData = await res.json().catch(() => ({}));
           throw new Error(errorData.error || `Failed to load solution (${res.status})`);
         }
         const data = await res.json();
+        console.log('[SD] Got data:', { title: data?.title, markdownLength: data?.markdown?.length });
         setSolutionTitle(data?.title || '');
         setSolutionMarkdown(data?.markdown || '');
       } catch (error) {
+        console.error('[SD] Error loading solution:', error);
         setSolutionMarkdown('');
         setSolutionTitle('');
         setSolutionLoadError(error.message || 'Failed to load markdown solution.');
@@ -606,6 +616,13 @@ export default function SystemDesignView({ question }) {
   const renderReferenceSolutionPanel = () => (
     <div className="sd-whiteboard-panel sd-reference-panel">
       <div className="sd-wb-label">Reference Framework</div>
+      <div style={{ padding: '0.5rem', background: 'rgba(255,0,0,0.1)', marginBottom: '1rem', fontSize: '0.8rem', borderRadius: '4px' }}>
+        <div>🐛 DEBUG INFO:</div>
+        <div>solutionSlug: {getSolutionSlugFromQuestion(question) || 'NULL'}</div>
+        <div>solutionLoading: {isSolutionLoading ? 'YES' : 'NO'}</div>
+        <div>solutionError: {solutionLoadError || 'NONE'}</div>
+        <div>hasMarkdown: {solutionMarkdown ? 'YES (' + solutionMarkdown.length + ' chars)' : 'NO'}</div>
+      </div>
       <div className="sd-ref-content">
         <div className="sd-ref-title">HelloInterview Delivery Framework</div>
         <div className="sd-ref-steps">
