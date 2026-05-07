@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Tldraw } from 'tldraw';
+import { Tldraw, getSnapshot, loadSnapshot } from 'tldraw';
 import Editor from '@monaco-editor/react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -30,6 +30,22 @@ const TldrawWrapper = ({ onEditorMount }) => {
 };
 
 function App() {
+  const PRACTICE_START_DATE = new Date(new Date().getFullYear(), 4, 7); // May 7 (month is 0-based)
+
+  const getPracticeDayNumber = (dayKey) => {
+    const parsed = parseInt(dayKey, 10);
+    return Number.isNaN(parsed) ? null : parsed;
+  };
+
+  const formatPracticeDayLabel = (dayKey) => {
+    const dayNumber = getPracticeDayNumber(dayKey);
+    if (!dayNumber || dayNumber < 1) return dayKey;
+
+    const labelDate = new Date(PRACTICE_START_DATE);
+    labelDate.setDate(PRACTICE_START_DATE.getDate() + (dayNumber - 1));
+    return labelDate.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+  };
+
   // ─── Mode: 'dsa' | 'system-design' | 'practice' ─────────────────────────────
   const [mode, setMode] = useState('dsa');
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -52,6 +68,12 @@ function App() {
   const [dsaExpanded, setDsaExpanded] = useState(false);
   const chatEndRef = useRef(null);
   const tldrawEditor = useRef(null);
+  const blankWhiteboardSnapshotRef = useRef(null);
+  const whiteboardSaveTimeoutRef = useRef(null);
+  const whiteboardStatusTimeoutRef = useRef(null);
+  const pendingWhiteboardSaveRef = useRef(null);
+  const lastWhiteboardSerializedRef = useRef('');
+  const isApplyingWhiteboardRef = useRef(false);
   const saveTimeoutRef = useRef(null);
   const [isDraggingDivider, setIsDraggingDivider] = useState(false);
   const [feedbackPaneWidth, setFeedbackPaneWidth] = useState(350);
@@ -130,6 +152,80 @@ function App() {
     } catch (error) {
       console.error('Health check failed:', error);
       setLlmHealth({ status: 'disconnected', message: 'LM Studio not responding' });
+    }
+  };
+
+  const buildWhiteboardPayload = (rawSnapshot) => ({
+    version: 1,
+    savedAt: new Date().toISOString(),
+    tldrawSnapshot: rawSnapshot
+  });
+
+  const getRawTldrawSnapshot = () => {
+    if (!tldrawEditor.current) return null;
+    try {
+      return getSnapshot(tldrawEditor.current.store);
+    } catch (error) {
+      console.error('Failed to read tldraw snapshot:', error);
+      return null;
+    }
+  };
+
+  const applyWhiteboardSnapshot = (snapshotPayload) => {
+    if (!tldrawEditor.current) return;
+    const payload = snapshotPayload?.tldrawSnapshot || blankWhiteboardSnapshotRef.current;
+    if (!payload) return;
+
+    try {
+      isApplyingWhiteboardRef.current = true;
+      loadSnapshot(tldrawEditor.current.store, payload);
+      const currentRaw = getRawTldrawSnapshot();
+      lastWhiteboardSerializedRef.current = currentRaw ? JSON.stringify(currentRaw) : '';
+    } catch (error) {
+      console.error('Failed to load tldraw snapshot:', error);
+    } finally {
+      setTimeout(() => {
+        isApplyingWhiteboardRef.current = false;
+      }, 0);
+    }
+  };
+
+  const saveWhiteboardSnapshot = async (questionId, payload) => {
+    if (!questionId || !payload) return;
+    const serialized = JSON.stringify(payload);
+    if (serialized.length > 1_000_000) {
+      setStatus({ text: 'Whiteboard too large to save (>1MB)', type: 'error' });
+      if (whiteboardStatusTimeoutRef.current) clearTimeout(whiteboardStatusTimeoutRef.current);
+      whiteboardStatusTimeoutRef.current = setTimeout(() => {
+        setStatus({ text: 'Ready', type: 'info' });
+      }, 2500);
+      return;
+    }
+
+    try {
+      await fetchWithAuth(`${API}/api/question-status/${questionId}/whiteboard`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ whiteboardSnapshot: payload }),
+      });
+
+      setQuestionStatuses(prev => ({
+        ...prev,
+        [questionId]: {
+          ...(prev[questionId] || {}),
+          whiteboard_snapshot: payload
+        }
+      }));
+
+      if (currentTab === 'whiteboard' && selectedQuestion?.id === questionId) {
+        setStatus({ text: 'Whiteboard saved', type: 'success' });
+        if (whiteboardStatusTimeoutRef.current) clearTimeout(whiteboardStatusTimeoutRef.current);
+        whiteboardStatusTimeoutRef.current = setTimeout(() => {
+          setStatus({ text: 'Ready', type: 'info' });
+        }, 1200);
+      }
+    } catch (error) {
+      console.error('Failed to save whiteboard snapshot:', error);
     }
   };
 
@@ -402,9 +498,14 @@ function App() {
         ...prev,
         [selectedQuestion.id]: {
           ...(prev[selectedQuestion.id] || {}),
-          user_code: null
+          user_code: null,
+          whiteboard_snapshot: null
         }
       }));
+
+      if (tldrawEditor.current && blankWhiteboardSnapshotRef.current) {
+        applyWhiteboardSnapshot(null);
+      }
 
       try {
         await fetchWithAuth(`${API}/api/code/reset`, {
@@ -565,7 +666,7 @@ function App() {
       setQuestionStatuses(prev => {
         const next = {};
         for (const [id, val] of Object.entries(prev)) {
-          next[id] = { ...(val || {}), user_code: null };
+          next[id] = { ...(val || {}), user_code: null, whiteboard_snapshot: null };
         }
         return next;
       });
@@ -740,7 +841,7 @@ const handleResetPracticeSession = async () => {
       setQuestionStatuses(prev => {
         const next = {};
         for (const [id, val] of Object.entries(prev)) {
-          next[id] = { ...(val || {}), user_code: null };
+          next[id] = { ...(val || {}), user_code: null, whiteboard_snapshot: null };
         }
         return next;
       });
@@ -813,8 +914,8 @@ const renderProblemDescription = () => {
     const currentIndex = dayQuestions.findIndex(q => String(q.id) === String(selectedQuestion.id));
     if (currentIndex !== -1) {
       const days = Object.keys(practiceSchedule).sort((a, b) => {
-        const d1 = parseInt(a.split(' ')[1]);
-        const d2 = parseInt(b.split(' ')[1]);
+        const d1 = getPracticeDayNumber(a) ?? 0;
+        const d2 = getPracticeDayNumber(b) ?? 0;
         return d1 - d2;
       });
       const currentDayIndex = days.indexOf(selectedPracticeDay);
@@ -857,7 +958,7 @@ const renderProblemDescription = () => {
           </button>
           
           <div className="nav-info">
-            <span className="nav-day">{selectedPracticeDay}</span>
+            <span className="nav-day">{formatPracticeDayLabel(selectedPracticeDay)}</span>
             <span className="nav-progress">{nav.index + 1} / {nav.total}</span>
           </div>
 
@@ -933,6 +1034,50 @@ const renderProblemDescription = () => {
     </div>
   );
 };
+
+useEffect(() => {
+  if (currentTab !== 'whiteboard' || !selectedQuestion?.id || !tldrawEditor.current) return;
+  const snapshotPayload = questionStatuses[selectedQuestion.id]?.whiteboard_snapshot || null;
+  applyWhiteboardSnapshot(snapshotPayload);
+}, [currentTab, selectedQuestion?.id, questionStatuses, applyWhiteboardSnapshot]);
+
+useEffect(() => {
+  if (currentTab !== 'whiteboard' || !selectedQuestion?.id || !tldrawEditor.current) return;
+
+  const interval = setInterval(() => {
+    if (!tldrawEditor.current || isApplyingWhiteboardRef.current) return;
+    const rawSnapshot = getRawTldrawSnapshot();
+    if (!rawSnapshot) return;
+
+    const currentSerialized = JSON.stringify(rawSnapshot);
+    if (currentSerialized === lastWhiteboardSerializedRef.current) return;
+
+    lastWhiteboardSerializedRef.current = currentSerialized;
+    if (whiteboardSaveTimeoutRef.current) clearTimeout(whiteboardSaveTimeoutRef.current);
+    const payload = buildWhiteboardPayload(rawSnapshot);
+    pendingWhiteboardSaveRef.current = { questionId: selectedQuestion.id, payload };
+    whiteboardSaveTimeoutRef.current = setTimeout(() => {
+      const pending = pendingWhiteboardSaveRef.current;
+      if (pending?.questionId && pending?.payload) {
+        saveWhiteboardSnapshot(pending.questionId, pending.payload);
+      }
+      pendingWhiteboardSaveRef.current = null;
+    }, 1000);
+  }, 1500);
+
+  return () => {
+    clearInterval(interval);
+    if (whiteboardSaveTimeoutRef.current) {
+      clearTimeout(whiteboardSaveTimeoutRef.current);
+      whiteboardSaveTimeoutRef.current = null;
+      const pending = pendingWhiteboardSaveRef.current;
+      if (pending?.questionId && pending?.payload) {
+        saveWhiteboardSnapshot(pending.questionId, pending.payload);
+      }
+      pendingWhiteboardSaveRef.current = null;
+    }
+  };
+}, [currentTab, selectedQuestion?.id, applyWhiteboardSnapshot, saveWhiteboardSnapshot]);
 
 
 // Group DSA questions by category
@@ -1136,7 +1281,6 @@ return (
                       {isExpanded && isActive && practiceSchedule && (
                         <div className="tree-content">
                           {Object.entries(practiceSchedule).map(([day, dayQuestions]) => {
-                            const dayNum = parseInt(day);
                             const dayExpanded = expandedPracticeDays[day];
                             const completed = dayQuestions.every(q => practiceProgress[q.id]);
 
@@ -1150,7 +1294,7 @@ return (
                                   }))}
                                 >
                                   <span className="chevron"></span>
-                                  <span className="day-label">Day {dayNum}</span>
+                                  <span className="day-label">{formatPracticeDayLabel(day)}</span>
                                   <span className="day-count">{dayQuestions.length}</span>
                                   {completed && <span className="day-done">✓</span>}
                                 </div>
@@ -1301,6 +1445,18 @@ return (
                 <TldrawWrapper
                   onEditorMount={(editor) => {
                     tldrawEditor.current = editor;
+                    try {
+                      const initialRaw = getSnapshot(editor.store);
+                      blankWhiteboardSnapshotRef.current = initialRaw;
+                      lastWhiteboardSerializedRef.current = JSON.stringify(initialRaw);
+                    } catch (error) {
+                      console.error('Failed to initialize blank whiteboard snapshot:', error);
+                    }
+
+                    if (selectedQuestion?.id) {
+                      const snapshotPayload = questionStatuses[selectedQuestion.id]?.whiteboard_snapshot || null;
+                      applyWhiteboardSnapshot(snapshotPayload);
+                    }
                   }}
                 />
               ) : currentTab === 'solution' ? (

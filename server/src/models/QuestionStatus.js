@@ -22,6 +22,10 @@ const QuestionStatus = sequelize.define('QuestionStatus', {
     type: DataTypes.TEXT,
     allowNull: true
   },
+  whiteboard_snapshot: {
+    type: DataTypes.JSON,
+    allowNull: true
+  },
   updatedAt: {
     type: DataTypes.DATE,
     defaultValue: DataTypes.NOW

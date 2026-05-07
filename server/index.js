@@ -22,6 +22,7 @@ const app = express();
 app.use(cors());
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
+const MAX_WHITEBOARD_SNAPSHOT_BYTES = 1_000_000;
 
 // Serve static files from the React app
 app.use(express.static(path.join(__dirname, '../client/dist')));
@@ -108,7 +109,11 @@ app.get('/api/question-status', authenticateToken, async (req, res) => {
     const statuses = await QuestionStatus.findAll({ where: { user_id: req.user.id } });
     const statusMap = {};
     statuses.forEach(s => {
-      statusMap[s.question_id] = { status: s.status, user_code: s.user_code };
+      statusMap[s.question_id] = {
+        status: s.status,
+        user_code: s.user_code,
+        whiteboard_snapshot: s.whiteboard_snapshot || null
+      };
     });
     res.json(statusMap);
   } catch (error) {
@@ -141,6 +146,40 @@ app.put('/api/question-status/:questionId', authenticateToken, async (req, res) 
     res.json({ success: true, questionId, status });
   } catch (error) {
     console.error('Update question status error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.put('/api/question-status/:questionId/whiteboard', authenticateToken, async (req, res) => {
+  try {
+    const { questionId } = req.params;
+    const { whiteboardSnapshot } = req.body;
+
+    if (whiteboardSnapshot !== null && whiteboardSnapshot !== undefined) {
+      const bytes = Buffer.byteLength(JSON.stringify(whiteboardSnapshot), 'utf8');
+      if (bytes > MAX_WHITEBOARD_SNAPSHOT_BYTES) {
+        return res.status(413).json({ error: 'Whiteboard snapshot exceeds 1MB limit' });
+      }
+    }
+
+    const [statusRecord] = await QuestionStatus.findOrCreate({
+      where: { question_id: questionId, user_id: req.user.id },
+      defaults: {
+        status: 'needs_review',
+        whiteboard_snapshot: whiteboardSnapshot ?? null,
+        updatedAt: new Date()
+      }
+    });
+
+    if (!statusRecord.isNewRecord) {
+      statusRecord.whiteboard_snapshot = whiteboardSnapshot ?? null;
+      statusRecord.updatedAt = new Date();
+      await statusRecord.save();
+    }
+
+    res.json({ success: true, questionId });
+  } catch (error) {
+    console.error('Update whiteboard snapshot error:', error);
     res.status(500).json({ error: error.message });
   }
 });
@@ -338,6 +377,7 @@ app.post('/api/code/reset', authenticateToken, async (req, res) => {
     });
     if (statusRecord) {
       statusRecord.user_code = null;
+      statusRecord.whiteboard_snapshot = null;
       await statusRecord.save();
     }
     res.json({ success: true });
@@ -348,7 +388,10 @@ app.post('/api/code/reset', authenticateToken, async (req, res) => {
 
 app.post('/api/code/reset-all', authenticateToken, async (req, res) => {
   try {
-    await QuestionStatus.update({ user_code: null }, { where: { user_id: req.user.id } });
+    await QuestionStatus.update(
+      { user_code: null, whiteboard_snapshot: null },
+      { where: { user_id: req.user.id } }
+    );
     res.json({ success: true });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -512,7 +555,10 @@ app.post('/api/practice/save', authenticateToken, async (req, res) => {
     });
 
     // Reset all code when creating a new session
-    await QuestionStatus.update({ user_code: null }, { where: { user_id: req.user.id } });
+    await QuestionStatus.update(
+      { user_code: null, whiteboard_snapshot: null },
+      { where: { user_id: req.user.id } }
+    );
 
     res.json({ success: true, session });
   } catch (error) {
@@ -635,7 +681,10 @@ app.delete('/api/practice/session/:id', authenticateToken, async (req, res) => {
     console.log(`✅ Session ${id} deleted successfully`);
     
     // Reset all code when resetting a session
-    await QuestionStatus.update({ user_code: null }, { where: { user_id: req.user.id } });
+    await QuestionStatus.update(
+      { user_code: null, whiteboard_snapshot: null },
+      { where: { user_id: req.user.id } }
+    );
     
     res.json({ success: true, message: 'Session deleted' });
   } catch (error) {
