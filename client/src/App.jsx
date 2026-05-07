@@ -805,11 +805,82 @@ const renderProblemDescription = () => {
     return <p className="placeholder-text">Select a problem to begin.</p>;
   }
 
+  // Get navigation context
+  let nav = null;
+  if (practiceSchedule && selectedPracticeDay) {
+    const dayQuestions = practiceSchedule[selectedPracticeDay];
+    const currentIndex = dayQuestions.findIndex(q => q.id === selectedQuestion.id);
+    if (currentIndex !== -1) {
+      const days = Object.keys(practiceSchedule).sort((a, b) => {
+        const d1 = parseInt(a.split(' ')[1]);
+        const d2 = parseInt(b.split(' ')[1]);
+        return d1 - d2;
+      });
+      const currentDayIndex = days.indexOf(selectedPracticeDay);
+      
+      nav = {
+        prev: currentIndex > 0 ? dayQuestions[currentIndex - 1] : null,
+        next: currentIndex < dayQuestions.length - 1 ? dayQuestions[currentIndex + 1] : null,
+        nextDay: (currentIndex === dayQuestions.length - 1 && currentDayIndex < days.length - 1) ? days[currentDayIndex + 1] : null,
+        index: currentIndex,
+        total: dayQuestions.length
+      };
+    }
+  }
+
+  const handleNavigate = (q, day = null) => {
+    if (day) {
+      setSelectedPracticeDay(day);
+      const firstInDay = practiceSchedule[day][0];
+      handleSelectQuestion(firstInDay);
+    } else if (q) {
+      handleSelectQuestion(q);
+    }
+  };
+
   const description = selectedQuestion.description || selectedQuestion.statement || '';
   const isHTML = /<[a-z][\s\S]*>/i.test(description);
 
   return (
     <div className="problem-content-wrapper">
+      {/* Navigation Card */}
+      {nav && (
+        <div className="problem-nav-card">
+          <button 
+            className={`nav-btn prev ${!nav.prev ? 'disabled' : ''}`}
+            onClick={() => nav.prev && handleNavigate(nav.prev)}
+            disabled={!nav.prev}
+          >
+            <span className="nav-arrow">←</span>
+            <span className="nav-text">{nav.prev ? nav.prev.title : 'First Problem'}</span>
+          </button>
+          
+          <div className="nav-info">
+            <span className="nav-day">{selectedPracticeDay}</span>
+            <span className="nav-progress">{nav.index + 1} / {nav.total}</span>
+          </div>
+
+          {nav.next ? (
+            <button className="nav-btn next" onClick={() => handleNavigate(nav.next)}>
+              <span className="nav-text">{nav.next.title}</span>
+              <span className="nav-arrow">→</span>
+            </button>
+          ) : nav.nextDay ? (
+            <button className="nav-btn next-day" onClick={() => handleNavigate(null, nav.nextDay)}>
+              <span className="nav-text">Next Day</span>
+              <span className="nav-arrow">→</span>
+            </button>
+          ) : (
+            <button className="nav-btn next disabled" disabled>
+              <span className="nav-text">Last Problem</span>
+              <span className="nav-arrow">→</span>
+            </button>
+          )}
+        </div>
+      )}
+
+      <h1 className="problem-title">{selectedQuestion.title}</h1>
+
       <div className="problem-statement-html">
         {isHTML ? (
           <div dangerouslySetInnerHTML={{ __html: formatLeetcodeHTML(description) }} />
@@ -1141,7 +1212,7 @@ return (
             overflow: 'auto' 
           }}>
             <div className="workspace-header">
-              <div className="panel-header" style={{ background: 'transparent', padding: '0' }}>Problem Description</div>
+              <div className="panel-header" style={{ background: 'transparent', padding: '0' }}></div>
               {selectedQuestion && (
                 <button
                   className={`status-toggle-btn ${questionStatuses[selectedQuestion.id]?.status === 'done' ? 'done' : 'needs-review'}`}

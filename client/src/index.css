@@ -3862,3 +3862,132 @@ input {
     width: 100%;
   }
 }
+
+/* Problem Navigation Card */
+.problem-nav-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: rgba(15, 23, 42, 0.4);
+  border: 1px solid var(--border);
+  border-radius: 0.75rem;
+  padding: 0.75rem 1rem;
+  margin-bottom: 1.5rem;
+  gap: 1rem;
+}
+
+.nav-btn {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  color: var(--text-primary);
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.nav-btn:hover:not(.disabled) {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: rgba(167, 139, 250, 0.1);
+}
+
+.nav-btn.disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.nav-btn.next, .nav-btn.next-day {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: white;
+}
+
+.nav-btn.next:hover, .nav-btn.next-day:hover {
+  filter: brightness(1.1);
+  color: white;
+}
+
+.nav-info {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.1rem;
+}
+
+.nav-day {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-secondary);
+}
+
+.nav-progress {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.problem-title {
+  font-size: 1.75rem;
+  font-weight: 700;
+  margin-bottom: 1.5rem;
+  color: var(--text-primary);
+  line-height: 1.2;
+}
+
+@media (max-width: 1024px) {
+  .problem-nav-card {
+    padding: 0.5rem 0.75rem;
+  }
+  
+  .nav-btn {
+    padding: 0.4rem 0.75rem;
+    font-size: 0.8rem;
+  }
+  
+  .problem-title {
+    font-size: 1.4rem;
+    margin-bottom: 1rem;
+  }
+}
+
+/* Navigation Button Enhancements */
+.nav-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  max-width: 40%;
+}
+
+.nav-text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.85rem;
+}
+
+.nav-arrow {
+  font-size: 1.1rem;
+  flex-shrink: 0;
+}
+
+@media (max-width: 640px) {
+  .nav-text {
+    display: none; /* Hide text on very small screens, show only arrows */
+  }
+  
+  .nav-btn {
+    max-width: none;
+    min-width: 44px;
+    justify-content: center;
+  }
+  
+  .problem-nav-card {
+    gap: 0.5rem;
+  }
+}
