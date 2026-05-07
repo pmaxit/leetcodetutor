@@ -83,6 +83,13 @@ with open(".env.cloud-run.json", "w") as f:
 print("✅ Created .env.cloud-run.json")
 PYTHON_EOF
 
+# 4. Handle secret-to-literal transition if necessary
+echo -e "\n${BLUE}Step 4: Clearing existing secret references to avoid type mismatch...${NC}"
+# This resolves the "Cannot update environment variable to string literal" error
+gcloud run services update $SERVICE_NAME \
+    --region $REGION \
+    --remove-env-vars OPENROUTER_API_KEY,LLM_BASE_URL,LLM_MODEL,LLM_ENABLE_TOOLS,DB_HOST,DB_USER,DB_PASSWORD,DB_NAME,DB_DIALECT,TAVILY_API_KEY || echo "No existing secrets to clear."
+
 echo "Deploying with environment variables..."
 
 gcloud run deploy $SERVICE_NAME \
