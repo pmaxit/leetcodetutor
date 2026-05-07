@@ -1,0 +1,7 @@
+/home/puneet/Projects/interviews/machine-learning/plans/success_criteria_state_manager.md
+/home/puneet/Projects/interviews/machine-learning/plans/mvp_completion_evaluation.md
+/home/puneet/Projects/interviews/machine-learning/client/public/favicon.svg
+/home/puneet/Projects/interviews/machine-learning/client/public/icons.svg
+/home/puneet/Projects/interviews/machine-learning/client/src/assets/hero.png
+/home/puneet/Projects/interviews/machine-learning/client/src/assets/vite.svg
+/home/puneet/Projects/interviews/machine-learning/client/src/assets/react.svg

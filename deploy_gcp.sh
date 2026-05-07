@@ -86,9 +86,13 @@ PYTHON_EOF
 # 4. Handle secret-to-literal transition if necessary
 echo -e "\n${BLUE}Step 4: Clearing existing secret references to avoid type mismatch...${NC}"
 # This resolves the "Cannot update environment variable to string literal" error
+# List of variables that might have been set as secrets in previous deployments
+VARS_TO_CLEAR="OPENROUTER_API_KEY,LLM_BASE_URL,LLM_API_KEY,LLM_MODEL,LLM_ENABLE_TOOLS,DB_HOST,DB_USER,DB_PASSWORD,DB_NAME,DB_DIALECT,TAVILY_API_KEY,GEMINI_API_KEY,OPENROUTER_FALLBACKS,LM_STUDIO_KEY"
+
 gcloud run services update $SERVICE_NAME \
     --region $REGION \
-    --remove-env-vars OPENROUTER_API_KEY,LLM_BASE_URL,LLM_MODEL,LLM_ENABLE_TOOLS,DB_HOST,DB_USER,DB_PASSWORD,DB_NAME,DB_DIALECT,TAVILY_API_KEY || echo "No existing secrets to clear."
+    --remove-env-vars "$VARS_TO_CLEAR" \
+    --remove-secrets "$VARS_TO_CLEAR" || echo "No existing secrets/vars to clear."
 
 echo "Deploying with environment variables..."
 

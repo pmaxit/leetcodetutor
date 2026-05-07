@@ -1227,9 +1227,8 @@ return (
         <div className="workspace-content-container">
           {/* Top Section: Problem Description (Always Visible) */}
           <section className="problem-pane" style={{ 
-            width: `var(--problem-pane-width, ${problemPaneWidth}%)`, 
-            minWidth: 0, 
-            overflow: 'auto' 
+            width: `${problemPaneWidth}%`, 
+            minWidth: 0
           }}>
             <div className="workspace-header">
               <div className="panel-header" style={{ background: 'transparent', padding: '0' }}></div>
