@@ -48,8 +48,8 @@ function App() {
   const [questions, setQuestions] = useState([]);
   const [selectedQuestion, setSelectedQuestion] = useState(null);
   const [constraints, setConstraints] = useState([]);
-  const [expandedCategories, setExpandedCategories] = useState({ 'Arrays & Hashing': true });
-  const [dsaExpanded, setDsaExpanded] = useState(true);
+  const [expandedCategories, setExpandedCategories] = useState({});
+  const [dsaExpanded, setDsaExpanded] = useState(false);
   const chatEndRef = useRef(null);
   const tldrawEditor = useRef(null);
   const saveTimeoutRef = useRef(null);
@@ -60,7 +60,7 @@ function App() {
   // ─── System Design State ─────────────────────────────────────────────────────
   const [sdQuestions, setSdQuestions] = useState([]);
   const [selectedSdQuestion, setSelectedSdQuestion] = useState(null);
-  const [sdExpanded, setSdExpanded] = useState(true);
+  const [sdExpanded, setSdExpanded] = useState(false);
   const [status, setStatus] = useState({ text: 'Ready', type: 'info' });
   const [llmHealth, setLlmHealth] = useState({ status: 'unknown', message: 'Checking...' });
   const [activeModel, setActiveModel] = useState('Gemma 4 (Primary)');
