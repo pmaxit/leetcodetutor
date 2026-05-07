@@ -35,7 +35,7 @@ const normalizeSdMarkdown = (text = '') => {
 };
 
 // ─── Stage Progress Bar ────────────────────────────────────────────────────────
-function StageProgressBar({ stages, currentStageIndex, completedStages }) {
+function StageProgressBar({ stages, currentStageIndex, completedStages, originalUrl }) {
   return (
     <div className="sd-stage-bar">
       {stages.map((s, i) => (
@@ -50,6 +50,18 @@ function StageProgressBar({ stages, currentStageIndex, completedStages }) {
           <span className="sd-stage-pip-label">{s.name}</span>
         </div>
       ))}
+      {originalUrl && (
+        <a
+          href={originalUrl}
+          target="_blank"
+          rel="noreferrer"
+          className="sd-stage-pip sd-solution-link"
+          title="View Full Solution"
+        >
+          <span className="sd-stage-icon">🔗</span>
+          <span className="sd-stage-pip-label">Solution</span>
+        </a>
+      )}
     </div>
   );
 }
@@ -695,6 +707,7 @@ export default function SystemDesignView({ question }) {
           stages={stages}
           currentStageIndex={currentStageIndex}
           completedStages={completedStages}
+          originalUrl={question.originalUrl}
         />
       </div>
 
