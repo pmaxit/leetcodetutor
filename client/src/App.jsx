@@ -810,7 +810,7 @@ const renderProblemDescription = () => {
   let nav = null;
   if (practiceSchedule && selectedPracticeDay) {
     const dayQuestions = practiceSchedule[selectedPracticeDay];
-    const currentIndex = dayQuestions.findIndex(q => q.id === selectedQuestion.id);
+    const currentIndex = dayQuestions.findIndex(q => String(q.id) === String(selectedQuestion.id));
     if (currentIndex !== -1) {
       const days = Object.keys(practiceSchedule).sort((a, b) => {
         const d1 = parseInt(a.split(' ')[1]);
@@ -1160,7 +1160,11 @@ return (
                                       <div
                                         key={q.id}
                                         className={`tree-item practice-question ${mode === 'dsa' && selectedQuestion?.id === q.id ? 'active' : ''} ${practiceProgress[q.id] ? 'done' : ''} ${questionStatuses[q.id]?.status || 'needs-review'}`}
-                                        onClick={() => { setMode('dsa'); handleSelectQuestion(q); }}
+                                        onClick={() => { 
+                                          setMode('dsa'); 
+                                          setSelectedPracticeDay(day);
+                                          handleSelectQuestion(q); 
+                                        }}
                                       >
                                         <span className={`status-dot status-dot--${questionStatuses[q.id]?.status || 'needs_review'}`} />
                                         {practiceProgress[q.id] && <span className="done-check">✓</span>}
