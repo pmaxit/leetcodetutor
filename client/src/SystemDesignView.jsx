@@ -619,11 +619,6 @@ export default function SystemDesignView({ question }) {
     <div className="sd-whiteboard-panel sd-reference-panel">
       <div className="sd-wb-label">Reference Solution</div>
       <div className="sd-ref-content">
-        {question.originalUrl && (
-          <a href={question.originalUrl} target="_blank" rel="noreferrer" className="sd-original-solution-link" style={{ marginBottom: '1.5rem' }}>
-            🔗 View Full Solution
-          </a>
-        )}
         
         {isSolutionLoading ? (
           <div className="placeholder-text">Loading solution markdown...</div>
