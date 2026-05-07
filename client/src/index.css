@@ -1906,7 +1906,8 @@ input {
     height: auto !important;
     border-right: none;
     border-bottom: 1px solid var(--border);
-    overflow: visible !important;
+    overflow-y: auto !important;
+    overflow-x: auto !important;
   }
 
   .action-pane {
@@ -3847,4 +3848,17 @@ input {
 
 .mobile-only {
   display: none;
+}
+
+.problem-statement-html img,
+.problem-statement-html table {
+  max-width: none !important;
+  display: block;
+}
+
+@media (max-width: 1024px) {
+  .problem-description-view {
+    overflow-x: auto !important;
+    width: 100%;
+  }
 }
