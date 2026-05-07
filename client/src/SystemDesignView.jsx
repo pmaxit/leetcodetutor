@@ -840,7 +840,7 @@ export default function SystemDesignView({ question }) {
             )}
           </div>
 
-          {/* Tab toggle: Whiteboard vs Text Answer */}
+          {/* Tab toggle: Whiteboard vs Text Answer vs Solution */}
           <div className="sd-answer-tabs">
             {!isSolutionOnlyMobile && (
               <button
@@ -856,48 +856,101 @@ export default function SystemDesignView({ question }) {
             >
               📝 Type Answer
             </button>
+            {!isSolutionOnlyMobile && (
+              <button
+                className={`sd-atab ${activeTab === 'solution' ? 'active' : ''}`}
+                onClick={() => setActiveTab('solution')}
+              >
+                📖 Solution
+              </button>
+            )}
           </div>
 
-          {/* Text answer area */}
-          <textarea
-            ref={textareaRef}
-            className="sd-answer-input"
-            placeholder={`Type your answer for: ${currentStage?.name}... (⌘/Ctrl+Enter to submit)`}
-            value={answer}
-            onChange={(e) => {
-              const nextAnswer = e.target.value;
-              setStageAnswers((prev) => {
-                const next = [...prev];
-                next[currentStageIndex] = nextAnswer;
-                return next;
-              });
-            }}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter' && (e.metaKey || e.ctrlKey) && !e.nativeEvent.isComposing) {
-                e.preventDefault();
-                if (!isEvaluating) {
-                  handleSubmitAnswer();
-                }
-              }
-            }}
-          />
+          {activeTab === 'solution' ? (
+            <div className="sd-solution-view">
+              {isSolutionLoading ? (
+                <div className="placeholder-text">Loading solution...</div>
+              ) : solutionLoadError ? (
+                <div className="placeholder-text">{solutionLoadError}</div>
+              ) : solutionMarkdown ? (
+                <div className="sd-inline-solution-markdown">
+                  {solutionTitle && (
+                    <div style={{ fontWeight: 600, marginBottom: '1rem', fontSize: '1.1rem' }}>{solutionTitle}</div>
+                  )}
+                  <ReactMarkdown
+                    remarkPlugins={[remarkGfm, remarkMath]}
+                    rehypePlugins={[rehypeKatex]}
+                    components={{
+                      code({ inline, className, children, ...props }) {
+                        const match = /language-(\w+)/.exec(className || '');
+                        return !inline && match ? (
+                          <SyntaxHighlighter
+                            style={vscDarkPlus}
+                            language={match[1]}
+                            PreTag="div"
+                            {...props}
+                          >
+                            {String(children).replace(/\n$/, '')}
+                          </SyntaxHighlighter>
+                        ) : (
+                          <code className={className} {...props}>
+                            {children}
+                          </code>
+                        );
+                      },
+                    }}
+                  >
+                    {solutionMarkdown}
+                  </ReactMarkdown>
+                </div>
+              ) : (
+                <div className="placeholder-text">No solution available.</div>
+              )}
+            </div>
+          ) : (
+            <>
+              {/* Text answer area */}
+              <textarea
+                ref={textareaRef}
+                className="sd-answer-input"
+                placeholder={`Type your answer for: ${currentStage?.name}... (⌘/Ctrl+Enter to submit)`}
+                value={answer}
+                onChange={(e) => {
+                  const nextAnswer = e.target.value;
+                  setStageAnswers((prev) => {
+                    const next = [...prev];
+                    next[currentStageIndex] = nextAnswer;
+                    return next;
+                  });
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && (e.metaKey || e.ctrlKey) && !e.nativeEvent.isComposing) {
+                    e.preventDefault();
+                    if (!isEvaluating) {
+                      handleSubmitAnswer();
+                    }
+                  }
+                }}
+              />
 
-          {/* Submit */}
-          <div style={{ display: 'flex', gap: '0.5rem' }}>
-            <button
-              className="sd-submit-btn"
-              onClick={handleSubmitAnswer}
-              disabled={isEvaluating}
-              style={{ flex: 1 }}
-            >
-              {isEvaluating ? (
-                <span className="sd-loading-dot">Evaluating<span>.</span><span>.</span><span>.</span></span>
-              ) : 'Submit Answer →'}
-            </button>
-            <button className="action-btn-secondary" onClick={handleResetAnswers} type="button">
-              Reset Answers
-            </button>
-          </div>
+              {/* Submit */}
+              <div style={{ display: 'flex', gap: '0.5rem' }}>
+                <button
+                  className="sd-submit-btn"
+                  onClick={handleSubmitAnswer}
+                  disabled={isEvaluating}
+                  style={{ flex: 1 }}
+                >
+                  {isEvaluating ? (
+                    <span className="sd-loading-dot">Evaluating<span>.</span><span>.</span><span>.</span></span>
+                  ) : 'Submit Answer →'}
+                </button>
+                <button className="action-btn-secondary" onClick={handleResetAnswers} type="button">
+                  Reset Answers
+                </button>
+              </div>
+            </>
+          )}
 
           {/* Evaluation Result */}
           <EvaluationCard
