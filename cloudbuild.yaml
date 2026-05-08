@@ -15,17 +15,17 @@ steps:
       - '-c'
       - |
         cat <<EOF > env.yaml
-        OPENROUTER_API_KEY: "${_OPENROUTER_API_KEY}"
-        OPENROUTER_URL: "${_OPENROUTER_URL}"
-        OPENROUTER_FALLBACKS: "${_OPENROUTER_FALLBACKS}"
-        LLM_PROVIDER_STRATEGY: "${_LLM_PROVIDER_STRATEGY}"
-        DB_HOST: "${_DB_HOST}"
-        DB_USER: "${_DB_USER}"
-        DB_PASSWORD: "${_DB_PASSWORD}"
-        DB_NAME: "${_DB_NAME}"
-        DB_DIALECT: "mysql"
-        DB_SOCKET_PATH: "/cloudsql/adveralabs:us-central1:adveralabs-mysql"
-        LLM_ENABLE_TOOLS: "false"
+        APP_OPENROUTER_API_KEY: "${_OPENROUTER_API_KEY}"
+        APP_OPENROUTER_URL: "${_OPENROUTER_URL}"
+        APP_OPENROUTER_FALLBACKS: "${_OPENROUTER_FALLBACKS}"
+        APP_LLM_PROVIDER_STRATEGY: "${_LLM_PROVIDER_STRATEGY}"
+        APP_DB_HOST: "${_DB_HOST}"
+        APP_DB_USER: "${_DB_USER}"
+        APP_DB_PASSWORD: "${_DB_PASSWORD}"
+        APP_DB_NAME: "${_DB_NAME}"
+        APP_DB_DIALECT: "mysql"
+        APP_DB_SOCKET_PATH: "/cloudsql/adveralabs:us-central1:adveralabs-mysql"
+        APP_LLM_ENABLE_TOOLS: "false"
         NODE_ENV: "production"
         EOF
 

@@ -1,11 +1,11 @@
 # Graph Report - machine-learning  (2026-05-08)
 
 ## Corpus Check
-- 55 files · ~314,198 words
+- 56 files · ~315,478 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 200 nodes · 220 edges · 18 communities detected
+- 204 nodes · 223 edges · 18 communities detected
 - Extraction: 96% EXTRACTED · 4% INFERRED · 0% AMBIGUOUS · INFERRED: 8 edges (avg confidence: 0.8)
 - Token cost: 0 input · 0 output
 
@@ -26,8 +26,8 @@
 - [[_COMMUNITY_Community 14|Community 14]]
 - [[_COMMUNITY_Community 15|Community 15]]
 - [[_COMMUNITY_Community 16|Community 16]]
-- [[_COMMUNITY_Community 17|Community 17]]
-- [[_COMMUNITY_Community 19|Community 19]]
+- [[_COMMUNITY_Community 18|Community 18]]
+- [[_COMMUNITY_Community 20|Community 20]]
 
 ## God Nodes (most connected - your core abstractions)
 1. `LLMService` - 13 edges
@@ -111,11 +111,11 @@ Nodes (1): ProctorAgent
 Cohesion: 0.83
 Nodes (3): generateScaffold(), processQuestion(), run()
 
-### Community 17 - "Community 17"
+### Community 18 - "Community 18"
 Cohesion: 1.0
 Nodes (2): extractBoilerplate(), run()
 
-### Community 19 - "Community 19"
+### Community 20 - "Community 20"
 Cohesion: 1.0
 Nodes (2): generateScaffold(), run()
 
@@ -138,9 +138,9 @@ Nodes (2): generateScaffold(), run()
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
 - **Thin community `Community 15`** (4 nodes): `ProctorAgent`, `.analyzeCode()`, `.constructor()`, `ProctorAgent.js`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 17`** (3 nodes): `extractBoilerplate()`, `run()`, `reset_boilerplates.js`
+- **Thin community `Community 18`** (3 nodes): `extractBoilerplate()`, `run()`, `reset_boilerplates.js`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 19`** (3 nodes): `generateScaffold()`, `verify_3sum.js`, `run()`
+- **Thin community `Community 20`** (3 nodes): `generateScaffold()`, `verify_3sum.js`, `run()`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
 
 ## Suggested Questions

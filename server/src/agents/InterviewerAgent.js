@@ -85,7 +85,7 @@ class InterviewerAgent {
       const { OpenRouter } = await import('@openrouter/sdk');
       const { z } = await import('zod');
 
-      const apiKey = process.env.OPENROUTER_API_KEY || process.env.LLM_API_KEY || "sk-or-v1-";
+      const apiKey = process.env.APP_OPENROUTER_API_KEY || process.env.OPENROUTER_API_KEY || process.env.LLM_API_KEY || "sk-or-v1-";
       const client = new OpenRouter({ apiKey });
       const localClient = process.env.LM_STUDIO_URL ? new OpenRouter({ apiKey: process.env.LM_STUDIO_KEY, baseURL: process.env.LM_STUDIO_URL }) : null;
 
@@ -244,7 +244,7 @@ Candidate's Input: "${userInput.replace(/"/g, '\\"').replace(/\n/g, '\\n')}"
       ];
 
       // SD mode does not benefit from the code-critique tool. Disable both tools for SD.
-      const enableTools = !isSD && process.env.LLM_ENABLE_TOOLS === 'true';
+      const enableTools = !isSD && (process.env.APP_LLM_ENABLE_TOOLS === 'true' || process.env.LLM_ENABLE_TOOLS === 'true');
       let finalText = '';
       let successModelId = null;
       let lastError = null;

@@ -8,15 +8,18 @@ class LLMService {
     // ─── Configuration Dictionary ─────────────────────────────────────────
     const CONFIG = {
       local:  { url: process.env.LM_STUDIO_URL,  key: process.env.LM_STUDIO_KEY },
-      remote: { url: process.env.OPENROUTER_URL, key: process.env.OPENROUTER_API_KEY },
+      remote: { 
+        url: process.env.APP_OPENROUTER_URL || process.env.OPENROUTER_URL, 
+        key: process.env.APP_OPENROUTER_API_KEY || process.env.OPENROUTER_API_KEY 
+      },
     };
 
     const isProd = process.env.NODE_ENV === 'production';
-    const llmProviderStrategy = (process.env.LLM_PROVIDER_STRATEGY || (isProd ? "openrouter-only" : "local-first")).toLowerCase();
+    const llmProviderStrategy = (process.env.APP_LLM_PROVIDER_STRATEGY || process.env.LLM_PROVIDER_STRATEGY || (isProd ? "openrouter-only" : "local-first")).toLowerCase();
 
     // ─── Models (Primary + Fallbacks, in order, with provider) ────────────
     const defaultFallbacks = "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free,qwen/qwen3.6-flash,meta-llama/llama-3.3-70b-instruct";
-    const fallbacks = (process.env.OPENROUTER_FALLBACKS || defaultFallbacks)
+    const fallbacks = (process.env.APP_OPENROUTER_FALLBACKS || process.env.OPENROUTER_FALLBACKS || defaultFallbacks)
       .split(/[,;]/)
       .map(id => id.trim())
       .filter(Boolean)

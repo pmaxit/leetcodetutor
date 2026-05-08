@@ -180,7 +180,7 @@ app.get('/api/health', async (req, res) => {
       llm: 'disconnected',
       error: error.message,
       timestamp: new Date().toISOString(),
-      hint: 'Check OpenRouter API key in .env and your internet connection'
+      hint: 'Check OPENROUTER_API_KEY or APP_OPENROUTER_API_KEY in .env and your internet connection'
     });
   }
 });
@@ -448,7 +448,7 @@ app.post('/api/chat', authenticateToken, async (req, res) => {
 
     if (error.message.includes('ECONNREFUSED') || error.message.includes('OpenRouter') || error.message.includes('401') || error.message.includes('403')) {
       sendEvent('error', {
-        message: 'OpenRouter connection failed. Check your OPENROUTER_API_KEY in .env',
+        message: 'OpenRouter connection failed. Check your OPENROUTER_API_KEY / APP_OPENROUTER_API_KEY in .env',
         type: 'connection_error'
       });
     } else {

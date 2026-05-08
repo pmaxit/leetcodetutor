@@ -4,23 +4,26 @@ require('dotenv').config();
 
 const dbPath = path.resolve(__dirname, '../../database.sqlite');
 
-const dialectOptions = process.env.DB_DIALECT === 'mysql' ? {
+const dialect = process.env.APP_DB_DIALECT || process.env.DB_DIALECT || 'sqlite';
+const socketPath = process.env.APP_DB_SOCKET_PATH || process.env.DB_SOCKET_PATH;
+
+const dialectOptions = dialect === 'mysql' ? {
   // SSL is required for Public IP but not supported/needed over Unix Socket
-  ...(process.env.DB_SOCKET_PATH ? {} : { ssl: { rejectUnauthorized: false } })
+  ...(socketPath ? {} : { ssl: { rejectUnauthorized: false } })
 } : {};
 
-// On Google Cloud Run, we connect via a Unix socket if DB_SOCKET_PATH is provided
-if (process.env.DB_SOCKET_PATH && process.env.DB_DIALECT === 'mysql') {
-  dialectOptions.socketPath = process.env.DB_SOCKET_PATH;
+// On Google Cloud Run, we connect via a Unix socket if socketPath is provided
+if (socketPath && dialect === 'mysql') {
+  dialectOptions.socketPath = socketPath;
 }
 
 const sequelize = new Sequelize({
-  dialect: process.env.DB_DIALECT || 'sqlite',
-  storage: process.env.DB_STORAGE || dbPath,
-  host: process.env.DB_HOST,
-  username: process.env.DB_USER,
-  password: process.env.DB_PASSWORD || process.env.DB_PASS,
-  database: process.env.DB_NAME,
+  dialect: dialect,
+  storage: process.env.APP_DB_STORAGE || process.env.DB_STORAGE || dbPath,
+  host: process.env.APP_DB_HOST || process.env.DB_HOST,
+  username: process.env.APP_DB_USER || process.env.DB_USER,
+  password: process.env.APP_DB_PASSWORD || process.env.DB_PASSWORD || process.env.DB_PASS,
+  database: process.env.APP_DB_NAME || process.env.DB_NAME,
   logging: false,
   dialectOptions
 });
