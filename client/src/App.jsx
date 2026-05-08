@@ -338,8 +338,9 @@ function App() {
           const sessionRes = await fetchWithAuth(`${API}/api/practice/session/${mostRecent.id}`);
           const sessionData = await sessionRes.json();
 
+          const defaultDay = getDefaultPracticeDay(sessionData.schedule);
           setPracticeSchedule(sessionData.schedule);
-          setSelectedPracticeDay(getDefaultPracticeDay(sessionData.schedule));
+          setSelectedPracticeDay(defaultDay);
           setPracticeSessionName(sessionData.sessionName);
           setPracticeSessionId(sessionData.id);
           setPracticeProgress(sessionData.progress || {});
@@ -348,6 +349,14 @@ function App() {
             pastPerDay: sessionData.pastPerDay
           });
           setPracticeConfiguring(false);
+
+          // Auto-expand session and today's day in the sidebar
+          setExpandedSessions({ [mostRecent.id]: true });
+          if (defaultDay) setExpandedPracticeDays({ [defaultDay]: true });
+
+          // Auto-select the first problem of today
+          const firstQuestion = sessionData.schedule[defaultDay]?.[0];
+          if (firstQuestion) handleSelectQuestion(firstQuestion);
         }
 
         const sRes = await fetchWithAuth(`${API}/api/session/start`, {
