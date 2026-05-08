@@ -1,0 +1,25 @@
+steps:
+  # Build the Docker image with Tldraw license key as build arg
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'build'
+      - '--build-arg=VITE_TLDRAW_LICENSE_KEY=${_VITE_TLDRAW_LICENSE_KEY}'
+      - '-t'
+      - 'gcr.io/$PROJECT_ID/ai-interview-platform'
+      - '-t'
+      - 'gcr.io/$PROJECT_ID/ai-interview-platform:${COMMIT_SHA}'
+      - '.'
+
+images:
+  - 'gcr.io/$PROJECT_ID/ai-interview-platform'
+  - 'gcr.io/$PROJECT_ID/ai-interview-platform:${COMMIT_SHA}'
+
+substitutions:
+  _VITE_TLDRAW_LICENSE_KEY: ''
+
+options:
+  machineType: 'N1_HIGHCPU_8'
+  logging: CLOUD_LOGGING_ONLY
+
+# Note: Deploy separately using gcloud run deploy or deploy_gcp.sh
+# This config handles only the build and push steps
