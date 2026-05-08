@@ -5,13 +5,28 @@ steps:
       - 'build'
       - '--build-arg=VITE_TLDRAW_LICENSE_KEY=${_VITE_TLDRAW_LICENSE_KEY}'
       - '-t'
-      - 'gcr.io/$PROJECT_ID/ai-interview-platform'
+      - 'gcr.io/$PROJECT_ID/ai-interview-platform:latest'
       - '-t'
       - 'gcr.io/$PROJECT_ID/ai-interview-platform:${COMMIT_SHA}'
       - '.'
 
+  # Deploy to Cloud Run
+  - name: 'gcr.io/cloud-builders/run'
+    args:
+      - 'deploy'
+      - 'ai-interview-platform'
+      - '--image=gcr.io/$PROJECT_ID/ai-interview-platform:latest'
+      - '--region=us-central1'
+      - '--platform=managed'
+      - '--allow-unauthenticated'
+      - '--add-cloudsql-instances=adveralabs:us-central1:adveralabs-mysql'
+      - '--port=8080'
+      - '--timeout=120'
+      - '--cpu=2'
+      - '--memory=2Gi'
+
 images:
-  - 'gcr.io/$PROJECT_ID/ai-interview-platform'
+  - 'gcr.io/$PROJECT_ID/ai-interview-platform:latest'
   - 'gcr.io/$PROJECT_ID/ai-interview-platform:${COMMIT_SHA}'
 
 substitutions:
@@ -21,5 +36,4 @@ options:
   machineType: 'N1_HIGHCPU_8'
   logging: CLOUD_LOGGING_ONLY
 
-# Note: Deploy separately using gcloud run deploy or deploy_gcp.sh
-# This config handles only the build and push steps
+timeout: '3600s'
