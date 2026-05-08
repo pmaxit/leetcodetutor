@@ -1,7 +1,7 @@
-# Graph Report - machine-learning  (2026-05-07)
+# Graph Report - machine-learning  (2026-05-08)
 
 ## Corpus Check
-- 55 files · ~314,047 words
+- 55 files · ~314,181 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
@@ -42,8 +42,8 @@
 10. `BaseAgent` - 4 edges
 
 ## Surprising Connections (you probably didn't know these)
-- `parseMarkdownToStages()` --calls--> `extractSection()`  [INFERRED]
-  server/scripts/seed_system_design.js → server/src/utils/sdSolutionSections.js
+- `extractSection()` --calls--> `parseMarkdownToStages()`  [INFERRED]
+  server/src/utils/sdSolutionSections.js → server/scripts/seed_system_design.js
 
 ## Communities
 

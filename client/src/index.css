@@ -2203,7 +2203,7 @@ input {
 }
 
 /* ─── Mobile UI Layout ────────────────────────────────────────────── */
-@media (max-width: 1024px) {
+@media (max-width: 1800px) {
   *, *::before, *::after {
     box-sizing: border-box !important;
   }
@@ -2239,63 +2239,70 @@ input {
     visibility: visible;
   }
 
-  /* Workspace stacking */
+  /* Stacking rules (Tablet/Mobile) */
+  @media (max-width: 1024px) {
+    .workspace {
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto !important;
+      overflow-x: hidden !important;
+    }
+
+    .workspace-content-container {
+      flex-direction: column !important;
+      width: 100%;
+      flex: none;
+      height: auto !important;
+      overflow: visible !important;
+    }
+
+    .problem-pane {
+      width: 100% !important;
+      max-width: 100% !important;
+      flex: none !important;
+      min-height: 300px;
+      height: auto !important;
+      border-right: none;
+      border-bottom: 1px solid var(--border);
+      overflow: visible !important;
+    }
+
+    .action-pane {
+      width: 100% !important;
+      max-width: 100% !important;
+      flex: none !important;
+      height: auto !important;
+      min-height: 500px;
+      overflow: visible !important;
+    }
+
+    /* Use one unified scroll container on mobile (the workspace) */
+    .problem-pane .problem-description-view,
+    .problem-description-view,
+    .problem-content-wrapper {
+      overflow: visible !important;
+      height: auto !important;
+      max-height: none !important;
+    }
+
+    .action-pane .canvas-area {
+      flex: none !important;
+      min-height: 50vh;
+      height: 50vh;
+    }
+  }
+
   .workspace {
     grid-column: 1 / -1 !important;
     grid-row: 2;
-    display: flex;
-    flex-direction: column;
-    height: 100%;
-    width: 100%;
-    max-width: 100%;
-    overflow-y: auto !important;
-    overflow-x: hidden !important;
-    -webkit-overflow-scrolling: touch;
     position: relative;
   }
 
-  .workspace-content-container {
-    flex-direction: column !important;
-    width: 100%;
-    flex: none;
-    height: auto !important;
-    overflow: visible !important;
-  }
-
-  .problem-pane {
-    width: 100% !important;
-    max-width: 100% !important;
-    flex: none !important;
-    min-height: 300px;
-    height: auto !important;
-    border-right: none;
-    border-bottom: 1px solid var(--border);
-    overflow: visible !important;
-  }
-
-  .action-pane {
-    width: 100% !important;
-    max-width: 100% !important;
-    flex: none !important;
-    height: auto !important;
-    min-height: 500px;
-    overflow: visible !important;
-  }
-
-  /* Use one unified scroll container on mobile (the workspace) */
-  .problem-pane .problem-description-view,
-  .problem-description-view,
-  .problem-content-wrapper {
-    overflow: visible !important;
-    height: auto !important;
-    max-height: none !important;
-  }
-
   .action-pane .canvas-area {
-    flex: none !important;
-    min-height: 50vh;
-    height: 50vh;
+    flex: 1;
+    min-height: 0;
   }
+
 
   /* Sidebar acts as an off-canvas menu */
   .sidebar-panel {
@@ -4456,7 +4463,7 @@ input {
   opacity: 1;
 }
 
-@media (max-width: 1024px) {
+@media (max-width: 1800px) {
   .header-actions {
     margin-right: 0.75rem;
     padding-right: 0.75rem;
