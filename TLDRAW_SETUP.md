@@ -2,16 +2,43 @@
 
 ## Local Development
 
-The Tldraw license key is already configured in `.env` file for local development:
+### Option 1: Direct npm Development (Recommended for Active Development)
+
+The Tldraw license key is already configured in `.env` file:
 
 ```bash
-VITE_TLDRAW_LICENSE_KEY=tldraw-2026-08-15/WyJtY3ptSGdNXyIsWyIqIl0sMTYsIjIwMjYtMDgtMTUiXQ.rx1FVvQajYQUQfU8Dk/Ugef6kB9vBVI2z/HyKOwkDb/ZESWJOSvaUiGTl+l9SU/HpIGlv5Q/Uv8+2eeczy1L+w
+# In the client directory
+cd client
+npm run dev      # Development with hot reload on http://localhost:5173
+
+# In another terminal, run the server
+npm run dev      # Runs with nodemon on http://localhost:3005
 ```
 
-Simply run:
+### Option 2: Docker Compose Local Deployment
+
+For a containerized local environment that mirrors production:
+
 ```bash
-npm run dev      # Development with hot reload
-npm run build    # Build for production
+./deploy.sh      # or npm run deploy:local
+```
+
+The script will:
+- Load the license key from `.env`
+- Build the Docker image with the license key embedded
+- Start the container on http://localhost:3005
+
+**What happens internally:**
+1. Docker reads `VITE_TLDRAW_LICENSE_KEY` from `.env`
+2. Passes it as a build argument to the Dockerfile
+3. Frontend build includes the license key in the bundle
+4. Container starts with the app ready to use
+
+### Building for Production (Local)
+
+```bash
+cd client
+VITE_TLDRAW_LICENSE_KEY=tldraw-2026-08-15/WyJtY3ptSGdNXyIsWyIqIl0sMTYsIjIwMjYtMDgtMTUiXQ.rx1FVvQajYQUQfU8Dk/Ugef6kB9vBVI2z/HyKOwkDb/ZESWJOSvaUiGTl+l9SU/HpIGlv5Q/Uv8+2eeczy1L+w npm run build
 ```
 
 ## Production Deployment (Google Cloud)

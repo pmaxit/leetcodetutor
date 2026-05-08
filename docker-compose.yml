@@ -1,6 +1,9 @@
 services:
   app:
-    build: .
+    build:
+      context: .
+      args:
+        VITE_TLDRAW_LICENSE_KEY: ${VITE_TLDRAW_LICENSE_KEY}
     ports:
       - "3005:8080"
     env_file:
@@ -10,4 +13,5 @@ services:
       - PORT=8080
       - LLM_ENABLE_TOOLS=false
       - LLM_PROVIDER_STRATEGY=openrouter-only
+      - VITE_TLDRAW_LICENSE_KEY=${VITE_TLDRAW_LICENSE_KEY}
     restart: unless-stopped
