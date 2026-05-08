@@ -6,8 +6,6 @@ steps:
       - '--build-arg=VITE_TLDRAW_LICENSE_KEY=${_VITE_TLDRAW_LICENSE_KEY}'
       - '-t'
       - 'gcr.io/$PROJECT_ID/ai-interview-platform:latest'
-      - '-t'
-      - 'gcr.io/$PROJECT_ID/ai-interview-platform:${COMMIT_SHA}'
       - '.'
 
   # Deploy to Cloud Run
@@ -27,7 +25,6 @@ steps:
 
 images:
   - 'gcr.io/$PROJECT_ID/ai-interview-platform:latest'
-  - 'gcr.io/$PROJECT_ID/ai-interview-platform:${COMMIT_SHA}'
 
 substitutions:
   _VITE_TLDRAW_LICENSE_KEY: ''
