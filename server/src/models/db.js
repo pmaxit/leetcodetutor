@@ -19,7 +19,7 @@ const sequelize = new Sequelize({
   storage: process.env.DB_STORAGE || dbPath,
   host: process.env.DB_HOST,
   username: process.env.DB_USER,
-  password: process.env.DB_PASSWORD,
+  password: process.env.DB_PASSWORD || process.env.DB_PASS,
   database: process.env.DB_NAME,
   logging: false,
   dialectOptions

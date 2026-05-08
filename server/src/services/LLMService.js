@@ -11,21 +11,19 @@ class LLMService {
       remote: { url: process.env.OPENROUTER_URL, key: process.env.OPENROUTER_API_KEY },
     };
 
-    const llmProviderStrategy = (process.env.LLM_PROVIDER_STRATEGY || "local-first").toLowerCase();
+    const isProd = process.env.NODE_ENV === 'production';
+    const llmProviderStrategy = (process.env.LLM_PROVIDER_STRATEGY || (isProd ? "openrouter-only" : "local-first")).toLowerCase();
 
     // ─── Models (Primary + Fallbacks, in order, with provider) ────────────
-    const fallbacks = (process.env.OPENROUTER_FALLBACKS || "")
-      .split(",")
+    const defaultFallbacks = "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free,qwen/qwen3.6-flash,meta-llama/llama-3.3-70b-instruct";
+    const fallbacks = (process.env.OPENROUTER_FALLBACKS || defaultFallbacks)
+      .split(/[,;]/)
       .map(id => id.trim())
       .filter(Boolean)
       .map(id => ({ id, provider: "remote" }));
 
     const localModel = process.env.LM_STUDIO_MODEL || "gpt-4";
     const remoteModels = fallbacks;
-
-    const MODELS = llmProviderStrategy === "openrouter-only"
-      ? remoteModels
-      : [{ id: localModel, provider: "local" }, ...remoteModels];
 
     // ─── Initialize Clients ───────────────────────────────────────────────
     this.clients = {
@@ -42,6 +40,11 @@ class LLMService {
         },
       }) : null,
     };
+
+    const MODELS = (llmProviderStrategy === "openrouter-only"
+      ? remoteModels
+      : [{ id: localModel, provider: "local" }, ...remoteModels]
+    ).filter(m => this.clients[m.provider]);
 
     this.modelSequence = MODELS;
     this.model = MODELS[0]?.id;
