@@ -31,5 +31,9 @@ if ! $COMPOSE up --build -d; then
 fi
 
 echo -e "\n✅ DEPLOYMENT COMPLETE!"
+LOCAL_IP=$(hostname -I | awk '{print $1}' || echo "localhost")
 echo "Local Application: http://localhost:3005"
+if [ "$LOCAL_IP" != "localhost" ]; then
+    echo "Network Access:    http://$LOCAL_IP:3005"
+fi
 echo "View Logs:         $COMPOSE logs -f"
