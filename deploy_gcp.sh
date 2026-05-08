@@ -24,6 +24,14 @@ echo "Service: $SERVICE_NAME"
 echo "Region:  $REGION"
 echo ""
 
+# Load local .env early for build args
+if [ -f .env ]; then
+    echo "Loading environment variables from .env for build..."
+    export $(grep -v '^#' .env | grep -v '^\s*$' | xargs)
+else
+    echo -e "${RED}⚠️  No .env file found. Build will use empty build args.${NC}"
+fi
+
 # 1. Enable Google Cloud APIs
 echo -e "${BLUE}Step 1: Enabling necessary APIs...${NC}"
 gcloud services enable run.googleapis.com \
@@ -34,19 +42,10 @@ gcloud services enable run.googleapis.com \
 # 2. Build and Push the container image using Cloud Build
 echo -e "\n${BLUE}Step 2: Building and pushing Docker image to GCR...${NC}"
 echo "Using multi-stage Dockerfile for optimized production build."
-gcloud builds submit --tag $IMAGE_NAME .
+gcloud builds submit --tag $IMAGE_NAME --build-arg="VITE_TLDRAW_LICENSE_KEY=${VITE_TLDRAW_LICENSE_KEY}" .
 
 # 3. Deploy to Cloud Run
 echo -e "\n${BLUE}Step 3: Deploying to Cloud Run...${NC}"
-
-# Load local .env if it exists for environment variables
-if [ -f .env ]; then
-    echo "Loading environment variables from .env..."
-    # Export vars while ignoring comments and empty lines
-    export $(grep -v '^#' .env | grep -v '^\s*$' | xargs)
-else
-    echo -e "${RED}⚠️  No .env file found. Deploying with default environment variables.${NC}"
-fi
 
 # Create a temporary JSON env-vars file (Cloud Run requires YAML/JSON format)
 TEMP_ENV_FILE=".env.cloud-run.json"
