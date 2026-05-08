@@ -104,7 +104,7 @@ This script:
 ### 1. Database Environment
 - **Primary DB**: The application uses a **MySQL database on GCP** (see `.env`) for production-like data, NOT the local `server/database.sqlite`.
 - **Table Name**: The `Question` model maps to the `problems` table in MySQL, but `Questions` in SQLite.
-- **Data Integrity**: Always verify question metadata against the live DB using scratch scripts if the local SQLite seems stale or incomplete.
+- **Data Integrity**: Always verify question metadata against the live DB using seeding or migration scripts in `server/scripts/` if the local SQLite seems stale or incomplete.
 
 ### 2. Database Safety & Seeding (CRITICAL)
 - **NO `force: true`**: Never use `sequelize.sync({ force: true })` in scripts. This drops all tables and wipes production data.

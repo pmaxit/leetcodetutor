@@ -352,11 +352,12 @@ function App() {
 
           // Auto-expand session and today's day in the sidebar
           setExpandedSessions({ [mostRecent.id]: true });
-          if (defaultDay) setExpandedPracticeDays({ [defaultDay]: true });
-
-          // Auto-select the first problem of today
-          const firstQuestion = sessionData.schedule[defaultDay]?.[0];
-          if (firstQuestion) handleSelectQuestion(firstQuestion);
+          if (defaultDay) {
+            setExpandedPracticeDays({ [defaultDay]: true });
+            // Auto-select the first problem of today
+            const firstQuestion = sessionData.schedule[defaultDay]?.[0];
+            if (firstQuestion) handleSelectQuestion(firstQuestion);
+          }
         }
 
         const sRes = await fetchWithAuth(`${API}/api/session/start`, {
@@ -385,6 +386,31 @@ function App() {
     };
     init();
   }, [token]);
+  const handleGoToDailySchedule = async () => {
+    if (!practiceSessionId || !practiceSchedule) {
+      // If no session is active, try to load the most recent one
+      if (savedPracticeSessions.length > 0) {
+        await handleLoadPracticeSession(savedPracticeSessions[0].id);
+      } else {
+        // No sessions at all, go to main view
+        setCurrentView('main');
+      }
+      return;
+    }
+
+    const defaultDay = getDefaultPracticeDay(practiceSchedule);
+    setSelectedPracticeDay(defaultDay);
+    setCurrentView('main');
+    setMode('dsa');
+    setDsaExpanded(false);
+    setSdExpanded(false);
+    setExpandedSessions({ [practiceSessionId]: true });
+    if (defaultDay) {
+      setExpandedPracticeDays({ [defaultDay]: true });
+      const firstQuestion = practiceSchedule[defaultDay]?.[0];
+      if (firstQuestion) handleSelectQuestion(firstQuestion);
+    }
+  };
 
   const handleSelectQuestion = async (q) => {
     setSelectedQuestion(q);
@@ -725,7 +751,8 @@ function App() {
 
 
       setPracticeSchedule(data.schedule);
-      setSelectedPracticeDay(getDefaultPracticeDay(data.schedule));
+      const defaultDay = getDefaultPracticeDay(data.schedule);
+      setSelectedPracticeDay(defaultDay);
       setPracticeSessionName(sessionName);
       setPracticeSessionId(savedSession.session.id);
       setPracticeProgress(data.progress || {});
@@ -737,6 +764,11 @@ function App() {
       setDsaExpanded(false);
       setSdExpanded(false);
       setExpandedSessions({ [savedSession.session.id]: true });
+      if (defaultDay) {
+        setExpandedPracticeDays({ [defaultDay]: true });
+        const firstQuestion = data.schedule[defaultDay]?.[0];
+        if (firstQuestion) handleSelectQuestion(firstQuestion);
+      }
 
       setStatus({ text: 'Practice schedule ready!', type: 'success' });
 
@@ -774,7 +806,8 @@ function App() {
 
 
       setPracticeSchedule(session.schedule);
-      setSelectedPracticeDay(getDefaultPracticeDay(session.schedule));
+      const defaultDay = getDefaultPracticeDay(session.schedule);
+      setSelectedPracticeDay(defaultDay);
       setPracticeSessionName(session.sessionName);
       setPracticeSessionId(session.id);
       setPracticeProgress(session.progress || {});
@@ -788,6 +821,11 @@ function App() {
       setDsaExpanded(false);
       setSdExpanded(false);
       setExpandedSessions({ [session.id]: true });
+      if (defaultDay) {
+        setExpandedPracticeDays({ [defaultDay]: true });
+        const firstQuestion = session.schedule[defaultDay]?.[0];
+        if (firstQuestion) handleSelectQuestion(firstQuestion);
+      }
 
       setStatus({ text: 'Session loaded!', type: 'success' });
     } catch (error) {
@@ -1226,7 +1264,7 @@ return (
               <button onClick={() => { setCurrentView('settings'); setShowProfileMenu(false); }} className="dropdown-item">
                 <span className="item-icon">⚙️</span> Settings
               </button>
-              <button onClick={() => setShowProfileMenu(false)} className="dropdown-item">
+              <button onClick={() => { handleGoToDailySchedule(); setShowProfileMenu(false); }} className="dropdown-item">
                 <span className="item-icon">📈</span> Dashboard
               </button>
               <div className="dropdown-divider"></div>
@@ -1243,7 +1281,7 @@ return (
     {/* ─── SIDEBAR (always visible on desktop, toggleable on mobile) ────────────────────────────── */}
     {currentView === 'main' && (
       <aside className={`panel sidebar-panel ${isSidebarOpen ? 'open' : ''}`}>
-        <div className="logo sidebar-logo">
+        <div className="logo sidebar-logo" onClick={() => handleGoToDailySchedule()} style={{ cursor: 'pointer' }}>
           <span className="logo-mark">AG</span>
           Antigravity
           <span className="logo-sub">Interview</span>

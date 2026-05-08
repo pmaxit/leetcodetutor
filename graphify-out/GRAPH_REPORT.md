@@ -1,12 +1,12 @@
 # Graph Report - machine-learning  (2026-05-07)
 
 ## Corpus Check
-- 84 files · ~334,556 words
+- 55 files · ~314,047 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 253 nodes · 246 edges · 18 communities detected
-- Extraction: 96% EXTRACTED · 4% INFERRED · 0% AMBIGUOUS · INFERRED: 10 edges (avg confidence: 0.8)
+- 200 nodes · 220 edges · 18 communities detected
+- Extraction: 96% EXTRACTED · 4% INFERRED · 0% AMBIGUOUS · INFERRED: 8 edges (avg confidence: 0.8)
 - Token cost: 0 input · 0 output
 
 ## Community Hubs (Navigation)
@@ -48,15 +48,15 @@
 ## Communities
 
 ### Community 0 - "Community 0"
-Cohesion: 0.2
-Nodes (4): listModels(), testGemini(), enrich(), LLMService
+Cohesion: 0.28
+Nodes (2): enrich(), LLMService
 
 ### Community 1 - "Community 1"
 Cohesion: 0.2
 Nodes (8): InterviewerAgent, isSystemDesignQuestion(), loadPromptFile(), truncate(), parseMarkdownToStages(), seed(), extractSection(), getOriginalSolutionSectionsForQuestion()
 
 ### Community 2 - "Community 2"
-Cohesion: 0.18
+Cohesion: 0.17
 Nodes (2): buildSdContext(), parseStagesFromSolutionFormat()
 
 ### Community 3 - "Community 3"
@@ -120,7 +120,9 @@ Cohesion: 1.0
 Nodes (2): generateScaffold(), run()
 
 ## Knowledge Gaps
-- **Thin community `Community 2`** (12 nodes): `buildSdContext()`, `escapeHtml()`, `getSession()`, `getSystemDesignSolutionFiles()`, `isSystemDesignQuestion()`, `index.js`, `mapQuestion()`, `parseStagesFromSolutionFormat()`, `pickRandomQuestion()`, `sendEvent()`, `startServer()`, `toTitleCaseFromSlug()`
+- **Thin community `Community 0`** (16 nodes): `enrich()`, `enrich_boilerplates.js`, `LLMService.js`, `LLMService`, `.analyzeCode()`, `.analyzeGapAndSelectGuidance()`, `.analyzeWhiteboard()`, `.constructor()`, `.ensureSolutionExists()`, `.extractConstraints()`, `.fixJsonEscaping()`, `.generateChatResponse()`, `.generateContent()`, `.generateInitialProbe()`, `.generateReActResponse()`, `.loadSolutions()`
+  Too small to be a meaningful cluster - may be noise or needs more connections extracted.
+- **Thin community `Community 2`** (13 nodes): `buildSdContext()`, `escapeHtml()`, `getSession()`, `getSystemDesignSolutionFiles()`, `isSystemDesignQuestion()`, `index.js`, `mapQuestion()`, `parseStagesFromSolutionFormat()`, `pickRandomQuestion()`, `resolveSdMarkdownFile()`, `sendEvent()`, `startServer()`, `toTitleCaseFromSlug()`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
 - **Thin community `Community 3`** (11 nodes): `LogStreamer.js`, `LogStreamer`, `.addLog()`, `.broadcast()`, `.captureLog()`, `.constructor()`, `.detectLogLevel()`, `.getRecentLogs()`, `.start()`, `.stop()`, `.subscribe()`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
@@ -145,4 +147,4 @@ Nodes (2): generateScaffold(), run()
 _Questions this graph is uniquely positioned to answer:_
 
 - **Why does `enrichWithLLM()` connect `Community 4` to `Community 0`?**
-  _High betweenness centrality (0.011) - this node is a cross-community bridge._
+  _High betweenness centrality (0.016) - this node is a cross-community bridge._
