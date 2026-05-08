@@ -69,6 +69,7 @@ env_vars = {
     "LLM_MODEL": os.environ.get("LLM_MODEL", ""),
     "LLM_ENABLE_TOOLS": os.environ.get("LLM_ENABLE_TOOLS", "false"),
     "TAVILY_API_KEY": os.environ.get("TAVILY_API_KEY", ""),
+    "VITE_TLDRAW_LICENSE_KEY": os.environ.get("VITE_TLDRAW_LICENSE_KEY", ""),
     "DB_HOST": os.environ.get("DB_HOST", ""),
     "DB_USER": os.environ.get("DB_USER", ""),
     "DB_PASSWORD": os.environ.get("DB_PASSWORD", ""),
@@ -88,7 +89,7 @@ PYTHON_EOF
 echo -e "\n${BLUE}Step 4: Clearing existing secret references to avoid type mismatch...${NC}"
 # This resolves the "Cannot update environment variable to string literal" error
 # List of variables that might have been set as secrets in previous deployments
-VARS_TO_CLEAR="OPENROUTER_API_KEY,LLM_PROVIDER_STRATEGY,LLM_BASE_URL,LLM_API_KEY,LLM_MODEL,LLM_ENABLE_TOOLS,DB_HOST,DB_USER,DB_PASSWORD,DB_NAME,DB_DIALECT,TAVILY_API_KEY,GEMINI_API_KEY,OPENROUTER_FALLBACKS,LM_STUDIO_KEY"
+VARS_TO_CLEAR="OPENROUTER_API_KEY,LLM_PROVIDER_STRATEGY,LLM_BASE_URL,LLM_API_KEY,LLM_MODEL,LLM_ENABLE_TOOLS,DB_HOST,DB_USER,DB_PASSWORD,DB_NAME,DB_DIALECT,TAVILY_API_KEY,GEMINI_API_KEY,OPENROUTER_FALLBACKS,LM_STUDIO_KEY,VITE_TLDRAW_LICENSE_KEY"
 
 gcloud run services update $SERVICE_NAME \
     --region $REGION \

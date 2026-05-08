@@ -16,39 +16,58 @@ npm run build    # Build for production
 
 ## Production Deployment (Google Cloud)
 
-### Option 1: Google Cloud Secret Manager (Recommended)
+### Recommended: Using deploy_gcp.sh Script
 
-1. **Create the secret in Google Cloud Secret Manager:**
+The easiest way to deploy to Google Cloud is using the existing `deploy_gcp.sh` script, which now automatically handles the Tldraw license key:
+
+```bash
+npm run deploy:gcp
+```
+
+This script will:
+1. Enable necessary Google Cloud APIs
+2. Build and push your Docker image to Google Container Registry
+3. Deploy to Cloud Run with all environment variables from `.env.cloud-run`
+4. Include the `VITE_TLDRAW_LICENSE_KEY` automatically
+
+**No additional setup needed** — the license key is already configured in `.env.cloud-run` and will be picked up by the script.
+
+### Alternative: Manual Google Cloud Deployment
+
+If you prefer to deploy manually without the script:
+
+```bash
+# Set the license key as an environment variable
+export VITE_TLDRAW_LICENSE_KEY="tldraw-2026-08-15/WyJtY3ptSGdNXyIsWyIqIl0sMTYsIjIwMjYtMDgtMTUiXQ.rx1FVvQajYQUQfU8Dk/Ugef6kB9vBVI2z/HyKOwkDb/ZESWJOSvaUiGTl+l9SU/HpIGlv5Q/Uv8+2eeczy1L+w"
+
+# Deploy using gcloud
+gcloud run deploy ai-interview-platform \
+  --image gcr.io/YOUR_PROJECT_ID/ai-interview-platform \
+  --region us-central1 \
+  --set-env-vars VITE_TLDRAW_LICENSE_KEY=$VITE_TLDRAW_LICENSE_KEY
+```
+
+### Optional: Google Cloud Secret Manager (For Enhanced Security)
+
+For additional security in production, store the license key in Google Cloud Secret Manager:
+
+1. **Create the secret:**
    ```bash
-   gcloud secrets create tldraw-license-key \
-     --replication-policy="automatic" \
-     --data-file=- <<< "tldraw-2026-08-15/WyJtY3ptSGdNXyIsWyIqIl0sMTYsIjIwMjYtMDgtMTUiXQ.rx1FVvQajYQUQfU8Dk/Ugef6kB9vBVI2z/HyKOwkDb/ZESWJOSvaUiGTl+l9SU/HpIGlv5Q/Uv8+2eeczy1L+w"
+   echo -n "tldraw-2026-08-15/WyJtY3ptSGdNXyIsWyIqIl0sMTYsIjIwMjYtMDgtMTUiXQ.rx1FVvQajYQUQfU8Dk/Ugef6kB9vBVI2z/HyKOwkDb/ZESWJOSvaUiGTl+l9SU/HpIGlv5Q/Uv8+2eeczy1L+w" | gcloud secrets create tldraw-license-key --data-file=-
    ```
 
-2. **Grant Cloud Run access to the secret:**
+2. **Grant Cloud Run service account access:**
    ```bash
    gcloud secrets add-iam-policy-binding tldraw-license-key \
-     --member=serviceAccount:YOUR_CLOUD_RUN_SERVICE_ACCOUNT \
+     --member=serviceAccount:YOUR_CLOUD_RUN_SERVICE_ACCOUNT@appspot.gserviceaccount.com \
      --role=roles/secretmanager.secretAccessor
    ```
 
-3. **Update Cloud Run deployment to use the secret:**
+3. **Reference the secret in Cloud Run:**
    ```bash
-   gcloud run deploy YOUR_SERVICE_NAME \
-     --set-env-vars VITE_TLDRAW_LICENSE_KEY=tldraw-2026-08-15/WyJtY3ptSGdNXyIsWyIqIl0sMTYsIjIwMjYtMDgtMTUiXQ.rx1FVvQajYQUQfU8Dk/Ugef6kB9vBVI2z/HyKOwkDb/ZESWJOSvaUiGTl+l9SU/HpIGlv5Q/Uv8+2eeczy1L+w \
-     --region us-central1
+   gcloud run deploy ai-interview-platform \
+     --set-secrets VITE_TLDRAW_LICENSE_KEY=tldraw-license-key:latest
    ```
-
-### Option 2: Using `.env.cloud-run` (Already Configured)
-
-The license key is already set in `.env.cloud-run` for Cloud Run deployments. When deploying:
-
-```bash
-gcloud run deploy YOUR_SERVICE_NAME \
-  --source . \
-  --region us-central1 \
-  --set-env-vars-file .env.cloud-run
-```
 
 ## Deployment Checklist
 
