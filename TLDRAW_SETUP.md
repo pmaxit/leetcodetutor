@@ -45,19 +45,39 @@ VITE_TLDRAW_LICENSE_KEY=tldraw-2026-08-15/WyJtY3ptSGdNXyIsWyIqIl0sMTYsIjIwMjYtMD
 
 ### Recommended: Using deploy_gcp.sh Script
 
-The easiest way to deploy to Google Cloud is using the existing `deploy_gcp.sh` script, which now automatically handles the Tldraw license key:
+The easiest way to deploy to Google Cloud is using the existing `deploy_gcp.sh` script:
 
 ```bash
 npm run deploy:gcp
 ```
 
-This script will:
-1. Enable necessary Google Cloud APIs
-2. Build and push your Docker image to Google Container Registry
-3. Deploy to Cloud Run with all environment variables from `.env.cloud-run`
-4. Include the `VITE_TLDRAW_LICENSE_KEY` automatically
+**IMPORTANT:** The script requires `.env` to be present with `VITE_TLDRAW_LICENSE_KEY` defined.
 
-**No additional setup needed** — the license key is already configured in `.env.cloud-run` and will be picked up by the script.
+This script will:
+1. Load environment variables from `.env` (including `VITE_TLDRAW_LICENSE_KEY`)
+2. Enable necessary Google Cloud APIs
+3. Build Docker image with the license key passed as a **build argument** (this embeds it in the frontend bundle)
+4. Push the image to Google Container Registry
+5. Deploy to Cloud Run with environment variables from `.env.cloud-run`
+
+**Why the license key must be a build arg:**
+- Vite needs the `VITE_*` prefixed variables at **build time** to embed them in the JavaScript bundle
+- At runtime, Vite checks `import.meta.env.VITE_TLDRAW_LICENSE_KEY` which must be available in the built code
+- Just setting environment variables won't work — they're only available to the Node server, not the frontend
+
+### Alternative: Using Cloud Build Configuration
+
+For CI/CD integration or more control, use the `cloudbuild.yaml` configuration:
+
+```bash
+gcloud builds submit --config=cloudbuild.yaml \
+  --substitutions=_VITE_TLDRAW_LICENSE_KEY="$(grep VITE_TLDRAW_LICENSE_KEY .env | cut -d= -f2)"
+```
+
+This is useful for:
+- GitHub Actions or GitLab CI integration
+- Cloud Source Repository triggers
+- Setting secrets securely via Cloud Console
 
 ### Alternative: Manual Google Cloud Deployment
 
