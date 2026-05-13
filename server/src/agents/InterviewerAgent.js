@@ -41,22 +41,47 @@ class InterviewerAgent {
       throw new Error(`Streaming client not configured for provider: ${provider}`);
     }
 
+    // Set hard limits to prevent infinite generation
+    const MAX_RESPONSE_LENGTH = 1024; // ~150-200 words max for interview responses
+    const MAX_TOKENS = 1024; // Hard limit on tokens (more reasonable than 4096)
+    const TIMEOUT_MS = 15000; // 15 second timeout
+    
     const stream = await client.chat.completions.create({
       model: modelId,
       messages,
-      max_tokens: 4096,
+      max_tokens: MAX_TOKENS, // Hard limit on token generation
       temperature: 0,
       stream: true,
     });
 
     let fullText = '';
+    const startTime = Date.now();
+    
     for await (const chunk of stream) {
       const delta = chunk?.choices?.[0]?.delta?.content || '';
       if (!delta) continue;
+      
       fullText += delta;
       onToken(delta);
+      
+      // HARD LIMITS TO PREVENT INFINITE GENERATION
+      if (fullText.length >= MAX_RESPONSE_LENGTH) {
+        console.warn(`Reached hard response length limit: ${fullText.length} chars`);
+        break;
+      }
+      
+      if (Date.now() - startTime > TIMEOUT_MS) {
+        console.warn(`Reached timeout limit: ${Date.now() - startTime}ms`);
+        break;
+      }
     }
 
+    // Final safety check
+    if (fullText.length > MAX_RESPONSE_LENGTH) {
+      fullText = fullText.substring(0, MAX_RESPONSE_LENGTH).trim();
+      console.warn(`Truncated response due to length limit: ${fullText.length} chars`);
+    }
+    
     return fullText.trim();
   }
 
@@ -176,6 +201,11 @@ ${basePrompt}
 Problem: ${question?.title || 'Unknown'}
 Difficulty: ${question?.difficulty || 'Unknown'}
 
+Problem Statement:
+"""
+${truncate(question?.description || question?.statement || 'Not provided.', 3000)}
+"""
+
 Interview Stages:
 ${stageList}
 
@@ -208,27 +238,58 @@ Operational rules:
 
         userContext = `Candidate's Input: "${userInput.replace(/"/g, '\\"').replace(/\n/g, '\\n')}"`;
       } else {
+        // Build rich hint context for DSA mode
+        const hintProgressLabel = hints.length > 0
+          ? `Hint ${currentHintIndex + 1} of ${hints.length}`
+          : 'No hints available';
+
+        const previousHints = hints.slice(0, currentHintIndex).map((h, i) => `  ${i + 1}. "${h}" (ALREADY SHOWN — do not repeat)`).join('\n');
+
+        const solutionPolicy = askingSolution
+          ? (hintsExhausted
+            ? 'User asked for the solution and all hints are exhausted. Provide the FULL solution code with a brief explanation.'
+            : `User asked for the solution but ${hints.length - currentHintIndex} hint(s) remain. Say: "You still have hints remaining. Want the next nudge, or the full solution?"`)
+          : (hintsExhausted
+            ? 'All hints exhausted. If their code looks correct, tell them to run the tests. If not, point out the specific bug.'
+            : 'Hints remain. Use the current hint to craft a Socratic nudge. NEVER quote the hint verbatim.');
+
         systemPrompt = `
 ${basePrompt}
 
 ----------------------------------
-📌 CURRENT CONTEXT
+📌 PROBLEM CONTEXT
 ----------------------------------
 Problem: ${question?.title || 'Unknown'}
+Pattern: ${question?.pattern || question?.category || 'Unknown'}
+Difficulty: ${question?.difficulty || 'Unknown'}
 
-PEDAGOGICAL RULES (STRICT):
-1. CURRENT HINT (index ${currentHintIndex}): ${currentHint ? `Use this hint for your nudge: "${currentHint.replace(/"/g, '\\"')}"` : "'No more hints. If they are finished, tell them to run the tests.'"}
-2. If user asks for solution AND hints are exhausted: Provide the code. Otherwise, decline politely and give a nudge.
-3. NO REDUNDANCY: Do not repeat what the user said or what you've already said.
+Problem Statement:
+"""
+${truncate(question?.description || question?.statement || 'Not provided.', 3000)}
+"""
+
+----------------------------------
+📊 HINT STATE (${hintProgressLabel})
+----------------------------------
+${previousHints ? `Previously shown hints (DO NOT repeat these):\n${previousHints}\n` : ''}Current Hint: ${currentHint ? `"${currentHint.replace(/"/g, '\\"')}"` : 'None remaining.'}
+Hints Exhausted: ${hintsExhausted}
+
+SOLUTION POLICY: ${solutionPolicy}
+
+HOW TO USE THE CURRENT HINT:
+- The hint tells you WHAT the student needs to discover. Your job is to make them discover it themselves.
+- Find the GAP between their code and the hint's insight.
+- Craft ONE question targeting that exact gap, grounded in their actual code or a concrete example.
+- NEVER quote the hint text directly. Rephrase it as a Socratic question about their specific code.
 `;
 
         userContext = `
-CURRENT CODE (from candidate's editor):
+CANDIDATE'S CODE (from their editor — analyze this BEFORE responding):
 <user_code>
 ${codeBuffer || '# No code yet'}
 </user_code>
 
-Candidate's Input: "${userInput.replace(/"/g, '\\"').replace(/\n/g, '\\n')}"
+Candidate says: "${userInput.replace(/"/g, '\\"').replace(/\n/g, '\\n')}"
 `;
       }
 
@@ -344,12 +405,65 @@ Candidate's Input: "${userInput.replace(/"/g, '\\"').replace(/\n/g, '\\n')}"
     const hints = question?.hints || [];
 
     if (hints.length > 0) {
-      return {
-        text: `### Initial Guidance\n\n${hints[0]}`,
-        nextHintIndex: 1
-      };
+      // Generate a proper initial question using the agent system, rather than directly showing the hint
+      // This ensures consistency with the Socratic questioning approach
+      const systemPrompt = `
+You are an expert DSA interview coach. Your goal is to provide an initial question that helps the candidate begin solving the problem.
+
+Follow these rules:
+1. DO NOT directly show the first hint
+2. DO NOT provide solutions or code
+3. DO NOT ask "What do you think?" or generic questions
+4. ASK A SPECIFIC, GROUNDED QUESTION RELATED TO THE PROBLEM
+5. Use the problem pattern to guide your question
+
+Problem: ${question?.title || 'Unknown'}
+Pattern: ${question?.pattern || question?.category || 'Unknown'}
+
+Problem Statement:
+"""
+${truncate(question?.description || question?.statement || 'Not provided.', 3000)}
+"""
+
+Hints available: ${hints.length}
+First hint: "${hints[0]}"
+
+Your response should be a single, focused question that helps the candidate approach the problem for the first time.
+
+Format your response as:
+### Initial Guidance
+
+[Your specific, Socratic question here]
+      `.trim();
+
+      const messages = [
+        {
+          role: "system",
+          content: systemPrompt
+        },
+        {
+          role: "user",
+          content: "Please provide the first question that would help someone approach this problem for the first time, following best practices for Socratic questioning."
+        }
+      ];
+
+      try {
+        const probeText = await this.streamCompletion(messages, LLMService.modelSequence[0].id, LLMService.modelSequence[0].provider);
+        return {
+          text: probeText.trim(),
+          nextHintIndex: 1 // Start with hint 1 after initial probe
+        };
+      } catch (error) {
+        // Fallback to just showing the first hint if generation fails
+        console.warn(`Failed to generate initial probe for ${question?.title}, falling back to hint:`, error.message);
+        return {
+          text: `### Initial Guidance\n\n${hints[0]}`,
+          nextHintIndex: 1
+        };
+      }
     }
 
+    // For problems without hints, fall back to the LLMService approach
     const probeText = await LLMService.generateInitialProbe(question);
     return {
       text: probeText,
