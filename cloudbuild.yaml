@@ -55,7 +55,7 @@ substitutions:
   _VITE_TLDRAW_LICENSE_KEY: ''
   _OPENROUTER_API_KEY: ''
   _OPENROUTER_URL: 'https://openrouter.ai/api/v1'
-  _OPENROUTER_FALLBACKS: 'nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free,qwen/qwen3.6-flash,meta-llama/llama-3.3-70b-instruct'
+  _OPENROUTER_FALLBACKS: 'google/gemma-3-4b-it'
   _LLM_PROVIDER_STRATEGY: 'openrouter-only'
   _DB_HOST: ''
   _DB_USER: ''
