@@ -18,7 +18,7 @@ class LLMService {
     const llmProviderStrategy = (process.env.APP_LLM_PROVIDER_STRATEGY || process.env.LLM_PROVIDER_STRATEGY || (isProd ? "openrouter-only" : "local-first")).toLowerCase();
 
     // ─── Models (Primary + Fallbacks, in order, with provider) ────────────
-    const defaultFallbacks = "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free,qwen/qwen3.6-flash,meta-llama/llama-3.3-70b-instruct";
+    const defaultFallbacks = "google/gemma-3-4b-it";
     const fallbacks = (process.env.APP_OPENROUTER_FALLBACKS || process.env.OPENROUTER_FALLBACKS || defaultFallbacks)
       .split(/[,;]/)
       .map(id => id.trim())

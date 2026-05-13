@@ -119,7 +119,7 @@ function App() {
   const [sdExpanded, setSdExpanded] = useState(false);
   const [status, setStatus] = useState({ text: 'Ready', type: 'info' });
   const [llmHealth, setLlmHealth] = useState({ status: 'unknown', message: 'Checking...' });
-  const [activeModel, setActiveModel] = useState('Gemma 4 (Primary)');
+  const [activeModel, setActiveModel] = useState('Gemma 3 4B');
 
   // ─── Practice State ──────────────────────────────────────────────────────────
   const [practiceConfig, setPracticeConfig] = useState({ newPerDay: 2, pastPerDay: 3 });
