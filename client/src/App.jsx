@@ -1651,15 +1651,29 @@ return (
                     components={{
                       code({ node, inline, className, children, ...props }) {
                         const match = /language-(\w+)/.exec(className || '');
+                        const codeString = String(children).replace(/\n$/, '');
+                        const [copied, setCopied] = useState(false);
+
+                        const handleCopy = () => {
+                          navigator.clipboard.writeText(codeString);
+                          setCopied(true);
+                          setTimeout(() => setCopied(false), 2000);
+                        };
+
                         return !inline && match ? (
-                          <SyntaxHighlighter
-                            style={vscDarkPlus}
-                            language={match[1]}
-                            PreTag="div"
-                            {...props}
-                          >
-                            {String(children).replace(/\n$/, '')}
-                          </SyntaxHighlighter>
+                          <div className="code-block-wrapper">
+                            <button className="copy-code-btn" onClick={handleCopy}>
+                              {copied ? '✓ Copied' : '📋 Copy'}
+                            </button>
+                            <SyntaxHighlighter
+                              style={vscDarkPlus}
+                              language={match[1]}
+                              PreTag="div"
+                              {...props}
+                            >
+                              {codeString}
+                            </SyntaxHighlighter>
+                          </div>
                         ) : (
                           <code className={className} {...props}>
                             {children}
