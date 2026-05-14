@@ -18,7 +18,7 @@ class LLMService {
     const llmProviderStrategy = (process.env.APP_LLM_PROVIDER_STRATEGY || process.env.LLM_PROVIDER_STRATEGY || (isProd ? "openrouter-only" : "local-first")).toLowerCase();
 
     // ─── Models (Primary + Fallbacks, in order, with provider) ────────────
-    const defaultFallbacks = "google/gemma-3-4b-it";
+    const defaultFallbacks = "google/gemini-3.1-flash-lite";
     const fallbacks = (process.env.APP_OPENROUTER_FALLBACKS || process.env.OPENROUTER_FALLBACKS || defaultFallbacks)
       .split(/[,;]/)
       .map(id => id.trim())
@@ -55,10 +55,18 @@ class LLMService {
     console.log("\n" + "=".repeat(60));
     console.log("🤖 LLMService Initialization");
     console.log("=".repeat(60));
-    const primaryProvider = MODELS[0]?.provider === "local" ? "LM Studio" : "OpenRouter";
-    console.log(`🧭 Provider strategy: ${llmProviderStrategy}`);
-    console.log(`🎯 Primary Model: ${this.model} (${primaryProvider})`);
-    console.log(`📋 Fallback Models: ${MODELS.slice(1).map(m => m.id).join(", ") || "None"}`);
+    if (MODELS.length === 0) {
+      console.error('⚠️ NO LLM MODELS CONFIGURED!');
+      console.error('   Set OPENROUTER_API_KEY + OPENROUTER_URL (and/or LM_STUDIO_URL + LM_STUDIO_KEY) in .env');
+      console.error('   Current strategy:', llmProviderStrategy);
+      console.error('   Local client configured:', !!this.clients.local);
+      console.error('   Remote client configured:', !!this.clients.remote);
+    } else {
+      const primaryProvider = MODELS[0]?.provider === "local" ? "LM Studio" : "OpenRouter";
+      console.log(`🧭 Provider strategy: ${llmProviderStrategy}`);
+      console.log(`🎯 Primary Model: ${this.model} (${primaryProvider})`);
+      console.log(`📋 Fallback Models: ${MODELS.slice(1).map(m => m.id).join(", ") || "None"}`);
+    }
     console.log("=".repeat(60) + "\n");
 
     this.dpSolutionsPath = path.join(__dirname, '../solutions/dp_solutions.json');
@@ -86,6 +94,73 @@ class LLMService {
       const escaped = value.replace(/(?<!\\)"/g, '\\"');
       return `"${key}": "${escaped}"`;
     });
+  }
+
+  extractJson(text, type = 'auto') {
+    try {
+      const parsed = JSON.parse(text);
+      if (type === 'auto') return parsed;
+      if (type === 'array' && Array.isArray(parsed)) return parsed;
+      if (type === 'object' && typeof parsed === 'object' && parsed !== null && !Array.isArray(parsed)) return parsed;
+    } catch (e) {
+    }
+
+    const extract = (open, close) => {
+      const start = text.indexOf(open);
+      if (start === -1) return null;
+
+      let depth = 0;
+      let inString = false;
+      let escape = false;
+
+      for (let i = start; i < text.length; i++) {
+        const char = text[i];
+
+        if (escape) {
+          escape = false;
+          continue;
+        }
+
+        if (char === '\\') {
+          escape = true;
+          continue;
+        }
+
+        if (char === '"') {
+          inString = !inString;
+          continue;
+        }
+
+        if (!inString) {
+          if (char === open) depth++;
+          else if (char === close) depth--;
+
+          if (depth === 0) {
+            return text.substring(start, i + 1);
+          }
+        }
+      }
+
+      return null;
+    };
+
+    let jsonStr = null;
+    if (type === 'array' || type === 'auto') {
+      jsonStr = extract('[', ']');
+    }
+    if (!jsonStr && (type === 'object' || type === 'auto')) {
+      jsonStr = extract('{', '}');
+    }
+
+    if (jsonStr) {
+      try {
+        return JSON.parse(jsonStr);
+      } catch (e) {
+        return null;
+      }
+    }
+
+    return null;
   }
 
   async generateContent(messagesOrPrompt, onStatus = null) {
@@ -118,12 +193,15 @@ class LLMService {
 
       try {
         console.log(`📤 Sending request to ${provider === 'local' ? 'LM Studio' : 'OpenRouter'} using ${modelId}...`);
-        const response = await client.chat.completions.create({
-          model: modelId,
-          messages: messages,
-          max_tokens: 4096,
-          temperature: 0,
-        });
+        const response = await this.withRetryOn429(
+          () => client.chat.completions.create({
+            model: modelId,
+            messages: messages,
+            max_tokens: 4096,
+            temperature: 0,
+          }),
+          modelId
+        );
 
         console.log(`✅ Response received successfully from ${modelId}!`);
         console.log(`📊 Response status: ${response.id ? 'Valid' : 'Invalid'}`);
@@ -235,17 +313,12 @@ class LLMService {
       const text = await this.generateContent(prompt);
       const cleanedText = text.replace(/```json|```/g, '').trim();
 
-      // Extract JSON array from text
-      const jsonMatch = cleanedText.match(/\[[\s\S]*\]/);
-      const jsonStr = jsonMatch ? jsonMatch[0] : cleanedText;
-
-      try {
-        const fixedText = this.fixJsonEscaping(jsonStr);
-        return JSON.parse(fixedText);
-      } catch (parseError) {
-        console.error("Failed to parse code analysis JSON. Raw text:", jsonStr);
-        return [{ type: 'error', message: `Err: Parse failed` }];
+      const parsed = this.extractJson(cleanedText, 'array');
+      if (parsed) {
+        return parsed;
       }
+      console.error("Failed to parse code analysis JSON. Raw text:", cleanedText);
+      return [{ type: 'error', message: `Err: Parse failed` }];
     } catch (error) {
       return [{ type: 'error', message: `Err: ${error.message}` }];
     }
@@ -279,17 +352,12 @@ class LLMService {
       const text = await this.generateContent(prompt);
       const cleanedText = text.replace(/```json|```/g, '').trim();
 
-      // Extract JSON array from text
-      const jsonMatch = cleanedText.match(/\[[\s\S]*\]/);
-      const jsonStr = jsonMatch ? jsonMatch[0] : cleanedText;
-
-      try {
-        const fixedText = this.fixJsonEscaping(jsonStr);
-        return JSON.parse(fixedText);
-      } catch (parseError) {
-        console.error("Failed to parse whiteboard analysis JSON. Raw text:", jsonStr);
-        return [{ type: 'error', message: `Err: Parse failed` }];
+      const parsed = this.extractJson(cleanedText, 'array');
+      if (parsed) {
+        return parsed;
       }
+      console.error("Failed to parse whiteboard analysis JSON. Raw text:", cleanedText);
+      return [{ type: 'error', message: `Err: Parse failed` }];
     } catch (error) {
       return [{ type: 'error', message: `Design Error: ${error.message}` }];
     }
@@ -389,17 +457,12 @@ class LLMService {
       const text = await this.generateContent(prompt);
       const cleanedText = text.replace(/```json|```/g, '').trim();
 
-      // Extract JSON array from text (find [ and ])
-      const jsonMatch = cleanedText.match(/\[[\s\S]*\]/);
-      const jsonStr = jsonMatch ? jsonMatch[0] : cleanedText;
-
-      try {
-        const fixedText = this.fixJsonEscaping(jsonStr);
-        return JSON.parse(fixedText);
-      } catch (parseError) {
-        console.error("Failed to parse constraints JSON. Raw text:", jsonStr);
-        return [];
+      const parsed = this.extractJson(cleanedText, 'array');
+      if (parsed) {
+        return parsed;
       }
+      console.error("Failed to parse constraints JSON. Raw text:", cleanedText);
+      return [];
     } catch (error) {
       return [];
     }
@@ -524,12 +587,16 @@ class LLMService {
       const text = await this.generateContent(prompt);
       const cleanedText = text.replace(/```json|```/g, '').trim();
 
-      // Extract JSON object from text (find { and })
-      const jsonMatch = cleanedText.match(/\{[\s\S]*\}/);
-      const jsonStr = jsonMatch ? jsonMatch[0] : cleanedText;
-
-      const fixedText = this.fixJsonEscaping(jsonStr);
-      return JSON.parse(fixedText);
+      const parsed = this.extractJson(cleanedText, 'object');
+      if (parsed) {
+        return parsed;
+      }
+      console.error("Failed to parse gap analysis JSON. Raw text:", cleanedText);
+      return {
+        guidance: "Think about the core transition or base case here. How should we proceed?",
+        logicGap: "General stuck state.",
+        relevantHintIndex: null
+      };
     } catch (error) {
       console.error("Gap Analysis Error:", error);
       return {
@@ -538,6 +605,30 @@ class LLMService {
         relevantHintIndex: null
       };
     }
+  }
+
+  async withRetryOn429(fn, context = '') {
+    const maxRetries = 3;
+    const baseDelay = 1000;
+    const maxDelay = 30000;
+
+    let lastError;
+    for (let attempt = 0; attempt <= maxRetries; attempt++) {
+      try {
+        return await fn();
+      } catch (error) {
+        lastError = error;
+        if (error.status !== 429 || attempt >= maxRetries) {
+          throw error;
+        }
+        const delay = Math.min(baseDelay * Math.pow(2, attempt), maxDelay);
+        const jitter = delay * (0.5 + Math.random() * 0.5);
+        const label = context ? ` for ${context}` : '';
+        console.warn(`⏳ Rate limited (429${label}) on attempt ${attempt + 1}/${maxRetries + 1}. Retrying in ${Math.round(jitter)}ms...`);
+        await new Promise(resolve => setTimeout(resolve, jitter));
+      }
+    }
+    throw lastError;
   }
 }
 

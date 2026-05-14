@@ -46,13 +46,16 @@ class InterviewerAgent {
     const MAX_TOKENS = 1024; // Hard limit on tokens (more reasonable than 4096)
     const TIMEOUT_MS = 15000; // 15 second timeout
     
-    const stream = await client.chat.completions.create({
-      model: modelId,
-      messages,
-      max_tokens: MAX_TOKENS, // Hard limit on token generation
-      temperature: 0,
-      stream: true,
-    });
+    const stream = await LLMService.withRetryOn429(
+      () => client.chat.completions.create({
+        model: modelId,
+        messages,
+        max_tokens: MAX_TOKENS, // Hard limit on token generation
+        temperature: 0,
+        stream: true,
+      }),
+      modelId
+    );
 
     let fullText = '';
     const startTime = Date.now();
@@ -246,7 +249,7 @@ Operational rules:
         const previousHints = hints.slice(0, currentHintIndex).map((h, i) => `  ${i + 1}. "${h}" (ALREADY SHOWN — do not repeat)`).join('\n');
 
         const solutionPolicy = askingSolution
-          ? 'The user has asked for the solution. Provide the complete implementation wrapped in a brief, friendly message (e.g., "Here is one clean way to approach this...").'
+          ? 'OVERRIDE ACTIVE: The user explicitly asked for the solution. Exit Socratic mode. Provide: 1) Brief intuition (one sentence), 2) Full working implementation (complete, runnable code), 3) Time + space complexity analysis.'
           : (hintsExhausted
             ? 'All hints exhausted. If their code looks correct, tell them to run the tests. If not, point out the specific bug.'
             : 'Hints remain. Use the current hint to craft a Socratic nudge. NEVER quote the hint verbatim.');
@@ -446,7 +449,11 @@ Format your response as:
       ];
 
       try {
-        const probeText = await this.streamCompletion(messages, LLMService.modelSequence[0].id, LLMService.modelSequence[0].provider);
+        if (!LLMService.modelSequence?.length) {
+          throw new Error('No LLM models are configured. Check OPENROUTER_API_KEY or LM_STUDIO_URL environment variables.');
+        }
+        const { id: modelId, provider } = LLMService.modelSequence[0];
+        const probeText = await this.streamCompletion(messages, modelId, provider);
         return {
           text: probeText.trim(),
           nextHintIndex: 1 // Start with hint 1 after initial probe

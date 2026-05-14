@@ -1292,7 +1292,13 @@ app.get('*', (req, res) => {
 
 // Health check endpoint for Cloud Run
 app.get('/health', (req, res) => {
-  res.status(200).json({ status: 'ok', timestamp: new Date().toISOString() });
+  if (!dbReady && !dbError) {
+    res.status(200).json({ status: 'starting', dbConnected: false, timestamp: new Date().toISOString() });
+  } else if (dbError) {
+    res.status(200).json({ status: 'degraded', dbConnected: false, dbError, timestamp: new Date().toISOString() });
+  } else {
+    res.status(200).json({ status: 'ok', dbConnected: true, timestamp: new Date().toISOString() });
+  }
 });
 
 // Start log streamer
@@ -1301,16 +1307,68 @@ LogStreamer.start();
 const PORT = process.env.PORT || 3005;
 const HOST = '0.0.0.0';
 
-// Initialize database and start server
-const startServer = async () => {
+// ── Readiness state ─────────────────────────────────────────────────────
+let dbReady = false;
+let dbError = null;
+
+// ── Graceful shutdown ───────────────────────────────────────────────────
+let server = null;
+
+const shutdown = (signal) => {
+  console.log(`\n🛑 Received ${signal}, shutting down gracefully...`);
+  if (server) {
+    server.close(() => {
+      console.log('✅ HTTP server closed');
+      process.exit(0);
+    });
+    // Force exit after 10s if graceful shutdown hangs
+    setTimeout(() => {
+      console.error('⚠️  Graceful shutdown timed out, forcing exit');
+      process.exit(1);
+    }, 10000);
+  } else {
+    process.exit(0);
+  }
+};
+
+process.on('SIGTERM', () => shutdown('SIGTERM'));
+process.on('SIGINT', () => shutdown('SIGINT'));
+
+// ── Database retry helper ───────────────────────────────────────────────
+const connectDb = async (sequelize, maxRetries = 5) => {
+  let lastError = null;
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      console.log(`🔌 DB connection attempt ${attempt}/${maxRetries}...`);
+      await sequelize.authenticate();
+      console.log('✅ Database connected successfully');
+      return true;
+    } catch (err) {
+      lastError = err;
+      const delay = Math.min(2000 * attempt, 10000); // 2s, 4s, 6s, 8s, 10s
+      console.warn(`⚠️  DB connection attempt ${attempt} failed: ${err.message}`);
+      if (attempt < maxRetries) {
+        console.log(`⏳ Retrying in ${delay / 1000}s...`);
+        await new Promise((r) => setTimeout(r, delay));
+      }
+    }
+  }
+  console.error('❌ All DB connection attempts exhausted');
+  dbError = lastError?.message || 'Unknown database error';
+  return false;
+};
+
+// ── Initialize database (background, after server is listening) ─────────
+const initDatabase = async () => {
   try {
-    // Import database after requiring models
     const sequelize = require('./src/models/db');
 
-    // Test database connection
-    console.log('Testing database connection...');
-    await sequelize.authenticate();
-    console.log('✅ Database connected successfully');
+    // Retry DB connection with backoff
+    const connected = await connectDb(sequelize);
+    if (!connected) {
+      console.error('⚠️  Server running but database is NOT connected. Health check will report degraded status.');
+      return;
+    }
 
     // Sync all models
     console.log('Syncing database models...');
@@ -1320,7 +1378,6 @@ const startServer = async () => {
     } catch (syncError) {
       console.warn('⚠️  Schema sync warning:', syncError.message);
       console.log('✅ Continuing with existing schema...');
-      // Don't fail startup on schema issues - use what's there
     }
 
     // Seed test user
@@ -1330,22 +1387,26 @@ const startServer = async () => {
         where: { email: 'test@mailnator.io' },
         defaults: { passwordHash: hashed }
       });
-      console.log(`✅ Test user seeded/ready`);
+      console.log('✅ Test user seeded/ready');
     } catch (err) {
       console.error('Error seeding test user:', err);
     }
 
-    // Start listening
-    app.listen(PORT, HOST, () => {
-      console.log(`Server running on http://${HOST}:${PORT}`);
-      console.log(`📊 Log streaming available at /api/logs/stream`);
-      console.log(`🏥 Health check available at /health`);
-    });
+    dbReady = true;
+    console.log('✅ Database initialization complete');
   } catch (error) {
-    console.error('❌ Failed to start server:', error);
-    process.exit(1);
+    console.error('❌ Database initialization error:', error);
+    dbError = error.message || 'Database init failed';
   }
 };
 
-startServer();
+// ── Start server immediately (before DB) ────────────────────────────────
+server = app.listen(PORT, HOST, () => {
+  console.log(`🚀 Server running on http://${HOST}:${PORT}`);
+  console.log(`📊 Log streaming available at /api/logs/stream`);
+  console.log(`🏥 Health check available at /health`);
+
+  // Connect to database in background after server is already listening
+  initDatabase();
+});
 
