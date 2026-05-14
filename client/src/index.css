@@ -4616,3 +4616,15 @@ input {
     min-width: 40px;
   }
 }
+
+/* ─── Copy Button for Code Blocks ───────────────────────────────────────────── */
+.code-block-wrapper { position: relative; }
+.copy-code-btn {
+  position: absolute; top: 6px; right: 6px;
+  background: rgba(255,255,255,0.1); color: #c9d1d9;
+  border: 1px solid rgba(255,255,255,0.15); border-radius: 4px;
+  padding: 2px 8px; font-size: 11px; cursor: pointer;
+  opacity: 0; transition: opacity 0.2s;
+}
+.code-block-wrapper:hover .copy-code-btn { opacity: 1; }
+.copy-code-btn:hover { background: rgba(255,255,255,0.2); }
