@@ -95,7 +95,7 @@ class InterviewerAgent {
     const currentHintIndex = state.state?.currentHintIndex || 0;
     const sdContext = state.state?.sdContext || null;
 
-    const askingSolution = /show.*solution|give.*solution|write.*solution|full.*solution|complete.*solution|just.*solution|solution please|the answer|i give up|@showsolution/i.test(userInput);
+    const askingSolution = /\b(?:show|give|write|send|share|tell|walk).{0,15}(?:solution|answer|code|implementation)\b|\b(?:full|complete|entire|whole|final).{0,10}(?:solution|answer|code)\b|\b(?:what is|how (?:do|would|should|can) (?:you|i)).{0,20}(?:solution|answer|code|implement)\b|\bi give up\b|@showsolution/i.test(userInput);
     const hintsExhausted = currentHintIndex >= hints.length;
     const currentHint = !hintsExhausted ? hints[currentHintIndex] : null;
 
@@ -246,9 +246,7 @@ Operational rules:
         const previousHints = hints.slice(0, currentHintIndex).map((h, i) => `  ${i + 1}. "${h}" (ALREADY SHOWN — do not repeat)`).join('\n');
 
         const solutionPolicy = askingSolution
-          ? (hintsExhausted
-            ? 'User asked for the solution and all hints are exhausted. Provide the FULL solution code with a brief explanation.'
-            : `User asked for the solution but ${hints.length - currentHintIndex} hint(s) remain. Say: "You still have hints remaining. Want the next nudge, or the full solution?"`)
+          ? 'The user has asked for the solution. Provide the complete implementation wrapped in a brief, friendly message (e.g., "Here is one clean way to approach this...").'
           : (hintsExhausted
             ? 'All hints exhausted. If their code looks correct, tell them to run the tests. If not, point out the specific bug.'
             : 'Hints remain. Use the current hint to craft a Socratic nudge. NEVER quote the hint verbatim.');
