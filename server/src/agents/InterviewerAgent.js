@@ -42,9 +42,9 @@ class InterviewerAgent {
     }
 
     // Set hard limits to prevent infinite generation
-    const MAX_RESPONSE_LENGTH = 1024; // ~150-200 words max for interview responses
-    const MAX_TOKENS = 1024; // Hard limit on tokens (more reasonable than 4096)
-    const TIMEOUT_MS = 15000; // 15 second timeout
+    const MAX_RESPONSE_LENGTH = 16384;
+    const MAX_TOKENS = 8192;
+    const TIMEOUT_MS = 90000;
     
     const stream = await LLMService.withRetryOn429(
       () => client.chat.completions.create({
