@@ -95,7 +95,7 @@ class InterviewerAgent {
     const currentHintIndex = state.state?.currentHintIndex || 0;
     const sdContext = state.state?.sdContext || null;
 
-    const askingSolution = /show.*solution|give.*code|i give up|@showsolution/i.test(userInput);
+    const askingSolution = /show.*solution|give.*solution|write.*solution|full.*solution|complete.*solution|just.*solution|solution please|the answer|i give up|@showsolution/i.test(userInput);
     const hintsExhausted = currentHintIndex >= hints.length;
     const currentHint = !hintsExhausted ? hints[currentHintIndex] : null;
 
