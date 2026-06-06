@@ -14,6 +14,8 @@ const { User } = require('./src/models/User');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const { authenticateToken, JWT_SECRET } = require('./src/middleware/auth');
+const SchedulerService = require('./src/services/SchedulerService');
+const DigestService = require('./src/services/DigestService');
 
 const path = require('path');
 const fs = require('fs');
@@ -182,6 +184,50 @@ app.get('/api/health', async (req, res) => {
       timestamp: new Date().toISOString(),
       hint: 'Check OPENROUTER_API_KEY or APP_OPENROUTER_API_KEY in .env and your internet connection'
     });
+  }
+});
+
+app.post('/api/cron/trigger-daily-digest', async (req, res) => {
+  console.log('✉️ Manual daily digest trigger endpoint called');
+  const cronSecret = process.env.CRON_SECRET || process.env.APP_CRON_SECRET;
+  const providedKey = req.query.key || req.headers['x-cron-key'];
+  
+  let authorized = false;
+  if (cronSecret && providedKey === cronSecret) {
+    authorized = true;
+  } else {
+    const authHeader = req.headers['authorization'];
+    const token = authHeader && authHeader.split(' ')[1];
+    if (token) {
+      try {
+        const decoded = jwt.verify(token, JWT_SECRET);
+        req.user = decoded;
+        authorized = true;
+      } catch (err) {
+        // invalid token
+      }
+    }
+  }
+
+  if (!authorized) {
+    return res.status(401).json({ error: 'Unauthorized. Provide valid credentials or key.' });
+  }
+
+  try {
+    const day = req.query.day ? String(req.query.day) : undefined;
+    const session = req.query.session ? String(req.query.session) : undefined;
+    const email = req.query.email || 'puneetgirdhar.in@gmail.com';
+
+    const result = await DigestService.sendDailyDigest({
+      day,
+      session,
+      email
+    });
+
+    res.json({ success: true, message: 'Daily digest processed successfully.', details: result });
+  } catch (err) {
+    console.error('Error triggering daily digest manual run:', err.message);
+    res.status(500).json({ error: err.message });
   }
 });
 
@@ -1409,6 +1455,13 @@ const initDatabase = async () => {
 
     dbReady = true;
     console.log('✅ Database initialization complete');
+
+    // Start background daily scheduler
+    try {
+      SchedulerService.start();
+    } catch (err) {
+      console.error('❌ Failed to start SchedulerService:', err.message);
+    }
 
     // Periodic DB keepalive to prevent stale connections
     const DB_KEEPALIVE_INTERVAL = 5 * 60 * 1000; // 5 minutes
