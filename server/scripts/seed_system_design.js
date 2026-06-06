@@ -126,8 +126,16 @@ async function seed() {
 
     console.log(`Parsed ${questions.length} questions. Saving to DB...`);
     
+    // NOTE: On Postgres, Sequelize returns column aliases lowercased (e.g. maxId -> maxid)
     const maxIdResult = await sequelize.query('SELECT MAX(id) as maxId FROM problems');
-    let nextId = (maxIdResult[0][0].maxId || 0) + 1;
+    const maxRow = maxIdResult?.[0]?.[0] || {};
+    const maxId =
+      maxRow.maxId ??
+      maxRow.maxid ??
+      maxRow.max_id ??
+      // Fallback: if the driver returns an unexpected key, take the first value
+      Object.values(maxRow)[0];
+    let nextId = (Number(maxId) || 0) + 1;
 
     for(const q of questions) {
        // Only insert if it doesn't already exist to prevent duplicates

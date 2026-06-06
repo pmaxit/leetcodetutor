@@ -1,12 +1,12 @@
-# Graph Report - machine-learning  (2026-05-08)
+# Graph Report - machine-learning  (2026-06-05)
 
 ## Corpus Check
-- 56 files · ~315,478 words
+- 63 files · ~327,163 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 204 nodes · 223 edges · 18 communities detected
-- Extraction: 96% EXTRACTED · 4% INFERRED · 0% AMBIGUOUS · INFERRED: 8 edges (avg confidence: 0.8)
+- 226 nodes · 248 edges · 20 communities detected
+- Extraction: 96% EXTRACTED · 4% INFERRED · 0% AMBIGUOUS · INFERRED: 11 edges (avg confidence: 0.8)
 - Token cost: 0 input · 0 output
 
 ## Community Hubs (Navigation)
@@ -23,14 +23,16 @@
 - [[_COMMUNITY_Community 10|Community 10]]
 - [[_COMMUNITY_Community 11|Community 11]]
 - [[_COMMUNITY_Community 12|Community 12]]
-- [[_COMMUNITY_Community 14|Community 14]]
+- [[_COMMUNITY_Community 13|Community 13]]
 - [[_COMMUNITY_Community 15|Community 15]]
 - [[_COMMUNITY_Community 16|Community 16]]
-- [[_COMMUNITY_Community 18|Community 18]]
-- [[_COMMUNITY_Community 20|Community 20]]
+- [[_COMMUNITY_Community 17|Community 17]]
+- [[_COMMUNITY_Community 19|Community 19]]
+- [[_COMMUNITY_Community 21|Community 21]]
+- [[_COMMUNITY_Community 22|Community 22]]
 
 ## God Nodes (most connected - your core abstractions)
-1. `LLMService` - 13 edges
+1. `LLMService` - 15 edges
 2. `LogStreamer` - 10 edges
 3. `ScorerAgent` - 8 edges
 4. `StateManager` - 7 edges
@@ -39,7 +41,7 @@
 7. `main()` - 6 edges
 8. `InterviewerAgent` - 5 edges
 9. `main()` - 5 edges
-10. `BaseAgent` - 4 edges
+10. `run()` - 5 edges
 
 ## Surprising Connections (you probably didn't know these)
 - `extractSection()` --calls--> `parseMarkdownToStages()`  [INFERRED]
@@ -48,16 +50,16 @@
 ## Communities
 
 ### Community 0 - "Community 0"
-Cohesion: 0.28
+Cohesion: 0.24
 Nodes (2): enrich(), LLMService
 
 ### Community 1 - "Community 1"
-Cohesion: 0.2
-Nodes (8): InterviewerAgent, isSystemDesignQuestion(), loadPromptFile(), truncate(), parseMarkdownToStages(), seed(), extractSection(), getOriginalSolutionSectionsForQuestion()
+Cohesion: 0.15
+Nodes (4): buildSdContext(), connectDb(), initDatabase(), parseStagesFromSolutionFormat()
 
 ### Community 2 - "Community 2"
-Cohesion: 0.17
-Nodes (2): buildSdContext(), parseStagesFromSolutionFormat()
+Cohesion: 0.22
+Nodes (8): InterviewerAgent, isSystemDesignQuestion(), loadPromptFile(), truncate(), parseMarkdownToStages(), seed(), extractSection(), getOriginalSolutionSectionsForQuestion()
 
 ### Community 3 - "Community 3"
 Cohesion: 0.24
@@ -99,30 +101,36 @@ Nodes (1): BaseAgent
 Cohesion: 0.7
 Nodes (4): fetchProblem(), main(), saveToDatabase(), sleep()
 
-### Community 14 - "Community 14"
-Cohesion: 0.5
-Nodes (1): SearchService
+### Community 13 - "Community 13"
+Cohesion: 0.6
+Nodes (3): compileHtmlEmail(), getDefaultPracticeDay(), run()
 
 ### Community 15 - "Community 15"
 Cohesion: 0.5
-Nodes (1): ProctorAgent
+Nodes (1): SearchService
 
 ### Community 16 - "Community 16"
+Cohesion: 0.5
+Nodes (1): ProctorAgent
+
+### Community 17 - "Community 17"
 Cohesion: 0.83
 Nodes (3): generateScaffold(), processQuestion(), run()
 
-### Community 18 - "Community 18"
+### Community 19 - "Community 19"
 Cohesion: 1.0
 Nodes (2): extractBoilerplate(), run()
 
-### Community 20 - "Community 20"
+### Community 21 - "Community 21"
 Cohesion: 1.0
 Nodes (2): generateScaffold(), run()
 
+### Community 22 - "Community 22"
+Cohesion: 1.0
+Nodes (2): migrateTable(), run()
+
 ## Knowledge Gaps
-- **Thin community `Community 0`** (16 nodes): `enrich()`, `enrich_boilerplates.js`, `LLMService.js`, `LLMService`, `.analyzeCode()`, `.analyzeGapAndSelectGuidance()`, `.analyzeWhiteboard()`, `.constructor()`, `.ensureSolutionExists()`, `.extractConstraints()`, `.fixJsonEscaping()`, `.generateChatResponse()`, `.generateContent()`, `.generateInitialProbe()`, `.generateReActResponse()`, `.loadSolutions()`
-  Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 2`** (13 nodes): `buildSdContext()`, `escapeHtml()`, `getSession()`, `getSystemDesignSolutionFiles()`, `isSystemDesignQuestion()`, `index.js`, `mapQuestion()`, `parseStagesFromSolutionFormat()`, `pickRandomQuestion()`, `resolveSdMarkdownFile()`, `sendEvent()`, `startServer()`, `toTitleCaseFromSlug()`
+- **Thin community `Community 0`** (18 nodes): `enrich()`, `enrich_boilerplates.js`, `LLMService.js`, `LLMService`, `.analyzeCode()`, `.analyzeGapAndSelectGuidance()`, `.analyzeWhiteboard()`, `.constructor()`, `.ensureSolutionExists()`, `.extractConstraints()`, `.extractJson()`, `.fixJsonEscaping()`, `.generateChatResponse()`, `.generateContent()`, `.generateInitialProbe()`, `.generateReActResponse()`, `.loadSolutions()`, `.withRetryOn429()`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
 - **Thin community `Community 3`** (11 nodes): `LogStreamer.js`, `LogStreamer`, `.addLog()`, `.broadcast()`, `.captureLog()`, `.constructor()`, `.detectLogLevel()`, `.getRecentLogs()`, `.start()`, `.stop()`, `.subscribe()`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
@@ -134,17 +142,19 @@ Nodes (2): generateScaffold(), run()
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
 - **Thin community `Community 11`** (5 nodes): `BaseAgent`, `.constructor()`, `.generateResponse()`, `._getSystemPrompt()`, `BaseAgent.js`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 14`** (4 nodes): `SearchService.js`, `SearchService`, `.constructor()`, `.performSearch()`
+- **Thin community `Community 15`** (4 nodes): `SearchService.js`, `SearchService`, `.constructor()`, `.performSearch()`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 15`** (4 nodes): `ProctorAgent`, `.analyzeCode()`, `.constructor()`, `ProctorAgent.js`
+- **Thin community `Community 16`** (4 nodes): `ProctorAgent`, `.analyzeCode()`, `.constructor()`, `ProctorAgent.js`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 18`** (3 nodes): `extractBoilerplate()`, `run()`, `reset_boilerplates.js`
+- **Thin community `Community 19`** (3 nodes): `extractBoilerplate()`, `run()`, `reset_boilerplates.js`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 20`** (3 nodes): `generateScaffold()`, `verify_3sum.js`, `run()`
+- **Thin community `Community 21`** (3 nodes): `generateScaffold()`, `verify_3sum.js`, `run()`
+  Too small to be a meaningful cluster - may be noise or needs more connections extracted.
+- **Thin community `Community 22`** (3 nodes): `migrate_mysql_to_postgres.js`, `migrateTable()`, `run()`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
 - **Why does `enrichWithLLM()` connect `Community 4` to `Community 0`?**
-  _High betweenness centrality (0.016) - this node is a cross-community bridge._
+  _High betweenness centrality (0.022) - this node is a cross-community bridge._

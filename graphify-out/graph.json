@@ -9,7 +9,7 @@
       "source_file": "client/vite.config.js",
       "source_location": "L1",
       "id": "client_vite_config_js",
-      "community": 41,
+      "community": 48,
       "norm_label": "vite.config.js"
     },
     {
@@ -18,7 +18,7 @@
       "source_file": "client/eslint.config.js",
       "source_location": "L1",
       "id": "client_eslint_config_js",
-      "community": 42,
+      "community": 49,
       "norm_label": "eslint.config.js"
     },
     {
@@ -99,7 +99,7 @@
       "source_file": "client/src/main.jsx",
       "source_location": "L1",
       "id": "client_src_main_jsx",
-      "community": 43,
+      "community": 50,
       "norm_label": "main.jsx"
     },
     {
@@ -108,7 +108,7 @@
       "source_file": "client/src/DebugBar.jsx",
       "source_location": "L1",
       "id": "client_src_debugbar_jsx",
-      "community": 21,
+      "community": 23,
       "norm_label": "debugbar.jsx"
     },
     {
@@ -117,7 +117,7 @@
       "source_file": "client/src/DebugBar.jsx",
       "source_location": "L3",
       "id": "src_debugbar_debugbar",
-      "community": 21,
+      "community": 23,
       "norm_label": "debugbar()"
     },
     {
@@ -126,34 +126,34 @@
       "source_file": "client/src/App.jsx",
       "source_location": "L1",
       "id": "client_src_app_jsx",
-      "community": 13,
+      "community": 14,
       "norm_label": "app.jsx"
     },
     {
       "label": "TldrawWrapper()",
       "file_type": "code",
       "source_file": "client/src/App.jsx",
-      "source_location": "L26",
+      "source_location": "L29",
       "id": "src_app_tldrawwrapper",
-      "community": 13,
+      "community": 14,
       "norm_label": "tldrawwrapper()"
     },
     {
       "label": "App()",
       "file_type": "code",
       "source_file": "client/src/App.jsx",
-      "source_location": "L42",
+      "source_location": "L45",
       "id": "src_app_app",
-      "community": 13,
+      "community": 14,
       "norm_label": "app()"
     },
     {
       "label": "ConfirmationModal()",
       "file_type": "code",
       "source_file": "client/src/App.jsx",
-      "source_location": "L1807",
+      "source_location": "L1905",
       "id": "src_app_confirmationmodal",
-      "community": 13,
+      "community": 14,
       "norm_label": "confirmationmodal()"
     },
     {
@@ -162,7 +162,7 @@
       "source_file": "client/src/utils/formatProblemDescription.js",
       "source_location": "L1",
       "id": "client_src_utils_formatproblemdescription_js",
-      "community": 22,
+      "community": 24,
       "norm_label": "formatproblemdescription.js"
     },
     {
@@ -171,7 +171,7 @@
       "source_file": "client/src/utils/formatProblemDescription.js",
       "source_location": "L1",
       "id": "utils_formatproblemdescription_formatproblemdescription",
-      "community": 22,
+      "community": 24,
       "norm_label": "formatproblemdescription()"
     },
     {
@@ -180,7 +180,7 @@
       "source_file": "client/src/utils/formatLeetcodeHTML.js",
       "source_location": "L1",
       "id": "client_src_utils_formatleetcodehtml_js",
-      "community": 23,
+      "community": 25,
       "norm_label": "formatleetcodehtml.js"
     },
     {
@@ -189,7 +189,7 @@
       "source_file": "client/src/utils/formatLeetcodeHTML.js",
       "source_location": "L1",
       "id": "utils_formatleetcodehtml_formatleetcodehtml",
-      "community": 23,
+      "community": 25,
       "norm_label": "formatleetcodehtml()"
     },
     {
@@ -198,7 +198,7 @@
       "source_file": "client/src/components/StatsPage.jsx",
       "source_location": "L1",
       "id": "client_src_components_statspage_jsx",
-      "community": 24,
+      "community": 26,
       "norm_label": "statspage.jsx"
     },
     {
@@ -207,7 +207,7 @@
       "source_file": "client/src/components/StatsPage.jsx",
       "source_location": "L3",
       "id": "components_statspage_statspage",
-      "community": 24,
+      "community": 26,
       "norm_label": "statspage()"
     },
     {
@@ -216,7 +216,7 @@
       "source_file": "client/src/components/SettingsPage.jsx",
       "source_location": "L1",
       "id": "client_src_components_settingspage_jsx",
-      "community": 25,
+      "community": 27,
       "norm_label": "settingspage.jsx"
     },
     {
@@ -225,7 +225,7 @@
       "source_file": "client/src/components/SettingsPage.jsx",
       "source_location": "L3",
       "id": "components_settingspage_settingspage",
-      "community": 25,
+      "community": 27,
       "norm_label": "settingspage()"
     },
     {
@@ -234,7 +234,7 @@
       "source_file": "client/src/components/Login.jsx",
       "source_location": "L1",
       "id": "client_src_components_login_jsx",
-      "community": 26,
+      "community": 28,
       "norm_label": "login.jsx"
     },
     {
@@ -243,7 +243,7 @@
       "source_file": "client/src/components/Login.jsx",
       "source_location": "L3",
       "id": "components_login_login",
-      "community": 26,
+      "community": 28,
       "norm_label": "login()"
     },
     {
@@ -252,7 +252,7 @@
       "source_file": "server/index.js",
       "source_location": "L1",
       "id": "server_index_js",
-      "community": 2,
+      "community": 1,
       "norm_label": "index.js"
     },
     {
@@ -261,7 +261,7 @@
       "source_file": "server/index.js",
       "source_location": "L32",
       "id": "server_index_escapehtml",
-      "community": 2,
+      "community": 1,
       "norm_label": "escapehtml()"
     },
     {
@@ -270,7 +270,7 @@
       "source_file": "server/index.js",
       "source_location": "L40",
       "id": "server_index_totitlecasefromslug",
-      "community": 2,
+      "community": 1,
       "norm_label": "totitlecasefromslug()"
     },
     {
@@ -279,7 +279,7 @@
       "source_file": "server/index.js",
       "source_location": "L47",
       "id": "server_index_getsystemdesignsolutionfiles",
-      "community": 2,
+      "community": 1,
       "norm_label": "getsystemdesignsolutionfiles()"
     },
     {
@@ -288,7 +288,7 @@
       "source_file": "server/index.js",
       "source_location": "L56",
       "id": "server_index_resolvesdmarkdownfile",
-      "community": 2,
+      "community": 1,
       "norm_label": "resolvesdmarkdownfile()"
     },
     {
@@ -297,7 +297,7 @@
       "source_file": "server/index.js",
       "source_location": "L89",
       "id": "server_index_issystemdesignquestion",
-      "community": 2,
+      "community": 1,
       "norm_label": "issystemdesignquestion()"
     },
     {
@@ -306,7 +306,7 @@
       "source_file": "server/index.js",
       "source_location": "L95",
       "id": "server_index_parsestagesfromsolutionformat",
-      "community": 2,
+      "community": 1,
       "norm_label": "parsestagesfromsolutionformat()"
     },
     {
@@ -315,7 +315,7 @@
       "source_file": "server/index.js",
       "source_location": "L107",
       "id": "server_index_buildsdcontext",
-      "community": 2,
+      "community": 1,
       "norm_label": "buildsdcontext()"
     },
     {
@@ -324,44 +324,62 @@
       "source_file": "server/index.js",
       "source_location": "L143",
       "id": "server_index_mapquestion",
-      "community": 2,
+      "community": 1,
       "norm_label": "mapquestion()"
     },
     {
       "label": "getSession()",
       "file_type": "code",
       "source_file": "server/index.js",
-      "source_location": "L295",
+      "source_location": "L310",
       "id": "server_index_getsession",
-      "community": 2,
+      "community": 1,
       "norm_label": "getsession()"
     },
     {
       "label": "sendEvent()",
       "file_type": "code",
       "source_file": "server/index.js",
-      "source_location": "L378",
+      "source_location": "L393",
       "id": "server_index_sendevent",
-      "community": 2,
+      "community": 1,
       "norm_label": "sendevent()"
     },
     {
       "label": "pickRandomQuestion()",
       "file_type": "code",
       "source_file": "server/index.js",
-      "source_location": "L592",
+      "source_location": "L607",
       "id": "server_index_pickrandomquestion",
-      "community": 2,
+      "community": 1,
       "norm_label": "pickrandomquestion()"
     },
     {
-      "label": "startServer()",
+      "label": "shutdown()",
       "file_type": "code",
       "source_file": "server/index.js",
-      "source_location": "L1305",
-      "id": "server_index_startserver",
-      "community": 2,
-      "norm_label": "startserver()"
+      "source_location": "L1332",
+      "id": "server_index_shutdown",
+      "community": 1,
+      "norm_label": "shutdown()"
+    },
+    {
+      "label": "connectDb()",
+      "file_type": "code",
+      "source_file": "server/index.js",
+      "source_location": "L1353",
+      "id": "server_index_connectdb",
+      "community": 1,
+      "norm_label": "connectdb()"
+    },
+    {
+      "label": "initDatabase()",
+      "file_type": "code",
+      "source_file": "server/index.js",
+      "source_location": "L1377",
+      "id": "server_index_initdatabase",
+      "community": 1,
+      "norm_label": "initdatabase()"
     },
     {
       "label": "StateManager.js",
@@ -441,7 +459,7 @@
       "source_file": "server/src/middleware/auth.js",
       "source_location": "L1",
       "id": "server_src_middleware_auth_js",
-      "community": 27,
+      "community": 29,
       "norm_label": "auth.js"
     },
     {
@@ -450,7 +468,7 @@
       "source_file": "server/src/middleware/auth.js",
       "source_location": "L5",
       "id": "middleware_auth_authenticatetoken",
-      "community": 27,
+      "community": 29,
       "norm_label": "authenticatetoken()"
     },
     {
@@ -459,7 +477,7 @@
       "source_file": "server/src/models/db.js",
       "source_location": "L1",
       "id": "server_src_models_db_js",
-      "community": 44,
+      "community": 51,
       "norm_label": "db.js"
     },
     {
@@ -468,7 +486,7 @@
       "source_file": "server/src/models/Question.js",
       "source_location": "L1",
       "id": "server_src_models_question_js",
-      "community": 45,
+      "community": 52,
       "norm_label": "question.js"
     },
     {
@@ -477,7 +495,7 @@
       "source_file": "server/src/models/User.js",
       "source_location": "L1",
       "id": "server_src_models_user_js",
-      "community": 46,
+      "community": 53,
       "norm_label": "user.js"
     },
     {
@@ -486,7 +504,7 @@
       "source_file": "server/src/models/QuestionStatus.js",
       "source_location": "L1",
       "id": "server_src_models_questionstatus_js",
-      "community": 47,
+      "community": 54,
       "norm_label": "questionstatus.js"
     },
     {
@@ -495,7 +513,7 @@
       "source_file": "server/src/models/PracticeSession.js",
       "source_location": "L1",
       "id": "server_src_models_practicesession_js",
-      "community": 48,
+      "community": 55,
       "norm_label": "practicesession.js"
     },
     {
@@ -504,7 +522,7 @@
       "source_file": "server/src/services/SearchService.js",
       "source_location": "L1",
       "id": "server_src_services_searchservice_js",
-      "community": 14,
+      "community": 15,
       "norm_label": "searchservice.js"
     },
     {
@@ -513,7 +531,7 @@
       "source_file": "server/src/services/SearchService.js",
       "source_location": "L4",
       "id": "services_searchservice_searchservice",
-      "community": 14,
+      "community": 15,
       "norm_label": "searchservice"
     },
     {
@@ -522,7 +540,7 @@
       "source_file": "server/src/services/SearchService.js",
       "source_location": "L5",
       "id": "services_searchservice_searchservice_constructor",
-      "community": 14,
+      "community": 15,
       "norm_label": ".constructor()"
     },
     {
@@ -531,7 +549,7 @@
       "source_file": "server/src/services/SearchService.js",
       "source_location": "L13",
       "id": "services_searchservice_searchservice_performsearch",
-      "community": 14,
+      "community": 15,
       "norm_label": ".performsearch()"
     },
     {
@@ -565,7 +583,7 @@
       "label": ".loadSolutions()",
       "file_type": "code",
       "source_file": "server/src/services/LLMService.js",
-      "source_location": "L76",
+      "source_location": "L84",
       "id": "services_llmservice_llmservice_loadsolutions",
       "community": 0,
       "norm_label": ".loadsolutions()"
@@ -574,16 +592,25 @@
       "label": ".fixJsonEscaping()",
       "file_type": "code",
       "source_file": "server/src/services/LLMService.js",
-      "source_location": "L81",
+      "source_location": "L89",
       "id": "services_llmservice_llmservice_fixjsonescaping",
       "community": 0,
       "norm_label": ".fixjsonescaping()"
     },
     {
+      "label": ".extractJson()",
+      "file_type": "code",
+      "source_file": "server/src/services/LLMService.js",
+      "source_location": "L99",
+      "id": "services_llmservice_llmservice_extractjson",
+      "community": 0,
+      "norm_label": ".extractjson()"
+    },
+    {
       "label": ".generateContent()",
       "file_type": "code",
       "source_file": "server/src/services/LLMService.js",
-      "source_location": "L91",
+      "source_location": "L166",
       "id": "services_llmservice_llmservice_generatecontent",
       "community": 0,
       "norm_label": ".generatecontent()"
@@ -592,7 +619,7 @@
       "label": ".ensureSolutionExists()",
       "file_type": "code",
       "source_file": "server/src/services/LLMService.js",
-      "source_location": "L168",
+      "source_location": "L246",
       "id": "services_llmservice_llmservice_ensuresolutionexists",
       "community": 0,
       "norm_label": ".ensuresolutionexists()"
@@ -601,7 +628,7 @@
       "label": ".analyzeCode()",
       "file_type": "code",
       "source_file": "server/src/services/LLMService.js",
-      "source_location": "L214",
+      "source_location": "L292",
       "id": "services_llmservice_llmservice_analyzecode",
       "community": 0,
       "norm_label": ".analyzecode()"
@@ -610,7 +637,7 @@
       "label": ".analyzeWhiteboard()",
       "file_type": "code",
       "source_file": "server/src/services/LLMService.js",
-      "source_location": "L254",
+      "source_location": "L327",
       "id": "services_llmservice_llmservice_analyzewhiteboard",
       "community": 0,
       "norm_label": ".analyzewhiteboard()"
@@ -619,7 +646,7 @@
       "label": ".generateChatResponse()",
       "file_type": "code",
       "source_file": "server/src/services/LLMService.js",
-      "source_location": "L298",
+      "source_location": "L366",
       "id": "services_llmservice_llmservice_generatechatresponse",
       "community": 0,
       "norm_label": ".generatechatresponse()"
@@ -628,7 +655,7 @@
       "label": ".generateInitialProbe()",
       "file_type": "code",
       "source_file": "server/src/services/LLMService.js",
-      "source_location": "L345",
+      "source_location": "L413",
       "id": "services_llmservice_llmservice_generateinitialprobe",
       "community": 0,
       "norm_label": ".generateinitialprobe()"
@@ -637,7 +664,7 @@
       "label": ".extractConstraints()",
       "file_type": "code",
       "source_file": "server/src/services/LLMService.js",
-      "source_location": "L373",
+      "source_location": "L441",
       "id": "services_llmservice_llmservice_extractconstraints",
       "community": 0,
       "norm_label": ".extractconstraints()"
@@ -646,7 +673,7 @@
       "label": ".generateReActResponse()",
       "file_type": "code",
       "source_file": "server/src/services/LLMService.js",
-      "source_location": "L408",
+      "source_location": "L471",
       "id": "services_llmservice_llmservice_generatereactresponse",
       "community": 0,
       "norm_label": ".generatereactresponse()"
@@ -655,10 +682,19 @@
       "label": ".analyzeGapAndSelectGuidance()",
       "file_type": "code",
       "source_file": "server/src/services/LLMService.js",
-      "source_location": "L479",
+      "source_location": "L542",
       "id": "services_llmservice_llmservice_analyzegapandselectguidance",
       "community": 0,
       "norm_label": ".analyzegapandselectguidance()"
+    },
+    {
+      "label": ".withRetryOn429()",
+      "file_type": "code",
+      "source_file": "server/src/services/LLMService.js",
+      "source_location": "L610",
+      "id": "services_llmservice_llmservice_withretryon429",
+      "community": 0,
+      "norm_label": ".withretryon429()"
     },
     {
       "label": "LogStreamer.js",
@@ -765,7 +801,7 @@
       "source_file": "server/src/constants/Phases.js",
       "source_location": "L1",
       "id": "server_src_constants_phases_js",
-      "community": 49,
+      "community": 56,
       "norm_label": "phases.js"
     },
     {
@@ -774,7 +810,7 @@
       "source_file": "server/src/utils/sdSolutionSections.js",
       "source_location": "L1",
       "id": "server_src_utils_sdsolutionsections_js",
-      "community": 1,
+      "community": 2,
       "norm_label": "sdsolutionsections.js"
     },
     {
@@ -783,7 +819,7 @@
       "source_file": "server/src/utils/sdSolutionSections.js",
       "source_location": "L6",
       "id": "utils_sdsolutionsections_extractsection",
-      "community": 1,
+      "community": 2,
       "norm_label": "extractsection()"
     },
     {
@@ -792,7 +828,7 @@
       "source_file": "server/src/utils/sdSolutionSections.js",
       "source_location": "L22",
       "id": "utils_sdsolutionsections_getoriginalsolutionsectionsforquestion",
-      "community": 1,
+      "community": 2,
       "norm_label": "getoriginalsolutionsectionsforquestion()"
     },
     {
@@ -801,7 +837,7 @@
       "source_file": "server/src/data/system_design_questions.js",
       "source_location": "L1",
       "id": "server_src_data_system_design_questions_js",
-      "community": 50,
+      "community": 57,
       "norm_label": "system_design_questions.js"
     },
     {
@@ -810,7 +846,7 @@
       "source_file": "server/src/agents/InterviewerAgent.js",
       "source_location": "L1",
       "id": "server_src_agents_intervieweragent_js",
-      "community": 1,
+      "community": 2,
       "norm_label": "intervieweragent.js"
     },
     {
@@ -819,7 +855,7 @@
       "source_file": "server/src/agents/InterviewerAgent.js",
       "source_location": "L7",
       "id": "agents_intervieweragent_issystemdesignquestion",
-      "community": 1,
+      "community": 2,
       "norm_label": "issystemdesignquestion()"
     },
     {
@@ -828,7 +864,7 @@
       "source_file": "server/src/agents/InterviewerAgent.js",
       "source_location": "L14",
       "id": "agents_intervieweragent_truncate",
-      "community": 1,
+      "community": 2,
       "norm_label": "truncate()"
     },
     {
@@ -837,7 +873,7 @@
       "source_file": "server/src/agents/InterviewerAgent.js",
       "source_location": "L19",
       "id": "agents_intervieweragent_loadpromptfile",
-      "community": 1,
+      "community": 2,
       "norm_label": "loadpromptfile()"
     },
     {
@@ -846,7 +882,7 @@
       "source_file": "server/src/agents/InterviewerAgent.js",
       "source_location": "L32",
       "id": "agents_intervieweragent_intervieweragent",
-      "community": 1,
+      "community": 2,
       "norm_label": "intervieweragent"
     },
     {
@@ -855,7 +891,7 @@
       "source_file": "server/src/agents/InterviewerAgent.js",
       "source_location": "L33",
       "id": "agents_intervieweragent_intervieweragent_constructor",
-      "community": 1,
+      "community": 2,
       "norm_label": ".constructor()"
     },
     {
@@ -864,25 +900,25 @@
       "source_file": "server/src/agents/InterviewerAgent.js",
       "source_location": "L38",
       "id": "agents_intervieweragent_intervieweragent_streamcompletion",
-      "community": 1,
+      "community": 2,
       "norm_label": ".streamcompletion()"
     },
     {
       "label": ".generateResponse()",
       "file_type": "code",
       "source_file": "server/src/agents/InterviewerAgent.js",
-      "source_location": "L63",
+      "source_location": "L91",
       "id": "agents_intervieweragent_intervieweragent_generateresponse",
-      "community": 1,
+      "community": 2,
       "norm_label": ".generateresponse()"
     },
     {
       "label": ".generateInitialProbe()",
       "file_type": "code",
       "source_file": "server/src/agents/InterviewerAgent.js",
-      "source_location": "L332",
+      "source_location": "L394",
       "id": "agents_intervieweragent_intervieweragent_generateinitialprobe",
-      "community": 1,
+      "community": 2,
       "norm_label": ".generateinitialprobe()"
     },
     {
@@ -891,7 +927,7 @@
       "source_file": "server/src/agents/ProctorAgent.js",
       "source_location": "L1",
       "id": "server_src_agents_proctoragent_js",
-      "community": 15,
+      "community": 16,
       "norm_label": "proctoragent.js"
     },
     {
@@ -900,7 +936,7 @@
       "source_file": "server/src/agents/ProctorAgent.js",
       "source_location": "L3",
       "id": "agents_proctoragent_proctoragent",
-      "community": 15,
+      "community": 16,
       "norm_label": "proctoragent"
     },
     {
@@ -909,7 +945,7 @@
       "source_file": "server/src/agents/ProctorAgent.js",
       "source_location": "L4",
       "id": "agents_proctoragent_proctoragent_constructor",
-      "community": 15,
+      "community": 16,
       "norm_label": ".constructor()"
     },
     {
@@ -918,7 +954,7 @@
       "source_file": "server/src/agents/ProctorAgent.js",
       "source_location": "L8",
       "id": "agents_proctoragent_proctoragent_analyzecode",
-      "community": 15,
+      "community": 16,
       "norm_label": ".analyzecode()"
     },
     {
@@ -1053,7 +1089,7 @@
       "source_file": "server/scripts/generate_hints.js",
       "source_location": "L1",
       "id": "server_scripts_generate_hints_js",
-      "community": 28,
+      "community": 30,
       "norm_label": "generate_hints.js"
     },
     {
@@ -1062,7 +1098,7 @@
       "source_file": "server/scripts/generate_hints.js",
       "source_location": "L172",
       "id": "scripts_generate_hints_gethintsforpattern",
-      "community": 28,
+      "community": 30,
       "norm_label": "gethintsforpattern()"
     },
     {
@@ -1071,7 +1107,7 @@
       "source_file": "server/scripts/add_hints_migration.js",
       "source_location": "L1",
       "id": "server_scripts_add_hints_migration_js",
-      "community": 51,
+      "community": 58,
       "norm_label": "add_hints_migration.js"
     },
     {
@@ -1080,7 +1116,7 @@
       "source_file": "server/scripts/generate_scaffolds.js",
       "source_location": "L1",
       "id": "server_scripts_generate_scaffolds_js",
-      "community": 16,
+      "community": 17,
       "norm_label": "generate_scaffolds.js"
     },
     {
@@ -1089,7 +1125,7 @@
       "source_file": "server/scripts/generate_scaffolds.js",
       "source_location": "L7",
       "id": "scripts_generate_scaffolds_generatescaffold",
-      "community": 16,
+      "community": 17,
       "norm_label": "generatescaffold()"
     },
     {
@@ -1098,7 +1134,7 @@
       "source_file": "server/scripts/generate_scaffolds.js",
       "source_location": "L104",
       "id": "scripts_generate_scaffolds_processquestion",
-      "community": 16,
+      "community": 17,
       "norm_label": "processquestion()"
     },
     {
@@ -1107,7 +1143,7 @@
       "source_file": "server/scripts/generate_scaffolds.js",
       "source_location": "L117",
       "id": "scripts_generate_scaffolds_run",
-      "community": 16,
+      "community": 17,
       "norm_label": "run()"
     },
     {
@@ -1350,7 +1386,7 @@
       "source_file": "server/scripts/seed_all_patterns.js",
       "source_location": "L1",
       "id": "server_scripts_seed_all_patterns_js",
-      "community": 29,
+      "community": 31,
       "norm_label": "seed_all_patterns.js"
     },
     {
@@ -1359,7 +1395,7 @@
       "source_file": "server/scripts/seed_all_patterns.js",
       "source_location": "L125",
       "id": "scripts_seed_all_patterns_seed",
-      "community": 29,
+      "community": 31,
       "norm_label": "seed()"
     },
     {
@@ -1368,7 +1404,7 @@
       "source_file": "server/scripts/check-enrichment-status.js",
       "source_location": "L1",
       "id": "server_scripts_check_enrichment_status_js",
-      "community": 30,
+      "community": 32,
       "norm_label": "check-enrichment-status.js"
     },
     {
@@ -1377,7 +1413,7 @@
       "source_file": "server/scripts/check-enrichment-status.js",
       "source_location": "L13",
       "id": "scripts_check_enrichment_status_checkstatus",
-      "community": 30,
+      "community": 32,
       "norm_label": "checkstatus()"
     },
     {
@@ -1449,7 +1485,7 @@
       "source_file": "server/scripts/reset_boilerplates.js",
       "source_location": "L1",
       "id": "server_scripts_reset_boilerplates_js",
-      "community": 18,
+      "community": 19,
       "norm_label": "reset_boilerplates.js"
     },
     {
@@ -1458,7 +1494,7 @@
       "source_file": "server/scripts/reset_boilerplates.js",
       "source_location": "L3",
       "id": "scripts_reset_boilerplates_extractboilerplate",
-      "community": 18,
+      "community": 19,
       "norm_label": "extractboilerplate()"
     },
     {
@@ -1467,7 +1503,7 @@
       "source_file": "server/scripts/reset_boilerplates.js",
       "source_location": "L31",
       "id": "scripts_reset_boilerplates_run",
-      "community": 18,
+      "community": 19,
       "norm_label": "run()"
     },
     {
@@ -1476,7 +1512,7 @@
       "source_file": "server/scripts/generate_hints_remote.js",
       "source_location": "L1",
       "id": "server_scripts_generate_hints_remote_js",
-      "community": 31,
+      "community": 33,
       "norm_label": "generate_hints_remote.js"
     },
     {
@@ -1485,8 +1521,26 @@
       "source_file": "server/scripts/generate_hints_remote.js",
       "source_location": "L157",
       "id": "scripts_generate_hints_remote_gethintsforcategory",
-      "community": 31,
+      "community": 33,
       "norm_label": "gethintsforcategory()"
+    },
+    {
+      "label": "backup_cloud_sql_to_local.js",
+      "file_type": "code",
+      "source_file": "server/scripts/backup_cloud_sql_to_local.js",
+      "source_location": "L1",
+      "id": "server_scripts_backup_cloud_sql_to_local_js",
+      "community": 34,
+      "norm_label": "backup_cloud_sql_to_local.js"
+    },
+    {
+      "label": "runBackup()",
+      "file_type": "code",
+      "source_file": "server/scripts/backup_cloud_sql_to_local.js",
+      "source_location": "L18",
+      "id": "scripts_backup_cloud_sql_to_local_runbackup",
+      "community": 34,
+      "norm_label": "runbackup()"
     },
     {
       "label": "seed_dp.js",
@@ -1494,7 +1548,7 @@
       "source_file": "server/scripts/seed_dp.js",
       "source_location": "L1",
       "id": "server_scripts_seed_dp_js",
-      "community": 32,
+      "community": 35,
       "norm_label": "seed_dp.js"
     },
     {
@@ -1503,7 +1557,7 @@
       "source_file": "server/scripts/seed_dp.js",
       "source_location": "L41",
       "id": "scripts_seed_dp_seed",
-      "community": 32,
+      "community": 35,
       "norm_label": "seed()"
     },
     {
@@ -1512,7 +1566,7 @@
       "source_file": "server/scripts/seed_system_design.js",
       "source_location": "L1",
       "id": "server_scripts_seed_system_design_js",
-      "community": 1,
+      "community": 2,
       "norm_label": "seed_system_design.js"
     },
     {
@@ -1521,7 +1575,7 @@
       "source_file": "server/scripts/seed_system_design.js",
       "source_location": "L8",
       "id": "scripts_seed_system_design_parsemarkdowntostages",
-      "community": 1,
+      "community": 2,
       "norm_label": "parsemarkdowntostages()"
     },
     {
@@ -1530,7 +1584,7 @@
       "source_file": "server/scripts/seed_system_design.js",
       "source_location": "L99",
       "id": "scripts_seed_system_design_seed",
-      "community": 1,
+      "community": 2,
       "norm_label": "seed()"
     },
     {
@@ -1584,7 +1638,7 @@
       "source_file": "server/scripts/seed_hello_full.js",
       "source_location": "L1",
       "id": "server_scripts_seed_hello_full_js",
-      "community": 19,
+      "community": 20,
       "norm_label": "seed_hello_full.js"
     },
     {
@@ -1593,7 +1647,7 @@
       "source_file": "server/scripts/seed_hello_full.js",
       "source_location": "L67",
       "id": "scripts_seed_hello_full_getboilerplate",
-      "community": 19,
+      "community": 20,
       "norm_label": "getboilerplate()"
     },
     {
@@ -1602,7 +1656,7 @@
       "source_file": "server/scripts/seed_hello_full.js",
       "source_location": "L84",
       "id": "scripts_seed_hello_full_seed",
-      "community": 19,
+      "community": 20,
       "norm_label": "seed()"
     },
     {
@@ -1611,8 +1665,53 @@
       "source_file": "server/scripts/migrate_question_status.js",
       "source_location": "L1",
       "id": "server_scripts_migrate_question_status_js",
-      "community": 52,
+      "community": 59,
       "norm_label": "migrate_question_status.js"
+    },
+    {
+      "label": "send_daily_email.js",
+      "file_type": "code",
+      "source_file": "server/scripts/send_daily_email.js",
+      "source_location": "L1",
+      "id": "server_scripts_send_daily_email_js",
+      "community": 13,
+      "norm_label": "send_daily_email.js"
+    },
+    {
+      "label": "getDefaultPracticeDay()",
+      "file_type": "code",
+      "source_file": "server/scripts/send_daily_email.js",
+      "source_location": "L21",
+      "id": "scripts_send_daily_email_getdefaultpracticeday",
+      "community": 13,
+      "norm_label": "getdefaultpracticeday()"
+    },
+    {
+      "label": "getDifficultyStyle()",
+      "file_type": "code",
+      "source_file": "server/scripts/send_daily_email.js",
+      "source_location": "L40",
+      "id": "scripts_send_daily_email_getdifficultystyle",
+      "community": 13,
+      "norm_label": "getdifficultystyle()"
+    },
+    {
+      "label": "run()",
+      "file_type": "code",
+      "source_file": "server/scripts/send_daily_email.js",
+      "source_location": "L48",
+      "id": "scripts_send_daily_email_run",
+      "community": 13,
+      "norm_label": "run()"
+    },
+    {
+      "label": "compileHtmlEmail()",
+      "file_type": "code",
+      "source_file": "server/scripts/send_daily_email.js",
+      "source_location": "L242",
+      "id": "scripts_send_daily_email_compilehtmlemail",
+      "community": 13,
+      "norm_label": "compilehtmlemail()"
     },
     {
       "label": "enrich_boilerplates.js",
@@ -1638,7 +1737,7 @@
       "source_file": "tests/deployment.test.js",
       "source_location": "L1",
       "id": "tests_deployment_test_js",
-      "community": 17,
+      "community": 18,
       "norm_label": "deployment.test.js"
     },
     {
@@ -1647,7 +1746,7 @@
       "source_file": "tests/deployment.test.js",
       "source_location": "L10",
       "id": "tests_deployment_test_readfile",
-      "community": 17,
+      "community": 18,
       "norm_label": "readfile()"
     },
     {
@@ -1656,7 +1755,7 @@
       "source_file": "tests/deployment.test.js",
       "source_location": "L15",
       "id": "tests_deployment_test_extractserverenvvars",
-      "community": 17,
+      "community": 18,
       "norm_label": "extractserverenvvars()"
     },
     {
@@ -1665,7 +1764,7 @@
       "source_file": "tests/deployment.test.js",
       "source_location": "L35",
       "id": "tests_deployment_test_parseflatyaml",
-      "community": 17,
+      "community": 18,
       "norm_label": "parseflatyaml()"
     },
     {
@@ -1674,7 +1773,7 @@
       "source_file": "scratch/verify_3sum.js",
       "source_location": "L1",
       "id": "scratch_verify_3sum_js",
-      "community": 20,
+      "community": 21,
       "norm_label": "verify_3sum.js"
     },
     {
@@ -1683,7 +1782,7 @@
       "source_file": "scratch/verify_3sum.js",
       "source_location": "L5",
       "id": "scratch_verify_3sum_generatescaffold",
-      "community": 20,
+      "community": 21,
       "norm_label": "generatescaffold()"
     },
     {
@@ -1692,7 +1791,7 @@
       "source_file": "scratch/verify_3sum.js",
       "source_location": "L66",
       "id": "scratch_verify_3sum_run",
-      "community": 20,
+      "community": 21,
       "norm_label": "run()"
     },
     {
@@ -1701,7 +1800,7 @@
       "source_file": "scratch/migrate_sqlite_to_mysql.js",
       "source_location": "L1",
       "id": "scratch_migrate_sqlite_to_mysql_js",
-      "community": 33,
+      "community": 36,
       "norm_label": "migrate_sqlite_to_mysql.js"
     },
     {
@@ -1710,8 +1809,44 @@
       "source_file": "scratch/migrate_sqlite_to_mysql.js",
       "source_location": "L5",
       "id": "scratch_migrate_sqlite_to_mysql_migrate",
-      "community": 33,
+      "community": 36,
       "norm_label": "migrate()"
+    },
+    {
+      "label": "inspect_question.js",
+      "file_type": "code",
+      "source_file": "scratch/inspect_question.js",
+      "source_location": "L1",
+      "id": "scratch_inspect_question_js",
+      "community": 37,
+      "norm_label": "inspect_question.js"
+    },
+    {
+      "label": "inspect()",
+      "file_type": "code",
+      "source_file": "scratch/inspect_question.js",
+      "source_location": "L3",
+      "id": "scratch_inspect_question_inspect",
+      "community": 37,
+      "norm_label": "inspect()"
+    },
+    {
+      "label": "check_sessions.js",
+      "file_type": "code",
+      "source_file": "scratch/check_sessions.js",
+      "source_location": "L1",
+      "id": "scratch_check_sessions_js",
+      "community": 38,
+      "norm_label": "check_sessions.js"
+    },
+    {
+      "label": "run()",
+      "file_type": "code",
+      "source_file": "scratch/check_sessions.js",
+      "source_location": "L4",
+      "id": "scratch_check_sessions_run",
+      "community": 38,
+      "norm_label": "run()"
     },
     {
       "label": "check_tables.js",
@@ -1719,7 +1854,7 @@
       "source_file": "scratch/check_tables.js",
       "source_location": "L1",
       "id": "scratch_check_tables_js",
-      "community": 34,
+      "community": 39,
       "norm_label": "check_tables.js"
     },
     {
@@ -1728,8 +1863,26 @@
       "source_file": "scratch/check_tables.js",
       "source_location": "L3",
       "id": "scratch_check_tables_checktables",
-      "community": 34,
+      "community": 39,
       "norm_label": "checktables()"
+    },
+    {
+      "label": "check_both_dbs.js",
+      "file_type": "code",
+      "source_file": "scratch/check_both_dbs.js",
+      "source_location": "L1",
+      "id": "scratch_check_both_dbs_js",
+      "community": 40,
+      "norm_label": "check_both_dbs.js"
+    },
+    {
+      "label": "run()",
+      "file_type": "code",
+      "source_file": "scratch/check_both_dbs.js",
+      "source_location": "L5",
+      "id": "scratch_check_both_dbs_run",
+      "community": 40,
+      "norm_label": "run()"
     },
     {
       "label": "check_db.js",
@@ -1737,7 +1890,7 @@
       "source_file": "scratch/check_db.js",
       "source_location": "L1",
       "id": "scratch_check_db_js",
-      "community": 35,
+      "community": 41,
       "norm_label": "check_db.js"
     },
     {
@@ -1746,8 +1899,35 @@
       "source_file": "scratch/check_db.js",
       "source_location": "L3",
       "id": "scratch_check_db_checkdb",
-      "community": 35,
+      "community": 41,
       "norm_label": "checkdb()"
+    },
+    {
+      "label": "migrate_mysql_to_postgres.js",
+      "file_type": "code",
+      "source_file": "scratch/migrate_mysql_to_postgres.js",
+      "source_location": "L1",
+      "id": "scratch_migrate_mysql_to_postgres_js",
+      "community": 22,
+      "norm_label": "migrate_mysql_to_postgres.js"
+    },
+    {
+      "label": "migrateTable()",
+      "file_type": "code",
+      "source_file": "scratch/migrate_mysql_to_postgres.js",
+      "source_location": "L11",
+      "id": "scratch_migrate_mysql_to_postgres_migratetable",
+      "community": 22,
+      "norm_label": "migratetable()"
+    },
+    {
+      "label": "run()",
+      "file_type": "code",
+      "source_file": "scratch/migrate_mysql_to_postgres.js",
+      "source_location": "L49",
+      "id": "scratch_migrate_mysql_to_postgres_run",
+      "community": 22,
+      "norm_label": "run()"
     },
     {
       "label": "check_sqlite.js",
@@ -1755,7 +1935,7 @@
       "source_file": "scratch/check_sqlite.js",
       "source_location": "L1",
       "id": "scratch_check_sqlite_js",
-      "community": 36,
+      "community": 42,
       "norm_label": "check_sqlite.js"
     },
     {
@@ -1764,8 +1944,26 @@
       "source_file": "scratch/check_sqlite.js",
       "source_location": "L4",
       "id": "scratch_check_sqlite_checksqlite",
-      "community": 36,
+      "community": 42,
       "norm_label": "checksqlite()"
+    },
+    {
+      "label": "get_day_questions.js",
+      "file_type": "code",
+      "source_file": "scratch/get_day_questions.js",
+      "source_location": "L1",
+      "id": "scratch_get_day_questions_js",
+      "community": 43,
+      "norm_label": "get_day_questions.js"
+    },
+    {
+      "label": "run()",
+      "file_type": "code",
+      "source_file": "scratch/get_day_questions.js",
+      "source_location": "L5",
+      "id": "scratch_get_day_questions_run",
+      "community": 43,
+      "norm_label": "run()"
     },
     {
       "label": "check_sd_content.js",
@@ -1773,7 +1971,7 @@
       "source_file": "scratch/check_sd_content.js",
       "source_location": "L1",
       "id": "scratch_check_sd_content_js",
-      "community": 37,
+      "community": 44,
       "norm_label": "check_sd_content.js"
     },
     {
@@ -1782,7 +1980,7 @@
       "source_file": "scratch/check_sd_content.js",
       "source_location": "L3",
       "id": "scratch_check_sd_content_checksd",
-      "community": 37,
+      "community": 44,
       "norm_label": "checksd()"
     },
     {
@@ -1791,7 +1989,7 @@
       "source_file": "scratch/check_schemas.js",
       "source_location": "L1",
       "id": "scratch_check_schemas_js",
-      "community": 38,
+      "community": 45,
       "norm_label": "check_schemas.js"
     },
     {
@@ -1800,7 +1998,7 @@
       "source_file": "scratch/check_schemas.js",
       "source_location": "L3",
       "id": "scratch_check_schemas_checkschema",
-      "community": 38,
+      "community": 45,
       "norm_label": "checkschema()"
     },
     {
@@ -1809,7 +2007,7 @@
       "source_file": "scripts/reset_boilerplates.py",
       "source_location": "L1",
       "id": "scripts_reset_boilerplates_py",
-      "community": 39,
+      "community": 46,
       "norm_label": "reset_boilerplates.py"
     },
     {
@@ -1818,7 +2016,7 @@
       "source_file": "scripts/reset_boilerplates.py",
       "source_location": "L14",
       "id": "scripts_reset_boilerplates_extract_boilerplate",
-      "community": 39,
+      "community": 46,
       "norm_label": "extract_boilerplate()"
     },
     {
@@ -1827,7 +2025,7 @@
       "source_file": "scripts/scrape_hellointerview.js",
       "source_location": "L1",
       "id": "scripts_scrape_hellointerview_js",
-      "community": 40,
+      "community": 47,
       "norm_label": "scrape_hellointerview.js"
     },
     {
@@ -1836,7 +2034,7 @@
       "source_file": "scripts/scrape_hellointerview.js",
       "source_location": "L15",
       "id": "scripts_scrape_hellointerview_scrape",
-      "community": 40,
+      "community": 47,
       "norm_label": "scrape()"
     }
   ],
@@ -1953,7 +2151,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "client/src/App.jsx",
-      "source_location": "L26",
+      "source_location": "L29",
       "weight": 1.0,
       "_src": "client_src_app_jsx",
       "_tgt": "src_app_tldrawwrapper",
@@ -1965,7 +2163,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "client/src/App.jsx",
-      "source_location": "L42",
+      "source_location": "L45",
       "weight": 1.0,
       "_src": "client_src_app_jsx",
       "_tgt": "src_app_app",
@@ -1977,7 +2175,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "client/src/App.jsx",
-      "source_location": "L1807",
+      "source_location": "L1905",
       "weight": 1.0,
       "_src": "client_src_app_jsx",
       "_tgt": "src_app_confirmationmodal",
@@ -2145,7 +2343,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "server/index.js",
-      "source_location": "L295",
+      "source_location": "L310",
       "weight": 1.0,
       "_src": "server_index_js",
       "_tgt": "server_index_getsession",
@@ -2157,7 +2355,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "server/index.js",
-      "source_location": "L378",
+      "source_location": "L393",
       "weight": 1.0,
       "_src": "server_index_js",
       "_tgt": "server_index_sendevent",
@@ -2169,7 +2367,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "server/index.js",
-      "source_location": "L592",
+      "source_location": "L607",
       "weight": 1.0,
       "_src": "server_index_js",
       "_tgt": "server_index_pickrandomquestion",
@@ -2181,12 +2379,36 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "server/index.js",
-      "source_location": "L1305",
+      "source_location": "L1332",
       "weight": 1.0,
       "_src": "server_index_js",
-      "_tgt": "server_index_startserver",
+      "_tgt": "server_index_shutdown",
       "source": "server_index_js",
-      "target": "server_index_startserver",
+      "target": "server_index_shutdown",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "server/index.js",
+      "source_location": "L1353",
+      "weight": 1.0,
+      "_src": "server_index_js",
+      "_tgt": "server_index_connectdb",
+      "source": "server_index_js",
+      "target": "server_index_connectdb",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "server/index.js",
+      "source_location": "L1377",
+      "weight": 1.0,
+      "_src": "server_index_js",
+      "_tgt": "server_index_initdatabase",
+      "source": "server_index_js",
+      "target": "server_index_initdatabase",
       "confidence_score": 1.0
     },
     {
@@ -2199,6 +2421,18 @@
       "_tgt": "server_index_parsestagesfromsolutionformat",
       "source": "server_index_parsestagesfromsolutionformat",
       "target": "server_index_buildsdcontext",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "server/index.js",
+      "source_location": "L1382",
+      "weight": 1.0,
+      "_src": "server_index_initdatabase",
+      "_tgt": "server_index_connectdb",
+      "source": "server_index_connectdb",
+      "target": "server_index_initdatabase",
       "confidence_score": 1.0
     },
     {
@@ -2373,7 +2607,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "server/src/services/LLMService.js",
-      "source_location": "L76",
+      "source_location": "L84",
       "weight": 1.0,
       "_src": "services_llmservice_llmservice",
       "_tgt": "services_llmservice_llmservice_loadsolutions",
@@ -2385,7 +2619,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "server/src/services/LLMService.js",
-      "source_location": "L81",
+      "source_location": "L89",
       "weight": 1.0,
       "_src": "services_llmservice_llmservice",
       "_tgt": "services_llmservice_llmservice_fixjsonescaping",
@@ -2397,7 +2631,19 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "server/src/services/LLMService.js",
-      "source_location": "L91",
+      "source_location": "L99",
+      "weight": 1.0,
+      "_src": "services_llmservice_llmservice",
+      "_tgt": "services_llmservice_llmservice_extractjson",
+      "source": "services_llmservice_llmservice",
+      "target": "services_llmservice_llmservice_extractjson",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "server/src/services/LLMService.js",
+      "source_location": "L166",
       "weight": 1.0,
       "_src": "services_llmservice_llmservice",
       "_tgt": "services_llmservice_llmservice_generatecontent",
@@ -2409,7 +2655,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "server/src/services/LLMService.js",
-      "source_location": "L168",
+      "source_location": "L246",
       "weight": 1.0,
       "_src": "services_llmservice_llmservice",
       "_tgt": "services_llmservice_llmservice_ensuresolutionexists",
@@ -2421,7 +2667,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "server/src/services/LLMService.js",
-      "source_location": "L214",
+      "source_location": "L292",
       "weight": 1.0,
       "_src": "services_llmservice_llmservice",
       "_tgt": "services_llmservice_llmservice_analyzecode",
@@ -2433,7 +2679,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "server/src/services/LLMService.js",
-      "source_location": "L254",
+      "source_location": "L327",
       "weight": 1.0,
       "_src": "services_llmservice_llmservice",
       "_tgt": "services_llmservice_llmservice_analyzewhiteboard",
@@ -2445,7 +2691,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "server/src/services/LLMService.js",
-      "source_location": "L298",
+      "source_location": "L366",
       "weight": 1.0,
       "_src": "services_llmservice_llmservice",
       "_tgt": "services_llmservice_llmservice_generatechatresponse",
@@ -2457,7 +2703,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "server/src/services/LLMService.js",
-      "source_location": "L345",
+      "source_location": "L413",
       "weight": 1.0,
       "_src": "services_llmservice_llmservice",
       "_tgt": "services_llmservice_llmservice_generateinitialprobe",
@@ -2469,7 +2715,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "server/src/services/LLMService.js",
-      "source_location": "L373",
+      "source_location": "L441",
       "weight": 1.0,
       "_src": "services_llmservice_llmservice",
       "_tgt": "services_llmservice_llmservice_extractconstraints",
@@ -2481,7 +2727,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "server/src/services/LLMService.js",
-      "source_location": "L408",
+      "source_location": "L471",
       "weight": 1.0,
       "_src": "services_llmservice_llmservice",
       "_tgt": "services_llmservice_llmservice_generatereactresponse",
@@ -2493,7 +2739,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "server/src/services/LLMService.js",
-      "source_location": "L479",
+      "source_location": "L542",
       "weight": 1.0,
       "_src": "services_llmservice_llmservice",
       "_tgt": "services_llmservice_llmservice_analyzegapandselectguidance",
@@ -2502,10 +2748,22 @@
       "confidence_score": 1.0
     },
     {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "server/src/services/LLMService.js",
+      "source_location": "L610",
+      "weight": 1.0,
+      "_src": "services_llmservice_llmservice",
+      "_tgt": "services_llmservice_llmservice_withretryon429",
+      "source": "services_llmservice_llmservice",
+      "target": "services_llmservice_llmservice_withretryon429",
+      "confidence_score": 1.0
+    },
+    {
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "server/src/services/LLMService.js",
-      "source_location": "L73",
+      "source_location": "L81",
       "weight": 1.0,
       "_src": "services_llmservice_llmservice_constructor",
       "_tgt": "services_llmservice_llmservice_loadsolutions",
@@ -2517,60 +2775,12 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "server/src/services/LLMService.js",
-      "source_location": "L199",
+      "source_location": "L277",
       "weight": 1.0,
       "_src": "services_llmservice_llmservice_ensuresolutionexists",
       "_tgt": "services_llmservice_llmservice_fixjsonescaping",
       "source": "services_llmservice_llmservice_fixjsonescaping",
       "target": "services_llmservice_llmservice_ensuresolutionexists",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "calls",
-      "confidence": "EXTRACTED",
-      "source_file": "server/src/services/LLMService.js",
-      "source_location": "L243",
-      "weight": 1.0,
-      "_src": "services_llmservice_llmservice_analyzecode",
-      "_tgt": "services_llmservice_llmservice_fixjsonescaping",
-      "source": "services_llmservice_llmservice_fixjsonescaping",
-      "target": "services_llmservice_llmservice_analyzecode",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "calls",
-      "confidence": "EXTRACTED",
-      "source_file": "server/src/services/LLMService.js",
-      "source_location": "L287",
-      "weight": 1.0,
-      "_src": "services_llmservice_llmservice_analyzewhiteboard",
-      "_tgt": "services_llmservice_llmservice_fixjsonescaping",
-      "source": "services_llmservice_llmservice_fixjsonescaping",
-      "target": "services_llmservice_llmservice_analyzewhiteboard",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "calls",
-      "confidence": "EXTRACTED",
-      "source_file": "server/src/services/LLMService.js",
-      "source_location": "L397",
-      "weight": 1.0,
-      "_src": "services_llmservice_llmservice_extractconstraints",
-      "_tgt": "services_llmservice_llmservice_fixjsonescaping",
-      "source": "services_llmservice_llmservice_fixjsonescaping",
-      "target": "services_llmservice_llmservice_extractconstraints",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "calls",
-      "confidence": "EXTRACTED",
-      "source_file": "server/src/services/LLMService.js",
-      "source_location": "L531",
-      "weight": 1.0,
-      "_src": "services_llmservice_llmservice_analyzegapandselectguidance",
-      "_tgt": "services_llmservice_llmservice_fixjsonescaping",
-      "source": "services_llmservice_llmservice_fixjsonescaping",
-      "target": "services_llmservice_llmservice_analyzegapandselectguidance",
       "confidence_score": 1.0
     },
     {
@@ -2589,7 +2799,79 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "server/src/services/LLMService.js",
+      "source_location": "L316",
+      "weight": 1.0,
+      "_src": "services_llmservice_llmservice_analyzecode",
+      "_tgt": "services_llmservice_llmservice_extractjson",
+      "source": "services_llmservice_llmservice_extractjson",
+      "target": "services_llmservice_llmservice_analyzecode",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "server/src/services/LLMService.js",
+      "source_location": "L355",
+      "weight": 1.0,
+      "_src": "services_llmservice_llmservice_analyzewhiteboard",
+      "_tgt": "services_llmservice_llmservice_extractjson",
+      "source": "services_llmservice_llmservice_extractjson",
+      "target": "services_llmservice_llmservice_analyzewhiteboard",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "server/src/services/LLMService.js",
+      "source_location": "L460",
+      "weight": 1.0,
+      "_src": "services_llmservice_llmservice_extractconstraints",
+      "_tgt": "services_llmservice_llmservice_extractjson",
+      "source": "services_llmservice_llmservice_extractjson",
+      "target": "services_llmservice_llmservice_extractconstraints",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "server/src/services/LLMService.js",
+      "source_location": "L590",
+      "weight": 1.0,
+      "_src": "services_llmservice_llmservice_analyzegapandselectguidance",
+      "_tgt": "services_llmservice_llmservice_extractjson",
+      "source": "services_llmservice_llmservice_extractjson",
+      "target": "services_llmservice_llmservice_analyzegapandselectguidance",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "server/scripts/send_daily_email.js",
+      "source_location": "L145",
+      "weight": 1.0,
+      "_src": "services_llmservice_llmservice_extractjson",
+      "_tgt": "scripts_send_daily_email_run",
+      "source": "services_llmservice_llmservice_extractjson",
+      "target": "scripts_send_daily_email_run"
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "server/src/services/LLMService.js",
       "source_location": "L196",
+      "weight": 1.0,
+      "_src": "services_llmservice_llmservice_generatecontent",
+      "_tgt": "services_llmservice_llmservice_withretryon429",
+      "source": "services_llmservice_llmservice_generatecontent",
+      "target": "services_llmservice_llmservice_withretryon429",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "server/src/services/LLMService.js",
+      "source_location": "L274",
       "weight": 1.0,
       "_src": "services_llmservice_llmservice_ensuresolutionexists",
       "_tgt": "services_llmservice_llmservice_generatecontent",
@@ -2601,7 +2883,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "server/src/services/LLMService.js",
-      "source_location": "L235",
+      "source_location": "L313",
       "weight": 1.0,
       "_src": "services_llmservice_llmservice_analyzecode",
       "_tgt": "services_llmservice_llmservice_generatecontent",
@@ -2613,7 +2895,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "server/src/services/LLMService.js",
-      "source_location": "L279",
+      "source_location": "L352",
       "weight": 1.0,
       "_src": "services_llmservice_llmservice_analyzewhiteboard",
       "_tgt": "services_llmservice_llmservice_generatecontent",
@@ -2625,7 +2907,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "server/src/services/LLMService.js",
-      "source_location": "L339",
+      "source_location": "L407",
       "weight": 1.0,
       "_src": "services_llmservice_llmservice_generatechatresponse",
       "_tgt": "services_llmservice_llmservice_generatecontent",
@@ -2637,7 +2919,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "server/src/services/LLMService.js",
-      "source_location": "L367",
+      "source_location": "L435",
       "weight": 1.0,
       "_src": "services_llmservice_llmservice_generateinitialprobe",
       "_tgt": "services_llmservice_llmservice_generatecontent",
@@ -2649,7 +2931,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "server/src/services/LLMService.js",
-      "source_location": "L389",
+      "source_location": "L457",
       "weight": 1.0,
       "_src": "services_llmservice_llmservice_extractconstraints",
       "_tgt": "services_llmservice_llmservice_generatecontent",
@@ -2661,7 +2943,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "server/src/services/LLMService.js",
-      "source_location": "L473",
+      "source_location": "L536",
       "weight": 1.0,
       "_src": "services_llmservice_llmservice_generatereactresponse",
       "_tgt": "services_llmservice_llmservice_generatecontent",
@@ -2673,7 +2955,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "server/src/services/LLMService.js",
-      "source_location": "L524",
+      "source_location": "L587",
       "weight": 1.0,
       "_src": "services_llmservice_llmservice_analyzegapandselectguidance",
       "_tgt": "services_llmservice_llmservice_generatecontent",
@@ -2721,6 +3003,18 @@
       "relation": "calls",
       "confidence": "INFERRED",
       "confidence_score": 0.8,
+      "source_file": "server/scripts/send_daily_email.js",
+      "source_location": "L132",
+      "weight": 1.0,
+      "_src": "services_llmservice_llmservice_generatecontent",
+      "_tgt": "scripts_send_daily_email_run",
+      "source": "services_llmservice_llmservice_generatecontent",
+      "target": "scripts_send_daily_email_run"
+    },
+    {
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
       "source_file": "server/scripts/enrich_boilerplates.js",
       "source_location": "L30",
       "weight": 1.0,
@@ -2745,7 +3039,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "server/src/services/LLMService.js",
-      "source_location": "L215",
+      "source_location": "L293",
       "weight": 1.0,
       "_src": "services_llmservice_llmservice_analyzecode",
       "_tgt": "services_llmservice_llmservice_ensuresolutionexists",
@@ -2757,7 +3051,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "server/src/services/LLMService.js",
-      "source_location": "L256",
+      "source_location": "L329",
       "weight": 1.0,
       "_src": "services_llmservice_llmservice_analyzewhiteboard",
       "_tgt": "services_llmservice_llmservice_ensuresolutionexists",
@@ -2769,7 +3063,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "server/src/services/LLMService.js",
-      "source_location": "L300",
+      "source_location": "L368",
       "weight": 1.0,
       "_src": "services_llmservice_llmservice_generatechatresponse",
       "_tgt": "services_llmservice_llmservice_ensuresolutionexists",
@@ -2781,7 +3075,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "server/src/services/LLMService.js",
-      "source_location": "L347",
+      "source_location": "L415",
       "weight": 1.0,
       "_src": "services_llmservice_llmservice_generateinitialprobe",
       "_tgt": "services_llmservice_llmservice_ensuresolutionexists",
@@ -2793,13 +3087,25 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "server/src/services/LLMService.js",
-      "source_location": "L410",
+      "source_location": "L473",
       "weight": 1.0,
       "_src": "services_llmservice_llmservice_generatereactresponse",
       "_tgt": "services_llmservice_llmservice_ensuresolutionexists",
       "source": "services_llmservice_llmservice_ensuresolutionexists",
       "target": "services_llmservice_llmservice_generatereactresponse",
       "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "server/src/agents/InterviewerAgent.js",
+      "source_location": "L49",
+      "weight": 1.0,
+      "_src": "services_llmservice_llmservice_withretryon429",
+      "_tgt": "agents_intervieweragent_intervieweragent_streamcompletion",
+      "source": "services_llmservice_llmservice_withretryon429",
+      "target": "agents_intervieweragent_intervieweragent_streamcompletion"
     },
     {
       "relation": "contains",
@@ -3069,7 +3375,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "server/src/agents/InterviewerAgent.js",
-      "source_location": "L66",
+      "source_location": "L94",
       "weight": 1.0,
       "_src": "agents_intervieweragent_intervieweragent_generateresponse",
       "_tgt": "agents_intervieweragent_issystemdesignquestion",
@@ -3081,7 +3387,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "server/src/agents/InterviewerAgent.js",
-      "source_location": "L333",
+      "source_location": "L395",
       "weight": 1.0,
       "_src": "agents_intervieweragent_intervieweragent_generateinitialprobe",
       "_tgt": "agents_intervieweragent_issystemdesignquestion",
@@ -3093,7 +3399,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "server/src/agents/InterviewerAgent.js",
-      "source_location": "L163",
+      "source_location": "L191",
       "weight": 1.0,
       "_src": "agents_intervieweragent_intervieweragent_generateresponse",
       "_tgt": "agents_intervieweragent_truncate",
@@ -3105,7 +3411,19 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "server/src/agents/InterviewerAgent.js",
-      "source_location": "L139",
+      "source_location": "L426",
+      "weight": 1.0,
+      "_src": "agents_intervieweragent_intervieweragent_generateinitialprobe",
+      "_tgt": "agents_intervieweragent_truncate",
+      "source": "agents_intervieweragent_truncate",
+      "target": "agents_intervieweragent_intervieweragent_generateinitialprobe",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "server/src/agents/InterviewerAgent.js",
+      "source_location": "L167",
       "weight": 1.0,
       "_src": "agents_intervieweragent_intervieweragent_generateresponse",
       "_tgt": "agents_intervieweragent_loadpromptfile",
@@ -3141,7 +3459,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "server/src/agents/InterviewerAgent.js",
-      "source_location": "L63",
+      "source_location": "L91",
       "weight": 1.0,
       "_src": "agents_intervieweragent_intervieweragent",
       "_tgt": "agents_intervieweragent_intervieweragent_generateresponse",
@@ -3153,7 +3471,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "server/src/agents/InterviewerAgent.js",
-      "source_location": "L332",
+      "source_location": "L394",
       "weight": 1.0,
       "_src": "agents_intervieweragent_intervieweragent",
       "_tgt": "agents_intervieweragent_intervieweragent_generateinitialprobe",
@@ -3165,12 +3483,24 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "server/src/agents/InterviewerAgent.js",
-      "source_location": "L272",
+      "source_location": "L334",
       "weight": 1.0,
       "_src": "agents_intervieweragent_intervieweragent_generateresponse",
       "_tgt": "agents_intervieweragent_intervieweragent_streamcompletion",
       "source": "agents_intervieweragent_intervieweragent_streamcompletion",
       "target": "agents_intervieweragent_intervieweragent_generateresponse",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "server/src/agents/InterviewerAgent.js",
+      "source_location": "L456",
+      "weight": 1.0,
+      "_src": "agents_intervieweragent_intervieweragent_generateinitialprobe",
+      "_tgt": "agents_intervieweragent_intervieweragent_streamcompletion",
+      "source": "agents_intervieweragent_intervieweragent_streamcompletion",
+      "target": "agents_intervieweragent_intervieweragent_generateinitialprobe",
       "confidence_score": 1.0
     },
     {
@@ -4184,6 +4514,18 @@
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
+      "source_file": "server/scripts/backup_cloud_sql_to_local.js",
+      "source_location": "L18",
+      "weight": 1.0,
+      "_src": "server_scripts_backup_cloud_sql_to_local_js",
+      "_tgt": "scripts_backup_cloud_sql_to_local_runbackup",
+      "source": "server_scripts_backup_cloud_sql_to_local_js",
+      "target": "scripts_backup_cloud_sql_to_local_runbackup",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
       "source_file": "server/scripts/seed_dp.js",
       "source_location": "L41",
       "weight": 1.0,
@@ -4340,6 +4682,78 @@
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
+      "source_file": "server/scripts/send_daily_email.js",
+      "source_location": "L21",
+      "weight": 1.0,
+      "_src": "server_scripts_send_daily_email_js",
+      "_tgt": "scripts_send_daily_email_getdefaultpracticeday",
+      "source": "server_scripts_send_daily_email_js",
+      "target": "scripts_send_daily_email_getdefaultpracticeday",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "server/scripts/send_daily_email.js",
+      "source_location": "L40",
+      "weight": 1.0,
+      "_src": "server_scripts_send_daily_email_js",
+      "_tgt": "scripts_send_daily_email_getdifficultystyle",
+      "source": "server_scripts_send_daily_email_js",
+      "target": "scripts_send_daily_email_getdifficultystyle",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "server/scripts/send_daily_email.js",
+      "source_location": "L48",
+      "weight": 1.0,
+      "_src": "server_scripts_send_daily_email_js",
+      "_tgt": "scripts_send_daily_email_run",
+      "source": "server_scripts_send_daily_email_js",
+      "target": "scripts_send_daily_email_run",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "server/scripts/send_daily_email.js",
+      "source_location": "L242",
+      "weight": 1.0,
+      "_src": "server_scripts_send_daily_email_js",
+      "_tgt": "scripts_send_daily_email_compilehtmlemail",
+      "source": "server_scripts_send_daily_email_js",
+      "target": "scripts_send_daily_email_compilehtmlemail",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "server/scripts/send_daily_email.js",
+      "source_location": "L80",
+      "weight": 1.0,
+      "_src": "scripts_send_daily_email_run",
+      "_tgt": "scripts_send_daily_email_getdefaultpracticeday",
+      "source": "scripts_send_daily_email_getdefaultpracticeday",
+      "target": "scripts_send_daily_email_run",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "server/scripts/send_daily_email.js",
+      "source_location": "L186",
+      "weight": 1.0,
+      "_src": "scripts_send_daily_email_run",
+      "_tgt": "scripts_send_daily_email_compilehtmlemail",
+      "source": "scripts_send_daily_email_run",
+      "target": "scripts_send_daily_email_compilehtmlemail",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
       "source_file": "server/scripts/enrich_boilerplates.js",
       "source_location": "L8",
       "weight": 1.0,
@@ -4436,6 +4850,30 @@
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
+      "source_file": "scratch/inspect_question.js",
+      "source_location": "L3",
+      "weight": 1.0,
+      "_src": "scratch_inspect_question_js",
+      "_tgt": "scratch_inspect_question_inspect",
+      "source": "scratch_inspect_question_js",
+      "target": "scratch_inspect_question_inspect",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "scratch/check_sessions.js",
+      "source_location": "L4",
+      "weight": 1.0,
+      "_src": "scratch_check_sessions_js",
+      "_tgt": "scratch_check_sessions_run",
+      "source": "scratch_check_sessions_js",
+      "target": "scratch_check_sessions_run",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
       "source_file": "scratch/check_tables.js",
       "source_location": "L3",
       "weight": 1.0,
@@ -4443,6 +4881,18 @@
       "_tgt": "scratch_check_tables_checktables",
       "source": "scratch_check_tables_js",
       "target": "scratch_check_tables_checktables",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "scratch/check_both_dbs.js",
+      "source_location": "L5",
+      "weight": 1.0,
+      "_src": "scratch_check_both_dbs_js",
+      "_tgt": "scratch_check_both_dbs_run",
+      "source": "scratch_check_both_dbs_js",
+      "target": "scratch_check_both_dbs_run",
       "confidence_score": 1.0
     },
     {
@@ -4460,6 +4910,42 @@
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
+      "source_file": "scratch/migrate_mysql_to_postgres.js",
+      "source_location": "L11",
+      "weight": 1.0,
+      "_src": "scratch_migrate_mysql_to_postgres_js",
+      "_tgt": "scratch_migrate_mysql_to_postgres_migratetable",
+      "source": "scratch_migrate_mysql_to_postgres_js",
+      "target": "scratch_migrate_mysql_to_postgres_migratetable",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "scratch/migrate_mysql_to_postgres.js",
+      "source_location": "L49",
+      "weight": 1.0,
+      "_src": "scratch_migrate_mysql_to_postgres_js",
+      "_tgt": "scratch_migrate_mysql_to_postgres_run",
+      "source": "scratch_migrate_mysql_to_postgres_js",
+      "target": "scratch_migrate_mysql_to_postgres_run",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "scratch/migrate_mysql_to_postgres.js",
+      "source_location": "L137",
+      "weight": 1.0,
+      "_src": "scratch_migrate_mysql_to_postgres_run",
+      "_tgt": "scratch_migrate_mysql_to_postgres_migratetable",
+      "source": "scratch_migrate_mysql_to_postgres_migratetable",
+      "target": "scratch_migrate_mysql_to_postgres_run",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
       "source_file": "scratch/check_sqlite.js",
       "source_location": "L4",
       "weight": 1.0,
@@ -4467,6 +4953,18 @@
       "_tgt": "scratch_check_sqlite_checksqlite",
       "source": "scratch_check_sqlite_js",
       "target": "scratch_check_sqlite_checksqlite",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "scratch/get_day_questions.js",
+      "source_location": "L5",
+      "weight": 1.0,
+      "_src": "scratch_get_day_questions_js",
+      "_tgt": "scratch_get_day_questions_run",
+      "source": "scratch_get_day_questions_js",
+      "target": "scratch_get_day_questions_run",
       "confidence_score": 1.0
     },
     {

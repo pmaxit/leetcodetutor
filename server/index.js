@@ -203,11 +203,26 @@ app.post('/api/auth/login', async (req, res) => {
     if (!user) return res.status(401).json({ error: 'Invalid credentials' });
     const match = await bcrypt.compare(password, user.passwordHash);
     if (!match) return res.status(401).json({ error: 'Invalid credentials' });
-    const token = jwt.sign({ id: user.id, email: user.email }, JWT_SECRET, { expiresIn: '24h' });
+    const token = jwt.sign({ id: user.id, email: user.email }, JWT_SECRET, { expiresIn: '7d' });
     res.json({ token, user: { id: user.id, email: user.email } });
   } catch (err) {
     console.error('Login error:', err);
     res.status(500).json({ error: err.message });
+  }
+});
+
+// Refresh token endpoint - issues a new token if current one is still valid
+app.post('/api/auth/refresh', authenticateToken, (req, res) => {
+  try {
+    const newToken = jwt.sign(
+      { id: req.user.id, email: req.user.email },
+      JWT_SECRET,
+      { expiresIn: '7d' }
+    );
+    res.json({ token: newToken, user: { id: req.user.id, email: req.user.email } });
+  } catch (err) {
+    console.error('Token refresh error:', err);
+    res.status(500).json({ error: 'Failed to refresh token' });
   }
 });
 
@@ -1394,6 +1409,24 @@ const initDatabase = async () => {
 
     dbReady = true;
     console.log('✅ Database initialization complete');
+
+    // Periodic DB keepalive to prevent stale connections
+    const DB_KEEPALIVE_INTERVAL = 5 * 60 * 1000; // 5 minutes
+    setInterval(async () => {
+      if (!dbReady) return;
+      try {
+        await sequelize.query('SELECT 1');
+        console.log('💓 DB keepalive ping');
+      } catch (err) {
+        console.warn('⚠️ DB keepalive failed, reconnecting:', err.message);
+        dbReady = false;
+        const reconnected = await connectDb(sequelize);
+        if (reconnected) {
+          dbReady = true;
+          console.log('✅ DB reconnected after keepalive failure');
+        }
+      }
+    }, DB_KEEPALIVE_INTERVAL);
   } catch (error) {
     console.error('❌ Database initialization error:', error);
     dbError = error.message || 'Database init failed';

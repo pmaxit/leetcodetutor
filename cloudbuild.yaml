@@ -23,6 +23,12 @@ steps:
         APP_DB_USER: "${_DB_USER}"
         APP_DB_PASSWORD: "${_DB_PASSWORD}"
         APP_DB_NAME: "${_DB_NAME}"
+        # Optional: allow passing a full connection string instead of discrete host/user/pass/name.
+        # When set, server/src/models/db.js will prefer APP_DB_URL / DB_URL / DATABASE_URL.
+        APP_DB_URL: "${_DB_URL}"
+        DB_URL: "${_DB_URL}"
+        DATABASE_URL: "${_DB_URL}"
+        DATABASE_PUBLIC_URL: "${_DB_URL}"
         APP_DB_DIALECT: "mysql"
         APP_DB_SOCKET_PATH: "/cloudsql/adveralabs:us-central1:adveralabs-mysql"
         APP_LLM_ENABLE_TOOLS: "false"
@@ -61,6 +67,7 @@ substitutions:
   _DB_USER: ''
   _DB_PASSWORD: ''
   _DB_NAME: ''
+  _DB_URL: ''
 
 options:
   machineType: 'N1_HIGHCPU_8'

@@ -17,10 +17,13 @@ import { formatLeetcodeHTML } from './utils/formatLeetcodeHTML';
 import Login from './components/Login';
 import SettingsPage from './components/SettingsPage';
 import StatsPage from './components/StatsPage';
+import { decodeJwtPayload, isJwtExpired } from './utils/authToken';
 
 const API = import.meta.env.PROD ? '' : 'http://127.0.0.1:3005';
 const TLDRAW_LICENSE_KEY = import.meta.env.VITE_TLDRAW_LICENSE_KEY;
 const CAN_USE_TLDRAW = !import.meta.env.PROD || Boolean(TLDRAW_LICENSE_KEY);
+const AUTH_TOKEN_KEY = 'ag_token';
+const AUTH_USER_KEY = 'ag_user';
 
 // Component to access tldraw editor instance
 const TldrawWrapper = ({ onEditorMount }) => {
@@ -40,7 +43,10 @@ const TldrawWrapper = ({ onEditorMount }) => {
 };
 
 function App() {
-  const PRACTICE_START_DATE = new Date(new Date().getFullYear(), 4, 7); // May 7 (month is 0-based)
+  const [practiceSessionCreatedAt, setPracticeSessionCreatedAt] = useState(null);
+  const PRACTICE_START_DATE = practiceSessionCreatedAt
+    ? new Date(practiceSessionCreatedAt)
+    : new Date();
 
   const getPracticeDayNumber = (dayKey) => {
     const parsed = parseInt(dayKey, 10);
@@ -56,7 +62,7 @@ function App() {
     return labelDate.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
   };
 
-  const getDefaultPracticeDay = (schedule) => {
+  const getDefaultPracticeDay = (schedule, sessionCreatedAt) => {
     if (!schedule) return null;
     const dayKeys = Object.keys(schedule).sort((a, b) => {
       const d1 = getPracticeDayNumber(a) ?? 0;
@@ -66,7 +72,7 @@ function App() {
     if (dayKeys.length === 0) return null;
 
     const today = new Date();
-    const start = new Date(PRACTICE_START_DATE);
+    const start = sessionCreatedAt ? new Date(sessionCreatedAt) : new Date(PRACTICE_START_DATE);
     const diffMs = today.setHours(0, 0, 0, 0) - start.setHours(0, 0, 0, 0);
     const dayOffset = Math.floor(diffMs / (1000 * 60 * 60 * 24));
     const todayPracticeDay = dayOffset + 1;
@@ -146,31 +152,104 @@ function App() {
   const [showProfileMenu, setShowProfileMenu] = useState(false);
 
   // ─── Auth State ─────────────────────────────────────────────────────────────
-  const [token, setToken] = useState(localStorage.getItem('ag_token'));
-  const [user, setUser] = useState(JSON.parse(localStorage.getItem('ag_user')));
+  const [token, setToken] = useState(() => {
+    const storedToken = localStorage.getItem(AUTH_TOKEN_KEY);
+    if (!storedToken || isJwtExpired(storedToken)) {
+      localStorage.removeItem(AUTH_TOKEN_KEY);
+      localStorage.removeItem(AUTH_USER_KEY);
+      return null;
+    }
+    return storedToken;
+  });
+  const [user, setUser] = useState(() => {
+    const storedToken = localStorage.getItem(AUTH_TOKEN_KEY);
+    if (!storedToken || isJwtExpired(storedToken)) return null;
+
+    const rawUser = localStorage.getItem(AUTH_USER_KEY);
+    if (!rawUser) return null;
+
+    try {
+      return JSON.parse(rawUser);
+    } catch (_error) {
+      localStorage.removeItem(AUTH_USER_KEY);
+      return null;
+    }
+  });
 
   const handleLogin = (newToken, newUser) => {
     setToken(newToken);
     setUser(newUser);
-    localStorage.setItem('ag_token', newToken);
-    localStorage.setItem('ag_user', JSON.stringify(newUser));
+    localStorage.setItem(AUTH_TOKEN_KEY, newToken);
+    localStorage.setItem(AUTH_USER_KEY, JSON.stringify(newUser));
   };
 
   const handleLogout = () => {
     setToken(null);
     setUser(null);
-    localStorage.removeItem('ag_token');
-    localStorage.removeItem('ag_user');
+    localStorage.removeItem(AUTH_TOKEN_KEY);
+    localStorage.removeItem(AUTH_USER_KEY);
   };
 
-  const fetchWithAuth = (url, options = {}) => {
-    return fetch(url, {
+  const isTokenExpiringSoon = (tok, minutesThreshold = 60) => {
+    const payload = decodeJwtPayload(tok);
+    if (!payload || typeof payload.exp !== 'number') return true;
+    return payload.exp * 1000 < Date.now() + minutesThreshold * 60 * 1000;
+  };
+
+  const refreshAuthToken = async () => {
+    try {
+      const res = await fetch(`${API}/api/auth/refresh`, {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        handleLogin(data.token, data.user);
+        return data.token;
+      }
+    } catch (_err) {
+      // Refresh failed
+    }
+    return null;
+  };
+
+  const fetchWithAuth = async (url, options = {}) => {
+    let currentToken = token;
+
+    if (isTokenExpiringSoon(currentToken)) {
+      const newToken = await refreshAuthToken();
+      if (newToken) {
+        currentToken = newToken;
+      } else {
+        handleLogout();
+        throw new Error('Session expired');
+      }
+    }
+
+    const response = await fetch(url, {
       ...options,
       headers: {
         ...options.headers,
-        'Authorization': `Bearer ${token}`,
+        'Authorization': `Bearer ${currentToken}`,
       },
     });
+
+    if (response.status === 401 || response.status === 403) {
+      const refreshedToken = await refreshAuthToken();
+      if (refreshedToken) {
+        return fetch(url, {
+          ...options,
+          headers: {
+            ...options.headers,
+            'Authorization': `Bearer ${refreshedToken}`,
+          },
+        });
+      }
+      handleLogout();
+      throw new Error('Session expired');
+    }
+
+    return response;
   };
 
   const checkLLMHealth = async () => {
@@ -338,11 +417,12 @@ function App() {
           const sessionRes = await fetchWithAuth(`${API}/api/practice/session/${mostRecent.id}`);
           const sessionData = await sessionRes.json();
 
-          const defaultDay = getDefaultPracticeDay(sessionData.schedule);
+          const defaultDay = getDefaultPracticeDay(sessionData.schedule, sessionData.createdAt);
           setPracticeSchedule(sessionData.schedule);
           setSelectedPracticeDay(defaultDay);
           setPracticeSessionName(sessionData.sessionName);
           setPracticeSessionId(sessionData.id);
+          setPracticeSessionCreatedAt(sessionData.createdAt);
           setPracticeProgress(sessionData.progress || {});
           setPracticeConfig({
             newPerDay: sessionData.newPerDay,
@@ -751,10 +831,11 @@ function App() {
 
 
       setPracticeSchedule(data.schedule);
-      const defaultDay = getDefaultPracticeDay(data.schedule);
+      const defaultDay = getDefaultPracticeDay(data.schedule, savedSession.session.createdAt);
       setSelectedPracticeDay(defaultDay);
       setPracticeSessionName(sessionName);
       setPracticeSessionId(savedSession.session.id);
+      setPracticeSessionCreatedAt(savedSession.session.createdAt);
       setPracticeProgress(data.progress || {});
       setPracticeConfiguring(false);
       setMode('dsa');
@@ -806,10 +887,11 @@ function App() {
 
 
       setPracticeSchedule(session.schedule);
-      const defaultDay = getDefaultPracticeDay(session.schedule);
+      const defaultDay = getDefaultPracticeDay(session.schedule, session.createdAt);
       setSelectedPracticeDay(defaultDay);
       setPracticeSessionName(session.sessionName);
       setPracticeSessionId(session.id);
+      setPracticeSessionCreatedAt(session.createdAt);
       setPracticeProgress(session.progress || {});
       setPracticeConfig({ newPerDay: session.newPerDay, pastPerDay: session.pastPerDay });
       setPracticeConfiguring(false);
@@ -913,6 +995,7 @@ function App() {
             setPracticeSchedule(null);
             setPracticeSessionName(null);
             setPracticeSessionId(null);
+            setPracticeSessionCreatedAt(null);
           }
 
           setExpandedSessions(prev => {
@@ -952,6 +1035,7 @@ const handleResetPracticeSession = async () => {
       setPracticeSchedule(null);
       setPracticeSessionName(null);
       setPracticeSessionId(null);
+      setPracticeSessionCreatedAt(null);
       setStatus({ text: 'Session reset', type: 'success' });
 
       // Clear local user codes

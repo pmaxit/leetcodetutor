@@ -1,54 +1,28 @@
-name: Deploy to Cloud Run
+name: Deploy to Railway
 
 on:
   push:
     branches:
       - main
 
-env:
-  PROJECT_ID: adveralabs
-  SERVICE_NAME: ai-interview-platform
-  REGION: us-central1
-  IMAGE_NAME: gcr.io/adveralabs/ai-interview-platform
-
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    permissions:
-      contents: 'read'
-      id-token: 'write'
 
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
 
-    - name: Google Auth
-      id: auth
-      uses: google-github-actions/auth@v2
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
       with:
-        workload_identity_provider: 'projects/1078980357394/locations/global/workloadIdentityPools/github-pool/providers/github-provider'
-        service_account: 'github-actions-sa@adveralabs.iam.gserviceaccount.com'
+        node-version: '20'
 
-    - name: Set up Cloud SDK
-      uses: google-github-actions/setup-gcloud@v2
+    - name: Install Railway CLI
+      run: npm install -g @railway/cli
 
-    - name: Authorize Docker
-      run: gcloud auth configure-docker --quiet
+    - name: Deploy to Railway
+      run: railway up --project 1788c341-250a-4451-b45d-89cf435b602d --service app --environment production --detach -y --message "GitHub Actions Deploy"
+      env:
+        RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
 
-    - name: Build and Push Container
-      run: |
-        docker build -t $IMAGE_NAME .
-        docker push $IMAGE_NAME
-
-    - name: Deploy to Cloud Run
-      run: |
-        gcloud run deploy $SERVICE_NAME \
-          --image $IMAGE_NAME \
-          --platform managed \
-          --region $REGION \
-          --allow-unauthenticated \
-          --add-cloudsql-instances adveralabs:us-central1:adveralabs-mysql \
-          --port 8080 \
-          --service-account "adveralabs-sa@adveralabs.iam.gserviceaccount.com" \
-          --set-secrets "OPENROUTER_API_KEY=OPENROUTER_API_KEY:latest,LLM_BASE_URL=LLM_BASE_URL:latest,LLM_API_KEY=LLM_API_KEY:latest,LLM_MODEL=LLM_MODEL:latest,LLM_ENABLE_TOOLS=LLM_ENABLE_TOOLS:latest,DB_HOST=DB_HOST:latest,DB_USER=DB_USER:latest,DB_PASSWORD=DB_PASSWORD:latest,DB_NAME=DB_NAME:latest,DB_DIALECT=DB_DIALECT:latest,TAVILY_API_KEY=TAVILY_API_KEY:latest" \
-          --set-env-vars "DB_SOCKET_PATH=/cloudsql/adveralabs:us-central1:adveralabs-mysql"
